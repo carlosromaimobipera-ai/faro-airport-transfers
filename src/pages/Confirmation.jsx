@@ -152,8 +152,8 @@ export default function Confirmation() {
               <div className="bg-muted/50 rounded-xl p-4 text-center space-y-2">
                 <p className="text-sm font-medium">{t(lang, 'conf_contact')}</p>
                 <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 289 000 000</span>
-                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@algarvestar.pt</span>
+                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 913 956 971</span>
+                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@transfers-algarvestar.com</span>
                 </div>
               </div>
 

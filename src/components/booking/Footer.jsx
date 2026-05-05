@@ -35,10 +35,10 @@ export default function Footer() {
             <h4 className="font-bold text-background mb-4">{t(lang, 'footer_contact')}</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-background/60">
-                <Phone className="w-4 h-4 text-primary" /> +351 289 000 000
+                <Phone className="w-4 h-4 text-primary" /> +351 913 956 971
               </li>
               <li className="flex items-center gap-2 text-background/60">
-                <Mail className="w-4 h-4 text-primary" /> info@algarvestar.pt
+                <Mail className="w-4 h-4 text-primary" /> info@transfers-algarvestar.com
               </li>
               <li className="flex items-center gap-2 text-background/60">
                 <MapPin className="w-4 h-4 text-primary" /> Aeroporto de Faro, Algarve

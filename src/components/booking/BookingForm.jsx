@@ -1,0 +1,295 @@
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, CreditCard } from 'lucide-react';
+import LocationSelector from './LocationSelector';
+import VehicleCard from './VehicleCard';
+import RouteMap from './RouteMap';
+import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef } from '@/lib/transferData';
+import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
+
+const steps = [
+  { id: 1, label: "Rota", icon: MapPin },
+  { id: 2, label: "Veículo", icon: CircleDot },
+  { id: 3, label: "Detalhes", icon: Calendar },
+  { id: 4, label: "Dados", icon: User },
+];
+
+export default function BookingForm() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    origin: '',
+    destination: '',
+    vehicle_type: '',
+    transfer_date: '',
+    transfer_time: '',
+    flight_number: '',
+    passengers: 1,
+    luggage: 1,
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    notes: '',
+  });
+
+  const distance = useMemo(() => getDistance(form.origin, form.destination), [form.origin, form.destination]);
+  const price = useMemo(() => calculatePrice(distance, form.vehicle_type), [distance, form.vehicle_type]);
+
+  const updateForm = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const canProceed = () => {
+    switch (step) {
+      case 1: return form.origin && form.destination && distance;
+      case 2: return form.vehicle_type;
+      case 3: return form.transfer_date && form.transfer_time;
+      case 4: return form.customer_name && form.customer_email && form.customer_phone;
+      default: return false;
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    const originLoc = locations.find(l => l.id === form.origin);
+    const destLoc = locations.find(l => l.id === form.destination);
+    const bookingRef = generateBookingRef();
+
+    const booking = await base44.entities.Booking.create({
+      booking_ref: bookingRef,
+      customer_name: form.customer_name,
+      customer_email: form.customer_email,
+      customer_phone: form.customer_phone,
+      origin: originLoc?.name,
+      destination: destLoc?.name,
+      origin_coords: originLoc?.coords,
+      destination_coords: destLoc?.coords,
+      vehicle_type: form.vehicle_type,
+      distance_km: distance,
+      price: price,
+      transfer_date: form.transfer_date,
+      transfer_time: form.transfer_time,
+      flight_number: form.flight_number,
+      passengers: form.passengers,
+      luggage: form.luggage,
+      notes: form.notes,
+      status: 'pending',
+      payment_status: 'unpaid',
+    });
+
+    navigate(`/confirmacao?id=${booking.id}`);
+  };
+
+  return (
+    <section id="booking" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10 pb-20">
+      {/* Steps indicator */}
+      <div className="flex items-center justify-center gap-2 mb-8">
+        {steps.map((s, i) => (
+          <React.Fragment key={s.id}>
+            <button
+              onClick={() => s.id < step && setStep(s.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                step === s.id
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                  : step > s.id
+                  ? 'bg-primary/10 text-primary cursor-pointer hover:bg-primary/20'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              <s.icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{s.label}</span>
+            </button>
+            {i < steps.length - 1 && (
+              <div className={`w-8 h-0.5 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <Card className="shadow-xl shadow-black/5 border-border/40">
+        <CardContent className="p-6 md:p-8">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Route */}
+            {step === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div>
+                  <h2 className="font-display text-2xl font-bold mb-1">Escolha a sua rota</h2>
+                  <p className="text-muted-foreground text-sm">Selecione o ponto de partida e o destino</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <LocationSelector label="Origem" value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
+                  <LocationSelector label="Destino" value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} />
+                </div>
+                {(form.origin || form.destination) && (
+                  <RouteMap originId={form.origin} destinationId={form.destination} />
+                )}
+                {distance && (
+                  <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Distância estimada</p>
+                      <p className="text-2xl font-bold text-primary">{distance} km</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">A partir de</p>
+                      <p className="text-2xl font-bold text-secondary">€{(distance * 0.80).toFixed(0)}</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Step 2: Vehicle */}
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div>
+                  <h2 className="font-display text-2xl font-bold mb-1">Escolha o veículo</h2>
+                  <p className="text-muted-foreground text-sm">Selecione o tipo de veículo para a sua viagem</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {vehicleTypes.map((vehicle) => (
+                    <VehicleCard
+                      key={vehicle.id}
+                      vehicle={vehicle}
+                      selected={form.vehicle_type === vehicle.id}
+                      onSelect={(id) => updateForm('vehicle_type', id)}
+                      price={calculatePrice(distance, vehicle.id)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Details */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div>
+                  <h2 className="font-display text-2xl font-bold mb-1">Detalhes da viagem</h2>
+                  <p className="text-muted-foreground text-sm">Quando pretende viajar?</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> Data</Label>
+                    <Input type="date" value={form.transfer_date} onChange={(e) => updateForm('transfer_date', e.target.value)} className="h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> Hora</Label>
+                    <Input type="time" value={form.transfer_time} onChange={(e) => updateForm('transfer_time', e.target.value)} className="h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Número do voo (opcional)</Label>
+                    <Input placeholder="Ex: TP1234" value={form.flight_number} onChange={(e) => updateForm('flight_number', e.target.value)} className="h-12" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Passageiros</Label>
+                      <Input type="number" min={1} max={9} value={form.passengers} onChange={(e) => updateForm('passengers', parseInt(e.target.value) || 1)} className="h-12" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Malas</Label>
+                      <Input type="number" min={0} max={15} value={form.luggage} onChange={(e) => updateForm('luggage', parseInt(e.target.value) || 0)} className="h-12" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Notas especiais (opcional)</Label>
+                  <Textarea placeholder="Cadeira de bebé, paragem extra, etc." value={form.notes} onChange={(e) => updateForm('notes', e.target.value)} />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Customer Info */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div>
+                  <h2 className="font-display text-2xl font-bold mb-1">Os seus dados</h2>
+                  <p className="text-muted-foreground text-sm">Preencha os seus dados de contacto</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Nome completo</Label>
+                    <Input placeholder="João Silva" value={form.customer_name} onChange={(e) => updateForm('customer_name', e.target.value)} className="h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input type="email" placeholder="joao@email.com" value={form.customer_email} onChange={(e) => updateForm('customer_email', e.target.value)} className="h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telemóvel</Label>
+                    <Input type="tel" placeholder="+351 912 345 678" value={form.customer_phone} onChange={(e) => updateForm('customer_phone', e.target.value)} className="h-12" />
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Summary */}
+                <div className="bg-muted/50 rounded-xl p-5 space-y-3">
+                  <h3 className="font-bold text-lg">Resumo da reserva</h3>
+                  <div className="grid grid-cols-2 gap-y-2 text-sm">
+                    <span className="text-muted-foreground">Rota:</span>
+                    <span className="font-medium">{locations.find(l => l.id === form.origin)?.name} → {locations.find(l => l.id === form.destination)?.name}</span>
+                    <span className="text-muted-foreground">Distância:</span>
+                    <span className="font-medium">{distance} km</span>
+                    <span className="text-muted-foreground">Veículo:</span>
+                    <span className="font-medium">{vehicleTypes.find(v => v.id === form.vehicle_type)?.name}</span>
+                    <span className="text-muted-foreground">Data:</span>
+                    <span className="font-medium">{form.transfer_date} às {form.transfer_time}</span>
+                    <span className="text-muted-foreground">Passageiros:</span>
+                    <span className="font-medium">{form.passengers}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold">Total</span>
+                    <span className="text-3xl font-bold text-primary">€{price.toFixed(2)}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation buttons */}
+          <div className="flex justify-between mt-8 pt-6 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setStep(s => s - 1)}
+              disabled={step === 1}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" /> Anterior
+            </Button>
+
+            {step < 4 ? (
+              <Button
+                onClick={() => setStep(s => s + 1)}
+                disabled={!canProceed()}
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                Seguinte <ArrowRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={!canProceed() || isSubmitting}
+                className="gap-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold px-8"
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-secondary-foreground/30 border-t-secondary-foreground rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" /> Confirmar Reserva — €{price.toFixed(2)}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}

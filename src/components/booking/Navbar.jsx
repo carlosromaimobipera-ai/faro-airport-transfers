@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom';
 import { Plane, Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { lang } = useLang();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -37,35 +41,36 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-6">
-          <a href="#booking" className={cn("text-sm font-medium transition-colors hover:text-primary", scrolled ? "text-foreground" : "text-white/90")}>
-            Reservar
+        <div className="hidden md:flex items-center gap-2">
+          <a href="#booking" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+            {t(lang, 'nav_book')}
           </a>
-          <Link to="/admin" className={cn("text-sm font-medium transition-colors hover:text-primary", scrolled ? "text-foreground" : "text-white/90")}>
-            Gestão
+          <Link to="/admin" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+            {t(lang, 'nav_manage')}
           </Link>
+          <LanguageSwitcher dark={!scrolled} />
           <a href="#booking">
-            <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold">
-              Reservar Agora
+            <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold ml-2">
+              {t(lang, 'nav_cta')}
             </Button>
           </a>
         </div>
 
-        {/* Mobile menu toggle */}
-        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen
-            ? <X className={scrolled ? "text-foreground" : "text-white"} />
-            : <Menu className={scrolled ? "text-foreground" : "text-white"} />
-          }
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <LanguageSwitcher dark={!scrolled} />
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen
+              ? <X className={scrolled ? "text-foreground" : "text-white"} />
+              : <Menu className={scrolled ? "text-foreground" : "text-white"} />
+            }
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-background border-t border-border p-4 space-y-3">
-          <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>Reservar</a>
-          <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>Gestão</Link>
+          <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
+          <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
         </div>
       )}
     </nav>

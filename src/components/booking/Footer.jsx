@@ -1,7 +1,11 @@
 import React from 'react';
 import { Plane, Phone, Mail, MapPin } from 'lucide-react';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 export default function Footer() {
+  const { lang } = useLang();
+
   return (
     <footer className="bg-foreground text-background/80 py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,13 +17,11 @@ export default function Footer() {
               </div>
               <span className="font-display text-xl font-bold text-background">Transfers Algarvestar</span>
             </div>
-            <p className="text-sm text-background/60 leading-relaxed">
-              Transfers Algarvestar — serviço premium de transfers privados no Algarve. Do aeroporto ao seu destino com conforto e segurança.
-            </p>
+            <p className="text-sm text-background/60 leading-relaxed">{t(lang, 'footer_desc')}</p>
           </div>
 
           <div>
-            <h4 className="font-bold text-background mb-4">Destinos populares</h4>
+            <h4 className="font-bold text-background mb-4">{t(lang, 'footer_destinations')}</h4>
             <ul className="space-y-2 text-sm text-background/60">
               <li>Aeroporto Faro → Albufeira</li>
               <li>Aeroporto Faro → Vilamoura</li>
@@ -30,7 +32,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-background mb-4">Contacto</h4>
+            <h4 className="font-bold text-background mb-4">{t(lang, 'footer_contact')}</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-background/60">
                 <Phone className="w-4 h-4 text-primary" /> +351 289 000 000
@@ -46,7 +48,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-background/10 mt-10 pt-6 text-center text-xs text-background/40">
-          © {new Date().getFullYear()} Transfers Algarvestar. Todos os direitos reservados.
+          © {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}
         </div>
       </div>
     </footer>

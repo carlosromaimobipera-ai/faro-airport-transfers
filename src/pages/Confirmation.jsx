@@ -11,10 +11,13 @@ import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phon
 import { vehicleTypes } from '@/lib/transferData';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 export default function Confirmation() {
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('id');
+  const { lang } = useLang();
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ['booking', bookingId],
@@ -54,8 +57,8 @@ export default function Confirmation() {
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="font-display text-3xl font-bold mb-2">Reserva Confirmada!</h1>
-          <p className="text-muted-foreground">A sua reserva foi registada com sucesso</p>
+          <h1 className="font-display text-3xl font-bold mb-2">{t(lang, 'conf_title')}</h1>
+          <p className="text-muted-foreground">{t(lang, 'conf_sub')}</p>
         </motion.div>
 
         <motion.div
@@ -67,7 +70,7 @@ export default function Confirmation() {
             <CardContent className="p-6 md:p-8 space-y-6">
               {/* Ref */}
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">Referência da reserva</p>
+                <p className="text-sm text-muted-foreground mb-1">{t(lang, 'conf_ref')}</p>
                 <p className="text-3xl font-mono font-bold text-primary tracking-wider">{booking.booking_ref}</p>
               </div>
 
@@ -107,7 +110,7 @@ export default function Confirmation() {
                   <Car className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{vehicle?.name}</p>
+                  <p className="text-sm font-medium">{t(lang, vehicle?.nameKey)}</p>
                   <p className="text-xs text-muted-foreground">{booking.passengers} passageiro(s), {booking.luggage} mala(s)</p>
                 </div>
               </div>
@@ -140,14 +143,14 @@ export default function Confirmation() {
               <div className="bg-primary/5 rounded-xl p-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Valor total</p>
-                  <Badge variant="outline" className="mt-1">Pagamento pendente</Badge>
+                  <Badge variant="outline" className="mt-1">{t(lang, 'conf_pending_pay')}</Badge>
                 </div>
                 <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>
               </div>
 
               {/* Contact info */}
               <div className="bg-muted/50 rounded-xl p-4 text-center space-y-2">
-                <p className="text-sm font-medium">O motorista entrará em contacto consigo</p>
+                <p className="text-sm font-medium">{t(lang, 'conf_contact')}</p>
                 <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 289 000 000</span>
                   <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@algarvestar.pt</span>
@@ -157,7 +160,7 @@ export default function Confirmation() {
               <div className="text-center">
                 <Link to="/">
                   <Button variant="outline" className="gap-2">
-                    <Home className="w-4 h-4" /> Voltar ao início
+                    <Home className="w-4 h-4" /> {t(lang, 'conf_back')}
                   </Button>
                 </Link>
               </div>

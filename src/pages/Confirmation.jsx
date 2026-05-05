@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phone, Mail } from 'lucide-react';
+import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phone, Mail, MessageCircle } from 'lucide-react';
 import { vehicleTypes } from '@/lib/transferData';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -154,6 +154,9 @@ export default function Confirmation() {
                 <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 913 956 971</span>
                   <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@transfers-algarvestar.com</span>
+                  <a href="https://wa.me/351913956971" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:text-green-700">
+                    <MessageCircle className="w-3 h-3" /> WhatsApp
+                  </a>
                 </div>
               </div>
 

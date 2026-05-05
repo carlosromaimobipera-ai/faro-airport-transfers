@@ -10,7 +10,7 @@ import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, CreditCard } 
 import LocationSelector from './LocationSelector';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
-import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef } from '@/lib/transferData';
+import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations } from '@/lib/transferData';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '@/lib/LanguageContext';
@@ -29,9 +29,16 @@ export default function BookingForm() {
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
   });
 
+  const allowedDestinations = useMemo(() => form.origin ? getAllowedDestinations(form.origin) : null, [form.origin]);
   const distance = useMemo(() => getDistance(form.origin, form.destination), [form.origin, form.destination]);
   const price = useMemo(() => calculatePrice(distance, form.vehicle_type), [distance, form.vehicle_type]);
-  const updateForm = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const updateForm = (field, value) => {
+    if (field === 'origin') {
+      setForm(prev => ({ ...prev, origin: value, destination: '' }));
+    } else {
+      setForm(prev => ({ ...prev, [field]: value }));
+    }
+  };
 
   const canProceed = () => {
     switch (step) {
@@ -118,7 +125,7 @@ export default function BookingForm() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
-                  <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} />
+                  <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
                 </div>
                 {(form.origin || form.destination) && (
                   <RouteMap originId={form.origin} destinationId={form.destination} />

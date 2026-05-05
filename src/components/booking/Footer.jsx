@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plane, Phone, Mail, MapPin } from 'lucide-react';
+import { Plane, Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
@@ -39,6 +39,12 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 text-background/60">
                 <Mail className="w-4 h-4 text-primary" /> info@transfers-algarvestar.com
+              </li>
+              <li className="flex items-center gap-2 text-background/60">
+                <MessageCircle className="w-4 h-4 text-green-400" />
+                <a href="https://wa.me/351913956971" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition-colors">
+                  WhatsApp: +351 913 956 971
+                </a>
               </li>
               <li className="flex items-center gap-2 text-background/60">
                 <MapPin className="w-4 h-4 text-primary" /> Aeroporto de Faro, Algarve

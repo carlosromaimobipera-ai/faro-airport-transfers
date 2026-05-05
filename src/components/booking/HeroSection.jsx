@@ -27,7 +27,7 @@ export default function HeroSection() {
             <div className="flex items-center gap-2 mb-6">
               <Plane className="w-5 h-5 text-secondary" />
               <span className="text-sm font-medium tracking-widest uppercase text-secondary">
-                Transfers Aeroporto de Faro
+                Transfers Algarvestar
               </span>
             </div>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">

@@ -150,7 +150,7 @@ export default function Confirmation() {
                 <p className="text-sm font-medium">O motorista entrará em contacto consigo</p>
                 <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 289 000 000</span>
-                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@farotransfers.pt</span>
+                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@algarvestar.pt</span>
                 </div>
               </div>
 

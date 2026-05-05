@@ -11,10 +11,10 @@ export default function Footer() {
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                 <Plane className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-display text-xl font-bold text-background">Faro Transfers</span>
+              <span className="font-display text-xl font-bold text-background">Transfers Algarvestar</span>
             </div>
             <p className="text-sm text-background/60 leading-relaxed">
-              Serviço premium de transfers privados no Algarve. Do aeroporto ao seu destino com conforto e segurança.
+              Transfers Algarvestar — serviço premium de transfers privados no Algarve. Do aeroporto ao seu destino com conforto e segurança.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-primary" /> +351 289 000 000
               </li>
               <li className="flex items-center gap-2 text-background/60">
-                <Mail className="w-4 h-4 text-primary" /> info@farotransfers.pt
+                <Mail className="w-4 h-4 text-primary" /> info@algarvestar.pt
               </li>
               <li className="flex items-center gap-2 text-background/60">
                 <MapPin className="w-4 h-4 text-primary" /> Aeroporto de Faro, Algarve
@@ -46,7 +46,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-background/10 mt-10 pt-6 text-center text-xs text-background/40">
-          © {new Date().getFullYear()} Faro Transfers. Todos os direitos reservados.
+          © {new Date().getFullYear()} Transfers Algarvestar. Todos os direitos reservados.
         </div>
       </div>
     </footer>

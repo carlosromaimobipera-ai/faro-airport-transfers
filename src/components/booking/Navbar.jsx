@@ -33,7 +33,7 @@ export default function Navbar() {
             "font-display text-lg font-bold transition-colors",
             scrolled ? "text-foreground" : "text-white"
           )}>
-            Faro Transfers
+            Transfers Algarvestar
           </span>
         </Link>
 

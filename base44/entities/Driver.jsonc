@@ -1,0 +1,70 @@
+{
+  "name": "Driver",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome completo do motorista"
+    },
+    "phone": {
+      "type": "string",
+      "description": "N\u00famero de telefone"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do motorista"
+    },
+    "vehicle_plate": {
+      "type": "string",
+      "description": "Matr\u00edcula do ve\u00edculo"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "Modelo do ve\u00edculo"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "sedan",
+        "minivan",
+        "minibus"
+      ],
+      "description": "Tipo de ve\u00edculo que conduz"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Motorista ativo"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas internas"
+    }
+  },
+  "required": [
+    "name",
+    "phone"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

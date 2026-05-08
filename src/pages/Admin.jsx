@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { vehicleTypes } from '@/lib/transferData';
+import DriversManager from '@/components/admin/DriversManager';
 
 const statusConfig = {
   pending:   { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -21,10 +22,12 @@ const statusConfig = {
 };
 
 const paymentConfig = {
-  unpaid:   { label: "Não pago",     color: "bg-orange-100 text-orange-800 border-orange-200" },
-  paid:     { label: "Pago",         color: "bg-green-100 text-green-800 border-green-200" },
-  refunded: { label: "Reembolsado",  color: "bg-gray-100 text-gray-800 border-gray-200" },
+  unpaid:   { label: "Não pago",    color: "bg-orange-100 text-orange-800 border-orange-200" },
+  paid:     { label: "Pago",        color: "bg-green-100 text-green-800 border-green-200" },
+  refunded: { label: "Reembolsado", color: "bg-gray-100 text-gray-800 border-gray-200" },
 };
+
+const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan', minibus: 'Minibus' };
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -33,24 +36,18 @@ export default function Admin() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const [filterStatus, setFilterStatus]   = useState('all');
-  const [filterPayment, setFilterPayment] = useState('all');
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo]     = useState('');
-  const [search, setSearch] = useState('');
+  const [filterStatus,   setFilterStatus]   = useState('all');
+  const [filterPayment,  setFilterPayment]   = useState('all');
+  const [filterDateFrom, setFilterDateFrom]  = useState('');
+  const [filterDateTo,   setFilterDateTo]    = useState('');
+  const [search,         setSearch]          = useState('');
 
   useEffect(() => {
     base44.auth.me().then(u => {
-      if (!u || u.role !== 'admin') {
-        navigate('/');
-      } else {
-        setUser(u);
-      }
+      if (!u || u.role !== 'admin') navigate('/');
+      else setUser(u);
       setAuthLoading(false);
-    }).catch(() => {
-      navigate('/');
-      setAuthLoading(false);
-    });
+    }).catch(() => { navigate('/'); setAuthLoading(false); });
   }, []);
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -59,16 +56,33 @@ export default function Admin() {
     enabled: !!user,
   });
 
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list('name'),
+    enabled: !!user,
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Booking.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bookings-admin'] }),
   });
 
+  const assignDriver = (booking, driverId) => {
+    const driver = drivers.find(d => d.id === driverId);
+    updateMutation.mutate({
+      id: booking.id,
+      data: {
+        driver_id: driverId || null,
+        driver_name: driver ? driver.name : null,
+      },
+    });
+  };
+
   const filtered = bookings.filter(b => {
-    if (filterStatus !== 'all' && b.status !== filterStatus) return false;
+    if (filterStatus  !== 'all' && b.status         !== filterStatus)  return false;
     if (filterPayment !== 'all' && b.payment_status !== filterPayment) return false;
     if (filterDateFrom && b.transfer_date < filterDateFrom) return false;
-    if (filterDateTo && b.transfer_date > filterDateTo) return false;
+    if (filterDateTo   && b.transfer_date > filterDateTo)   return false;
     if (search) {
       const q = search.toLowerCase();
       if (
@@ -90,13 +104,9 @@ export default function Admin() {
   };
 
   const clearFilters = () => {
-    setFilterStatus('all');
-    setFilterPayment('all');
-    setFilterDateFrom('');
-    setFilterDateTo('');
-    setSearch('');
+    setFilterStatus('all'); setFilterPayment('all');
+    setFilterDateFrom(''); setFilterDateTo(''); setSearch('');
   };
-
   const hasFilters = filterStatus !== 'all' || filterPayment !== 'all' || filterDateFrom || filterDateTo || search;
 
   if (authLoading) return (
@@ -110,23 +120,21 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/"><Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button></Link>
-            <div>
-              <h1 className="font-display text-2xl md:text-3xl font-bold">Gestão de Reservas</h1>
-              <p className="text-sm text-muted-foreground">Painel de administração</p>
-            </div>
+        <div className="flex items-center gap-4">
+          <Link to="/"><Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button></Link>
+          <div>
+            <h1 className="font-display text-2xl md:text-3xl font-bold">Gestão de Reservas</h1>
+            <p className="text-sm text-muted-foreground">Painel de administração</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Reservas", value: stats.total,              icon: Calendar, color: "text-primary" },
-            { label: "Pendentes",      value: stats.pending,            icon: Clock,    color: "text-yellow-600" },
-            { label: "Hoje",           value: stats.today,              icon: Car,      color: "text-blue-600" },
-            { label: "Receita (Pago)", value: `€${stats.revenue.toFixed(0)}`, icon: Euro, color: "text-green-600" },
+            { label: "Total Reservas",  value: stats.total,                    icon: Calendar, color: "text-primary" },
+            { label: "Pendentes",       value: stats.pending,                  icon: Clock,    color: "text-yellow-600" },
+            { label: "Hoje",            value: stats.today,                    icon: Car,      color: "text-blue-600" },
+            { label: "Receita (Pago)",  value: `€${stats.revenue.toFixed(0)}`, icon: Euro,     color: "text-green-600" },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -142,153 +150,175 @@ export default function Admin() {
           ))}
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-3 items-end">
-              {/* Search */}
-              <div className="relative flex-1 min-w-[180px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar cliente, ref, rota..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="pl-9 h-9"
-                />
+        {/* Tabs */}
+        <Tabs defaultValue="bookings">
+          <TabsList>
+            <TabsTrigger value="bookings">Reservas</TabsTrigger>
+            <TabsTrigger value="drivers" className="gap-1.5">
+              <UserCheck className="w-4 h-4" /> Motoristas
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ── Reservas Tab ── */}
+          <TabsContent value="bookings" className="space-y-4 mt-4">
+
+            {/* Filters */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="relative flex-1 min-w-[180px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pesquisar cliente, ref, rota..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-44 h-9"><SelectValue placeholder="Estado reserva" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os estados</SelectItem>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="confirmed">Confirmada</SelectItem>
+                      <SelectItem value="completed">Concluída</SelectItem>
+                      <SelectItem value="cancelled">Cancelada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterPayment} onValueChange={setFilterPayment}>
+                    <SelectTrigger className="w-44 h-9"><SelectValue placeholder="Pagamento" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os pagamentos</SelectItem>
+                      <SelectItem value="unpaid">Não pago</SelectItem>
+                      <SelectItem value="paid">Pago</SelectItem>
+                      <SelectItem value="refunded">Reembolsado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="h-9 w-36" />
+                    <span className="text-muted-foreground text-sm">→</span>
+                    <Input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-9 w-36" />
+                  </div>
+                  {hasFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-muted-foreground h-9">
+                      <FilterX className="w-4 h-4" /> Limpar
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">{filtered.length} reserva(s) encontrada(s)</p>
+              </CardContent>
+            </Card>
+
+            {/* Table */}
+            <Card>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ref.</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Rota</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Veículo</TableHead>
+                      <TableHead>Preço</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Pagamento</TableHead>
+                      <TableHead>Motorista</TableHead>
+                      <TableHead>Alterar estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                        </TableCell>
+                      </TableRow>
+                    ) : filtered.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+                          Nenhuma reserva encontrada
+                        </TableCell>
+                      </TableRow>
+                    ) : filtered.map(booking => (
+                      <TableRow key={booking.id}>
+                        <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
+                        <TableCell>
+                          <p className="font-medium text-sm">{booking.customer_name}</p>
+                          <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
+                          <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-start gap-1 text-xs max-w-[160px]">
+                            <MapPin className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+                            <span className="leading-tight">{booking.origin} → {booking.destination}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {booking.transfer_date && format(new Date(booking.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
+                          <br /><span className="text-muted-foreground text-xs">{booking.transfer_time}</span>
+                        </TableCell>
+                        <TableCell className="text-xs">{vehicleLabel[booking.vehicle_type] || booking.vehicle_type}</TableCell>
+                        <TableCell className="font-bold text-primary">€{booking.price?.toFixed(0)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusConfig[booking.status]?.color}>
+                            {statusConfig[booking.status]?.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
+                            {paymentConfig[booking.payment_status]?.label}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Motorista */}
+                        <TableCell>
+                          <Select
+                            value={booking.driver_id || 'none'}
+                            onValueChange={val => assignDriver(booking, val === 'none' ? null : val)}
+                            disabled={updateMutation.isPending}
+                          >
+                            <SelectTrigger className="h-8 w-40 text-xs">
+                              <SelectValue placeholder="Sem motorista" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">— Sem motorista —</SelectItem>
+                              {drivers.filter(d => d.active).map(d => (
+                                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+
+                        {/* Estado */}
+                        <TableCell>
+                          <Select
+                            value={booking.status}
+                            onValueChange={val => updateMutation.mutate({ id: booking.id, data: { status: val } })}
+                            disabled={updateMutation.isPending}
+                          >
+                            <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pendente</SelectItem>
+                              <SelectItem value="confirmed">Confirmada</SelectItem>
+                              <SelectItem value="completed">Concluída</SelectItem>
+                              <SelectItem value="cancelled">Cancelada</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
+            </Card>
+          </TabsContent>
 
-              {/* Status */}
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-44 h-9">
-                  <SelectValue placeholder="Estado reserva" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os estados</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="confirmed">Confirmada</SelectItem>
-                  <SelectItem value="completed">Concluída</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Payment */}
-              <Select value={filterPayment} onValueChange={setFilterPayment}>
-                <SelectTrigger className="w-44 h-9">
-                  <SelectValue placeholder="Estado pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os pagamentos</SelectItem>
-                  <SelectItem value="unpaid">Não pago</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="refunded">Reembolsado</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Date range */}
-              <div className="flex items-center gap-2">
-                <Input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="h-9 w-36" />
-                <span className="text-muted-foreground text-sm">→</span>
-                <Input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-9 w-36" />
-              </div>
-
-              {hasFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-muted-foreground h-9">
-                  <FilterX className="w-4 h-4" /> Limpar
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">{filtered.length} reserva(s) encontrada(s)</p>
-          </CardContent>
-        </Card>
-
-        {/* Table */}
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ref.</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Rota</TableHead>
-                  <TableHead>Data transferência</TableHead>
-                  <TableHead>Veículo</TableHead>
-                  <TableHead>Preço</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Pagamento</TableHead>
-                  <TableHead>Alterar estado</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
-                      Nenhuma reserva encontrada
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.map(booking => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
-                    <TableCell>
-                      <p className="font-medium text-sm">{booking.customer_name}</p>
-                      <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
-                      <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-start gap-1 text-xs max-w-[180px]">
-                        <MapPin className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-                        <span className="leading-tight">{booking.origin} → {booking.destination}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">
-                      {booking.transfer_date && format(new Date(booking.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
-                      <br />
-                      <span className="text-muted-foreground text-xs">{booking.transfer_time}</span>
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {vehicleTypes.find(v => v.id === booking.vehicle_type)?.nameKey
-                        ? { sedan: 'Sedan', minivan: 'Minivan', minibus: 'Minibus' }[booking.vehicle_type]
-                        : booking.vehicle_type}
-                    </TableCell>
-                    <TableCell className="font-bold text-primary">€{booking.price?.toFixed(0)}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={statusConfig[booking.status]?.color}>
-                        {statusConfig[booking.status]?.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
-                        {paymentConfig[booking.payment_status]?.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={booking.status}
-                        onValueChange={(val) => updateMutation.mutate({ id: booking.id, data: { status: val } })}
-                        disabled={updateMutation.isPending}
-                      >
-                        <SelectTrigger className="h-8 w-36 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="confirmed">Confirmada</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
-                          <SelectItem value="cancelled">Cancelada</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+          {/* ── Motoristas Tab ── */}
+          <TabsContent value="drivers" className="mt-4">
+            <DriversManager />
+          </TabsContent>
+        </Tabs>
 
       </div>
     </div>

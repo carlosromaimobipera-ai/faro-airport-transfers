@@ -122,5 +122,8 @@
     "vehicle_type",
     "transfer_date",
     "transfer_time"
-  ]
+  ],
+  "rls": {
+    "create": true
+  }
 }

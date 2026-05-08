@@ -8,9 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, CreditCard } from 'lucide-react';
 import LocationSelector from './LocationSelector';
+import PlacesAutocomplete from './PlacesAutocomplete';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
 import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations } from '@/lib/transferData';
+
+const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '@/lib/LanguageContext';
@@ -24,6 +27,7 @@ export default function BookingForm() {
 
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
+    origin_place: null, destination_place: null,
     transfer_date: '', transfer_time: '', flight_number: '',
     passengers: 1, luggage: 1,
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
@@ -42,7 +46,9 @@ export default function BookingForm() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return form.origin && form.destination && distance;
+      case 1:
+        if (HAS_PLACES_KEY) return form.origin_place && form.destination_place;
+        return form.origin && form.destination && distance;
       case 2: return form.vehicle_type;
       case 3: return form.transfer_date && form.transfer_time;
       case 4: return form.customer_name && form.customer_email && form.customer_phone;
@@ -54,16 +60,20 @@ export default function BookingForm() {
     setIsSubmitting(true);
     const originLoc = locations.find(l => l.id === form.origin);
     const destLoc = locations.find(l => l.id === form.destination);
+    const originName = HAS_PLACES_KEY ? form.origin_place?.address : originLoc?.name;
+    const destName = HAS_PLACES_KEY ? form.destination_place?.address : destLoc?.name;
+    const originCoords = HAS_PLACES_KEY ? form.origin_place?.coords : originLoc?.coords;
+    const destCoords = HAS_PLACES_KEY ? form.destination_place?.coords : destLoc?.coords;
     const bookingRef = generateBookingRef();
     const booking = await base44.entities.Booking.create({
       booking_ref: bookingRef,
       customer_name: form.customer_name,
       customer_email: form.customer_email,
       customer_phone: form.customer_phone,
-      origin: originLoc?.name,
-      destination: destLoc?.name,
-      origin_coords: originLoc?.coords,
-      destination_coords: destLoc?.coords,
+      origin: originName,
+      destination: destName,
+      origin_coords: originCoords,
+      destination_coords: destCoords,
       vehicle_type: form.vehicle_type,
       distance_km: distance,
       price: price,
@@ -124,8 +134,29 @@ export default function BookingForm() {
                   <p className="text-muted-foreground text-sm">{t(lang, 'step1_sub')}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
-                  <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
+                  {HAS_PLACES_KEY ? (
+                    <>
+                      <PlacesAutocomplete
+                        label={t(lang, 'origin')}
+                        value={form.origin_place}
+                        onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, origin: 'custom', destination: '', destination_place: null }))}
+                        icon={CircleDot}
+                        placeholder="Morada de origem..."
+                      />
+                      <PlacesAutocomplete
+                        label={t(lang, 'destination')}
+                        value={form.destination_place}
+                        onChange={(place) => setForm(prev => ({ ...prev, destination_place: place, destination: 'custom' }))}
+                        icon={MapPin}
+                        placeholder="Morada de destino..."
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
+                      <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
+                    </>
+                  )}
                 </div>
                 {(form.origin || form.destination) && (
                   <RouteMap originId={form.origin} destinationId={form.destination} />

@@ -7,7 +7,7 @@ export const locations = [
   // Faro District - Airport
   { id: "faro_airport", name: "Aeroporto de Faro (FAO)", coords: { lat: 37.0144, lng: -7.9659 }, district: "faro" },
 
-  // Faro District - Algarve Cities
+  // Faro District - Algarve Cities (faro_city excluded from faro_airport routes - see getDistance)
   { id: "faro_city",        name: "Faro (Centro)",              coords: { lat: 37.0194, lng: -7.9322 }, district: "faro" },
   { id: "albufeira",        name: "Albufeira",                  coords: { lat: 37.0882, lng: -8.2503 }, district: "faro" },
   { id: "vilamoura",        name: "Vilamoura",                  coords: { lat: 37.0769, lng: -8.1137 }, district: "faro" },
@@ -198,10 +198,17 @@ export const routeDistances = {
   "huelva-tavira": 100,
 };
 
+// Blocked short routes (too short to offer)
+const BLOCKED_ROUTES = new Set([
+  "faro_airport-faro_city",
+  "faro_city-faro_airport",
+]);
+
 // Calculate distance between two locations
 export function getDistance(originId, destinationId) {
   const key1 = `${originId}-${destinationId}`;
   const key2 = `${destinationId}-${originId}`;
+  if (BLOCKED_ROUTES.has(key1) || BLOCKED_ROUTES.has(key2)) return null;
   return routeDistances[key1] || routeDistances[key2] || null;
 }
 
@@ -229,7 +236,7 @@ export const vehicleTypes = [
     nameKey: "veh_sedan",
     seats: 4,
     luggage: 3,
-    pricePerKm: 0.80,
+    pricePerKm: 1.00,
     image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=250&fit=crop",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_baby"],
   },
@@ -238,8 +245,8 @@ export const vehicleTypes = [
     nameKey: "veh_minivan",
     seats: 6,
     luggage: 5,
-    pricePerKm: 1.00,
-    image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=250&fit=crop",
+    pricePerKm: 1.20,
+    image: "https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?w=400&h=250&fit=crop",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_luggage", "feat_baby"],
   },
   {
@@ -247,8 +254,8 @@ export const vehicleTypes = [
     nameKey: "veh_minibus",
     seats: 8,
     luggage: 8,
-    pricePerKm: 1.50,
-    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400&h=250&fit=crop",
+    pricePerKm: 1.40,
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_space", "feat_group", "feat_baby"],
   },
 ];

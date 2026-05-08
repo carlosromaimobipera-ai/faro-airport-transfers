@@ -4,6 +4,7 @@ import HeroSection from '@/components/booking/HeroSection';
 import BookingForm from '@/components/booking/BookingForm';
 import FeaturesSection from '@/components/booking/FeaturesSection';
 import PricingTable from '@/components/booking/PricingTable';
+import ReviewsSection from '@/components/booking/ReviewsSection';
 import Footer from '@/components/booking/Footer';
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
       <BookingForm />
       <FeaturesSection />
       <PricingTable />
+      <ReviewsSection />
       <Footer />
     </div>
   );

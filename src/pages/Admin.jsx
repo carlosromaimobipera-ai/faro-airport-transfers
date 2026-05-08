@@ -1,64 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link, useNavigate } from 'react-router-dom';
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { vehicleTypes } from '@/lib/transferData';
 
 const statusConfig = {
-  pending: { label: "Pendente", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  pending:   { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
   confirmed: { label: "Confirmada", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  completed: { label: "Concluída", color: "bg-green-100 text-green-800 border-green-200" },
-  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-800 border-red-200" },
+  completed: { label: "Concluída",  color: "bg-green-100 text-green-800 border-green-200" },
+  cancelled: { label: "Cancelada",  color: "bg-red-100 text-red-800 border-red-200" },
 };
 
 const paymentConfig = {
-  unpaid: { label: "Não pago", color: "bg-orange-100 text-orange-800 border-orange-200" },
-  paid: { label: "Pago", color: "bg-green-100 text-green-800 border-green-200" },
-  refunded: { label: "Reembolsado", color: "bg-gray-100 text-gray-800 border-gray-200" },
+  unpaid:   { label: "Não pago",     color: "bg-orange-100 text-orange-800 border-orange-200" },
+  paid:     { label: "Pago",         color: "bg-green-100 text-green-800 border-green-200" },
+  refunded: { label: "Reembolsado",  color: "bg-gray-100 text-gray-800 border-gray-200" },
 };
 
 export default function Admin() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [filterStatus, setFilterStatus] = useState('all');
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  const [filterStatus, setFilterStatus]   = useState('all');
+  const [filterPayment, setFilterPayment] = useState('all');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo]     = useState('');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    base44.auth.me().then(u => {
+      if (!u || u.role !== 'admin') {
+        navigate('/');
+      } else {
+        setUser(u);
+      }
+      setAuthLoading(false);
+    }).catch(() => {
+      navigate('/');
+      setAuthLoading(false);
+    });
+  }, []);
 
   const { data: bookings = [], isLoading } = useQuery({
-    queryKey: ['bookings'],
-    queryFn: () => base44.entities.Booking.list('-created_date', 100),
+    queryKey: ['bookings-admin'],
+    queryFn: () => base44.entities.Booking.list('-transfer_date', 500),
+    enabled: !!user,
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Booking.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bookings'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bookings-admin'] }),
   });
 
-  const filteredBookings = filterStatus === 'all'
-    ? bookings
-    : bookings.filter(b => b.status === filterStatus);
+  const filtered = bookings.filter(b => {
+    if (filterStatus !== 'all' && b.status !== filterStatus) return false;
+    if (filterPayment !== 'all' && b.payment_status !== filterPayment) return false;
+    if (filterDateFrom && b.transfer_date < filterDateFrom) return false;
+    if (filterDateTo && b.transfer_date > filterDateTo) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (
+        !b.customer_name?.toLowerCase().includes(q) &&
+        !b.customer_email?.toLowerCase().includes(q) &&
+        !b.booking_ref?.toLowerCase().includes(q) &&
+        !b.origin?.toLowerCase().includes(q) &&
+        !b.destination?.toLowerCase().includes(q)
+      ) return false;
+    }
+    return true;
+  });
 
   const stats = {
-    total: bookings.length,
+    total:   bookings.length,
     pending: bookings.filter(b => b.status === 'pending').length,
-    revenue: bookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + (b.price || 0), 0),
-    today: bookings.filter(b => b.transfer_date === format(new Date(), 'yyyy-MM-dd')).length,
+    today:   bookings.filter(b => b.transfer_date === format(new Date(), 'yyyy-MM-dd')).length,
+    revenue: bookings.filter(b => b.payment_status === 'paid').reduce((s, b) => s + (b.price || 0), 0),
   };
+
+  const clearFilters = () => {
+    setFilterStatus('all');
+    setFilterPayment('all');
+    setFilterDateFrom('');
+    setFilterDateTo('');
+    setSearch('');
+  };
+
+  const hasFilters = filterStatus !== 'all' || filterPayment !== 'all' || filterDateFrom || filterDateTo || search;
+
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-6">
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
-            </Link>
+            <Link to="/"><Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button></Link>
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold">Gestão de Reservas</h1>
               <p className="text-sm text-muted-foreground">Painel de administração</p>
@@ -67,11 +121,11 @@ export default function Admin() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Reservas", value: stats.total, icon: Calendar, color: "text-primary" },
-            { label: "Pendentes", value: stats.pending, icon: Clock, color: "text-yellow-600" },
-            { label: "Hoje", value: stats.today, icon: Car, color: "text-blue-600" },
+            { label: "Total Reservas", value: stats.total,              icon: Calendar, color: "text-primary" },
+            { label: "Pendentes",      value: stats.pending,            icon: Clock,    color: "text-yellow-600" },
+            { label: "Hoje",           value: stats.today,              icon: Car,      color: "text-blue-600" },
             { label: "Receita (Pago)", value: `€${stats.revenue.toFixed(0)}`, icon: Euro, color: "text-green-600" },
           ].map(stat => (
             <Card key={stat.label}>
@@ -88,21 +142,64 @@ export default function Admin() {
           ))}
         </div>
 
-        {/* Filter */}
-        <div className="flex items-center gap-4 mb-4">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="pending">Pendentes</SelectItem>
-              <SelectItem value="confirmed">Confirmadas</SelectItem>
-              <SelectItem value="completed">Concluídas</SelectItem>
-              <SelectItem value="cancelled">Canceladas</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-3 items-end">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar cliente, ref, rota..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
+
+              {/* Status */}
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-44 h-9">
+                  <SelectValue placeholder="Estado reserva" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os estados</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="confirmed">Confirmada</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Payment */}
+              <Select value={filterPayment} onValueChange={setFilterPayment}>
+                <SelectTrigger className="w-44 h-9">
+                  <SelectValue placeholder="Estado pagamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os pagamentos</SelectItem>
+                  <SelectItem value="unpaid">Não pago</SelectItem>
+                  <SelectItem value="paid">Pago</SelectItem>
+                  <SelectItem value="refunded">Reembolsado</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Date range */}
+              <div className="flex items-center gap-2">
+                <Input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="h-9 w-36" />
+                <span className="text-muted-foreground text-sm">→</span>
+                <Input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-9 w-36" />
+              </div>
+
+              {hasFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-muted-foreground h-9">
+                  <FilterX className="w-4 h-4" /> Limpar
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{filtered.length} reserva(s) encontrada(s)</p>
+          </CardContent>
+        </Card>
 
         {/* Table */}
         <Card>
@@ -113,12 +210,12 @@ export default function Admin() {
                   <TableHead>Ref.</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Rota</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead>Data transferência</TableHead>
                   <TableHead>Veículo</TableHead>
                   <TableHead>Preço</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Pagamento</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead>Alterar estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,35 +225,37 @@ export default function Admin() {
                       <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
-                ) : filteredBookings.length === 0 ? (
+                ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       Nenhuma reserva encontrada
                     </TableCell>
                   </TableRow>
-                ) : filteredBookings.map(booking => (
+                ) : filtered.map(booking => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-xs font-bold">{booking.booking_ref}</TableCell>
+                    <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
                     <TableCell>
-                      <div>
-                        <p className="font-medium text-sm">{booking.customer_name}</p>
-                        <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
-                      </div>
+                      <p className="font-medium text-sm">{booking.customer_name}</p>
+                      <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
+                      <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-xs">
-                        <MapPin className="w-3 h-3 text-primary" />
-                        <span>{booking.origin} → {booking.destination}</span>
+                      <div className="flex items-start gap-1 text-xs max-w-[180px]">
+                        <MapPin className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+                        <span className="leading-tight">{booking.origin} → {booking.destination}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">
-                      {booking.transfer_date && format(new Date(booking.transfer_date), "d MMM", { locale: pt })}
-                      <span className="text-muted-foreground ml-1">{booking.transfer_time}</span>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {booking.transfer_date && format(new Date(booking.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
+                      <br />
+                      <span className="text-muted-foreground text-xs">{booking.transfer_time}</span>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {vehicleTypes.find(v => v.id === booking.vehicle_type)?.name}
+                      {vehicleTypes.find(v => v.id === booking.vehicle_type)?.nameKey
+                        ? { sedan: 'Sedan', minivan: 'Minivan', minibus: 'Minibus' }[booking.vehicle_type]
+                        : booking.vehicle_type}
                     </TableCell>
-                    <TableCell className="font-bold">€{booking.price?.toFixed(0)}</TableCell>
+                    <TableCell className="font-bold text-primary">€{booking.price?.toFixed(0)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusConfig[booking.status]?.color}>
                         {statusConfig[booking.status]?.label}
@@ -168,38 +267,21 @@ export default function Admin() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        {booking.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                              onClick={() => updateMutation.mutate({ id: booking.id, data: { status: 'confirmed' } })}
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => updateMutation.mutate({ id: booking.id, data: { status: 'cancelled' } })}
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                            </Button>
-                          </>
-                        )}
-                        {booking.status === 'confirmed' && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => updateMutation.mutate({ id: booking.id, data: { status: 'completed', payment_status: 'paid' } })}
-                          >
-                            Concluir
-                          </Button>
-                        )}
-                      </div>
+                      <Select
+                        value={booking.status}
+                        onValueChange={(val) => updateMutation.mutate({ id: booking.id, data: { status: val } })}
+                        disabled={updateMutation.isPending}
+                      >
+                        <SelectTrigger className="h-8 w-36 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pendente</SelectItem>
+                          <SelectItem value="confirmed">Confirmada</SelectItem>
+                          <SelectItem value="completed">Concluída</SelectItem>
+                          <SelectItem value="cancelled">Cancelada</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -207,6 +289,7 @@ export default function Admin() {
             </Table>
           </div>
         </Card>
+
       </div>
     </div>
   );

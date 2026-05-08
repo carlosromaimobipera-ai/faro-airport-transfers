@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, CreditCard } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User } from 'lucide-react';
 import LocationSelector from './LocationSelector';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import VehicleCard from './VehicleCard';
@@ -16,6 +16,7 @@ import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRe
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
+import PayPalButton from './PayPalButton';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
@@ -24,6 +25,7 @@ export default function BookingForm() {
   const { lang } = useLang();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
@@ -56,8 +58,9 @@ export default function BookingForm() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handlePaymentSuccess = async () => {
     setIsSubmitting(true);
+    setPaymentError('');
     const originLoc = locations.find(l => l.id === form.origin);
     const destLoc = locations.find(l => l.id === form.destination);
     const originName = HAS_PLACES_KEY ? form.origin_place?.address : originLoc?.name;
@@ -84,7 +87,7 @@ export default function BookingForm() {
       luggage: form.luggage,
       notes: form.notes,
       status: 'pending',
-      payment_status: 'unpaid',
+      payment_status: 'paid',
     });
     navigate(`/confirmacao?id=${booking.id}`);
   };
@@ -285,28 +288,29 @@ export default function BookingForm() {
           </AnimatePresence>
 
           {/* Navigation buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 1} className="gap-2">
-              <ArrowLeft className="w-4 h-4" /> {t(lang, 'btn_back')}
-            </Button>
-
-            {step < 4 ? (
-              <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed()} className="gap-2 bg-primary hover:bg-primary/90">
-                {t(lang, 'btn_next')} <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={!canProceed() || isSubmitting}
-                className="gap-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold px-8"
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-secondary-foreground/30 border-t-secondary-foreground rounded-full animate-spin" />
-                ) : (
-                  <><CreditCard className="w-4 h-4" /> {t(lang, 'btn_confirm')} — €{price.toFixed(2)}</>
+          <div className="mt-8 pt-6 border-t space-y-4">
+            {step === 4 && canProceed() && (
+              <>
+                {paymentError && (
+                  <p className="text-sm text-destructive text-center">{paymentError}</p>
                 )}
-              </Button>
+                <PayPalButton
+                  amount={price}
+                  onSuccess={handlePaymentSuccess}
+                  onError={(msg) => setPaymentError(msg)}
+                />
+              </>
             )}
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 1} className="gap-2">
+                <ArrowLeft className="w-4 h-4" /> {t(lang, 'btn_back')}
+              </Button>
+              {step < 4 && (
+                <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed()} className="gap-2 bg-primary hover:bg-primary/90">
+                  {t(lang, 'btn_next')} <ArrowRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

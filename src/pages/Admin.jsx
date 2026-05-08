@@ -13,6 +13,7 @@ import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
+import DriverUnavailabilityManager from '@/components/admin/DriverUnavailabilityManager';
 
 const statusConfig = {
   pending:   { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -61,6 +62,21 @@ export default function Admin() {
     queryFn: () => base44.entities.Driver.list('name'),
     enabled: !!user,
   });
+
+  const { data: unavailabilities = [] } = useQuery({
+    queryKey: ['driver-unavailabilities'],
+    queryFn: () => base44.entities.DriverUnavailability.list('-date_from', 500),
+    enabled: !!user,
+  });
+
+  const isDriverAvailable = (driverId, transferDate) => {
+    if (!transferDate) return true;
+    return !unavailabilities.some(u =>
+      u.driver_id === driverId &&
+      transferDate >= u.date_from &&
+      transferDate <= u.date_to
+    );
+  };
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Booking.update(id, data),
@@ -283,9 +299,14 @@ export default function Admin() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">— Sem motorista —</SelectItem>
-                              {drivers.filter(d => d.active).map(d => (
-                                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                              ))}
+                              {drivers.filter(d => d.active).map(d => {
+                                const available = isDriverAvailable(d.id, booking.transfer_date);
+                                return (
+                                  <SelectItem key={d.id} value={d.id} disabled={!available}>
+                                    {d.name}{!available ? ' (indisponível)' : ''}
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -315,8 +336,9 @@ export default function Admin() {
           </TabsContent>
 
           {/* ── Motoristas Tab ── */}
-          <TabsContent value="drivers" className="mt-4">
+          <TabsContent value="drivers" className="mt-4 space-y-4">
             <DriversManager />
+            <DriverUnavailabilityManager />
           </TabsContent>
         </Tabs>
 

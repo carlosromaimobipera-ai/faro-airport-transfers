@@ -1,0 +1,55 @@
+{
+  "name": "DriverUnavailability",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "ID do motorista"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Nome do motorista (cache)"
+    },
+    "date_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio da indisponibilidade"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de fim da indisponibilidade"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo (folga, f\u00e9rias, doen\u00e7a, etc.)"
+    }
+  },
+  "required": [
+    "driver_id",
+    "date_from",
+    "date_to"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

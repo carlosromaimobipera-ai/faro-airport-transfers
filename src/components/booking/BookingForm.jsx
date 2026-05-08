@@ -53,7 +53,13 @@ export default function BookingForm() {
         if (HAS_PLACES_KEY) return form.origin_place && form.destination_place;
         return form.origin && form.destination && distance;
       case 2: return form.vehicle_type;
-      case 3: return form.transfer_date && form.transfer_time;
+      case 3: {
+        if (!form.transfer_date || !form.transfer_time) return false;
+        // Minimum 24h advance booking
+        const bookingDateTime = new Date(`${form.transfer_date}T${form.transfer_time}`);
+        const minAllowed = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        return bookingDateTime >= minAllowed;
+      }
       case 4: return form.customer_name && form.customer_email && form.customer_phone;
       default: return false;
     }
@@ -242,10 +248,20 @@ export default function BookingForm() {
                   <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'step3_title')}</h2>
                   <p className="text-muted-foreground text-sm">{t(lang, 'step3_sub')}</p>
                 </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  As reservas têm de ser feitas com pelo menos <strong className="mx-1">24 horas de antecedência</strong>.
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> {t(lang, 'date')}</Label>
-                    <Input type="date" value={form.transfer_date} onChange={(e) => updateForm('transfer_date', e.target.value)} className="h-12" />
+                    <Input
+                      type="date"
+                      value={form.transfer_date}
+                      min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      onChange={(e) => updateForm('transfer_date', e.target.value)}
+                      className="h-12"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> {t(lang, 'time')}</Label>

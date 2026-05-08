@@ -26,6 +26,7 @@ export default function BookingForm() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState(''); // 'paypal' | 'cash'
 
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
@@ -56,6 +57,40 @@ export default function BookingForm() {
       case 4: return form.customer_name && form.customer_email && form.customer_phone;
       default: return false;
     }
+  };
+
+  const handleCashBooking = async () => {
+    setIsSubmitting(true);
+    setPaymentError('');
+    const originLoc = locations.find(l => l.id === form.origin);
+    const destLoc = locations.find(l => l.id === form.destination);
+    const originName = HAS_PLACES_KEY ? form.origin_place?.address : originLoc?.name;
+    const destName = HAS_PLACES_KEY ? form.destination_place?.address : destLoc?.name;
+    const originCoords = HAS_PLACES_KEY ? form.origin_place?.coords : originLoc?.coords;
+    const destCoords = HAS_PLACES_KEY ? form.destination_place?.coords : destLoc?.coords;
+    const bookingRef = generateBookingRef();
+    const booking = await base44.entities.Booking.create({
+      booking_ref: bookingRef,
+      customer_name: form.customer_name,
+      customer_email: form.customer_email,
+      customer_phone: form.customer_phone,
+      origin: originName,
+      destination: destName,
+      origin_coords: originCoords,
+      destination_coords: destCoords,
+      vehicle_type: form.vehicle_type,
+      distance_km: distance,
+      price: price,
+      transfer_date: form.transfer_date,
+      transfer_time: form.transfer_time,
+      flight_number: form.flight_number,
+      passengers: form.passengers,
+      luggage: form.luggage,
+      notes: form.notes,
+      status: 'pending',
+      payment_status: 'unpaid',
+    });
+    navigate(`/confirmacao?id=${booking.id}`);
   };
 
   const handlePaymentSuccess = async () => {
@@ -291,14 +326,49 @@ export default function BookingForm() {
           <div className="mt-8 pt-6 border-t space-y-4">
             {step === 4 && canProceed() && (
               <>
+                {/* Payment method selector */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setPaymentMethod('paypal')}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
+                  >
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-6 object-contain" />
+                    <span className="text-xs font-medium text-foreground">Pagar com PayPal</span>
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('cash')}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'cash' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
+                  >
+                    <span className="text-2xl">💵</span>
+                    <span className="text-xs font-medium text-foreground">Pagar em dinheiro ao motorista</span>
+                  </button>
+                </div>
+
                 {paymentError && (
                   <p className="text-sm text-destructive text-center">{paymentError}</p>
                 )}
-                <PayPalButton
-                  amount={price}
-                  onSuccess={handlePaymentSuccess}
-                  onError={(msg) => setPaymentError(msg)}
-                />
+
+                {paymentMethod === 'paypal' && (
+                  <PayPalButton
+                    amount={price}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(msg) => setPaymentError(msg)}
+                  />
+                )}
+
+                {paymentMethod === 'cash' && (
+                  <Button
+                    onClick={handleCashBooking}
+                    disabled={isSubmitting}
+                    className="w-full gap-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold h-12"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-secondary-foreground/30 border-t-secondary-foreground rounded-full animate-spin" />
+                    ) : (
+                      <>Confirmar reserva — €{price.toFixed(2)} em dinheiro</>
+                    )}
+                  </Button>
+                )}
               </>
             )}
             <div className="flex justify-between">

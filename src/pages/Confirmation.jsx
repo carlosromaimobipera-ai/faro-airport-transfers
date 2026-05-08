@@ -143,8 +143,8 @@ export default function Confirmation() {
               <div className="bg-primary/5 rounded-xl p-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Valor total</p>
-                  <Badge className={booking.payment_status === 'paid' ? 'bg-green-100 text-green-700 border-green-200 mt-1' : 'mt-1'} variant={booking.payment_status === 'paid' ? 'outline' : 'outline'}>
-                  {booking.payment_status === 'paid' ? '✓ Pago via PayPal' : t(lang, 'conf_pending_pay')}
+                  <Badge className={`mt-1 ${booking.payment_status === 'paid' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`} variant="outline">
+                  {booking.payment_status === 'paid' ? '✓ Pago via PayPal' : '💵 Pagamento em dinheiro ao motorista'}
                 </Badge>
                 </div>
                 <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>

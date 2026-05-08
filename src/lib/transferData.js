@@ -237,7 +237,7 @@ export const vehicleTypes = [
     seats: 4,
     luggage: 3,
     pricePerKm: 1.00,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=250&fit=crop",
+    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/a2d672c47_IMG-20210512-WA0010.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_baby"],
   },
   {
@@ -246,7 +246,7 @@ export const vehicleTypes = [
     seats: 6,
     luggage: 5,
     pricePerKm: 1.20,
-    image: "https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?w=400&h=250&fit=crop",
+    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/6db18abaf_VK_Caddy_Maxi.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_luggage", "feat_baby"],
   },
   {
@@ -255,7 +255,7 @@ export const vehicleTypes = [
     seats: 8,
     luggage: 8,
     pricePerKm: 1.40,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
+    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/5e228dd60_Mercedes_vito.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_space", "feat_group", "feat_baby"],
   },
 ];

@@ -1,0 +1,69 @@
+{
+  "name": "DriverLocation",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "ID do motorista"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Nome do motorista (cache)"
+    },
+    "booking_id": {
+      "type": "string",
+      "description": "ID da reserva ativa associada"
+    },
+    "booking_ref": {
+      "type": "string",
+      "description": "Refer\u00eancia da reserva"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitude"
+    },
+    "accuracy": {
+      "type": "number",
+      "description": "Precis\u00e3o em metros"
+    },
+    "speed": {
+      "type": "number",
+      "description": "Velocidade em km/h"
+    },
+    "heading": {
+      "type": "number",
+      "description": "Dire\u00e7\u00e3o em graus"
+    },
+    "recorded_at": {
+      "type": "string",
+      "description": "Timestamp ISO da posi\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "driver_id",
+    "lat",
+    "lng"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "driver"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": false,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

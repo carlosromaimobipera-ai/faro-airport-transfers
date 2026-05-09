@@ -8,6 +8,8 @@ import { format, addDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Calendar, Car, Loader2, CalendarDays } from 'lucide-react';
 import BookingCard from '@/components/driver/BookingCard';
+import { useGpsTracking } from '@/hooks/useGpsTracking';
+import GpsTrackingBadge from '@/components/driver/GpsTrackingBadge';
 
 const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
 
@@ -66,6 +68,24 @@ export default function Driver() {
   const completed = dayBookings.filter(b => b.status === 'completed');
   const inProgress = dayBookings.filter(b => b.status === 'in_progress');
 
+  // All today's non-cancelled bookings (for GPS tracking)
+  const todayAllBookings = dayBookings.filter(b => b.status !== 'cancelled');
+
+  // GPS tracking — starts automatically when a booking window is reached
+  useGpsTracking({ driver, activeBookings: todayAllBookings });
+
+  // Which booking is currently being tracked (for the badge)
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const trackedBooking = todayAllBookings.find(b => {
+    if (b.status === 'in_progress') return true;
+    if (!b.transfer_time) return false;
+    const [h, m] = b.transfer_time.split(':').map(Number);
+    const bt = new Date(now); bt.setHours(h, m, 0, 0);
+    const diff = bt - now;
+    return diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000;
+  }) || null;
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -107,6 +127,9 @@ export default function Driver() {
                 {driver.vehicle_plate && <span> · {driver.vehicle_plate}</span>}
               </p>
             </div>
+          </div>
+          <div className="mt-3">
+            <GpsTrackingBadge activeBooking={trackedBooking} />
           </div>
         </div>
       </div>

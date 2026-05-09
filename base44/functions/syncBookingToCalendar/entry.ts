@@ -110,9 +110,13 @@ Deno.serve(async (req) => {
 
     // Save event ID back to booking if it changed
     if (createdEvent.id && createdEvent.id !== booking.google_calendar_event_id) {
-      await base44.asServiceRole.entities.Booking.update(booking.id, {
-        google_calendar_event_id: createdEvent.id,
-      });
+      try {
+        await base44.asServiceRole.entities.Booking.update(booking.id, {
+          google_calendar_event_id: createdEvent.id,
+        });
+      } catch (e) {
+        console.warn('Could not save calendar event ID to booking:', e.message);
+      }
     }
 
     return Response.json({ status: 'ok', event_id: createdEvent.id });

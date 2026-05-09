@@ -1,0 +1,49 @@
+{
+  "name": "PriceConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Identifier: 'vehicle_sedan', 'vehicle_minivan', 'vehicle_minibus', or 'route_originId-destinationId'"
+    },
+    "value": {
+      "type": "number",
+      "description": "Price per km (for vehicles) or distance in km (for routes)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label"
+    },
+    "config_type": {
+      "type": "string",
+      "enum": [
+        "vehicle",
+        "route"
+      ],
+      "description": "Type of config"
+    }
+  },
+  "required": [
+    "key",
+    "value",
+    "config_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

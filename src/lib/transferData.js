@@ -212,11 +212,26 @@ export function getDistance(originId, destinationId) {
   return routeDistances[key1] || routeDistances[key2] || null;
 }
 
-// Calculate price
-export function calculatePrice(distanceKm, vehicleTypeId) {
+// Calculate price — accepts optional priceConfigs array from DB to override defaults
+export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = []) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle || !distanceKm) return 0;
-  return Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
+  const override = priceConfigs.find(c => c.key === `vehicle_${vehicleTypeId}`);
+  const pricePerKm = override ? override.value : vehicle.pricePerKm;
+  return Math.round(distanceKm * pricePerKm * 100) / 100;
+}
+
+// Get effective distance — checks DB overrides first
+export function getEffectiveDistance(originId, destinationId, priceConfigs = []) {
+  const key1 = `${originId}-${destinationId}`;
+  const key2 = `${destinationId}-${originId}`;
+  const blocked = new Set(["faro_airport-faro_city", "faro_city-faro_airport"]);
+  if (blocked.has(key1) || blocked.has(key2)) return null;
+  const override1 = priceConfigs.find(c => c.key === `route_${key1}`);
+  const override2 = priceConfigs.find(c => c.key === `route_${key2}`);
+  if (override1) return override1.value;
+  if (override2) return override2.value;
+  return routeDistances[key1] || routeDistances[key2] || null;
 }
 
 // Generate booking reference

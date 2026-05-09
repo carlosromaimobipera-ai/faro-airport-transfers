@@ -11,7 +11,8 @@ import LocationSelector from './LocationSelector';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
-import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations } from '@/lib/transferData';
+import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance } from '@/lib/transferData';
+import { useQuery } from '@tanstack/react-query';
 
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 import { base44 } from '@/api/base44Client';
@@ -28,6 +29,11 @@ export default function BookingForm() {
   const [paymentError, setPaymentError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(''); // 'paypal' | 'cash'
 
+  const { data: priceConfigs = [] } = useQuery({
+    queryKey: ['price-configs'],
+    queryFn: () => base44.entities.PriceConfig.list('key', 500),
+  });
+
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
     origin_place: null, destination_place: null,
@@ -37,8 +43,8 @@ export default function BookingForm() {
   });
 
   const allowedDestinations = useMemo(() => form.origin ? getAllowedDestinations(form.origin) : null, [form.origin]);
-  const distance = useMemo(() => getDistance(form.origin, form.destination), [form.origin, form.destination]);
-  const price = useMemo(() => calculatePrice(distance, form.vehicle_type), [distance, form.vehicle_type]);
+  const distance = useMemo(() => getEffectiveDistance(form.origin, form.destination, priceConfigs), [form.origin, form.destination, priceConfigs]);
+  const price = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
   const updateForm = (field, value) => {
     if (field === 'origin') {
       setForm(prev => ({ ...prev, origin: value, destination: '' }));
@@ -234,7 +240,7 @@ export default function BookingForm() {
                       vehicle={vehicle}
                       selected={form.vehicle_type === vehicle.id}
                       onSelect={(id) => updateForm('vehicle_type', id)}
-                      price={calculatePrice(distance, vehicle.id)}
+                      price={calculatePrice(distance, vehicle.id, priceConfigs)}
                     />
                   ))}
                 </div>

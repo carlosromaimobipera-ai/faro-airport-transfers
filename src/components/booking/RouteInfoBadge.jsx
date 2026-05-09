@@ -1,8 +1,8 @@
 import React from 'react';
-import { MapPin, ArrowRight, Zap } from 'lucide-react';
+import { MapPin, ArrowRight, Zap, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function RouteInfoBadge({ origin, destination, distance, price }) {
+export default function RouteInfoBadge({ origin, destination, distance, price, duration_minutes, isLoading }) {
   if (!origin || !distance) return null;
 
   return (
@@ -37,13 +37,26 @@ export default function RouteInfoBadge({ origin, destination, distance, price })
         {/* Distance */}
         <div className="flex items-start gap-2">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-            <span className="w-4 h-4 text-blue-600 text-xs font-bold">⇔</span>
+            {isLoading ? <Loader2 className="w-4 h-4 text-blue-600 animate-spin" /> : <span className="w-4 h-4 text-blue-600 text-xs font-bold">⇔</span>}
           </div>
           <div className="text-xs">
             <p className="text-muted-foreground">Distância</p>
             <p className="font-semibold text-foreground">{distance} km</p>
           </div>
         </div>
+
+        {/* Duration */}
+        {duration_minutes && (
+          <div className="flex items-start gap-2">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
+              <Clock className="w-4 h-4 text-orange-600" />
+            </div>
+            <div className="text-xs">
+              <p className="text-muted-foreground">Duração</p>
+              <p className="font-semibold text-foreground">{duration_minutes} min</p>
+            </div>
+          </div>
+        )}
 
         {/* Price */}
         {price && (

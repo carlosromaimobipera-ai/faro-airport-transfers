@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,14 +45,40 @@ export default function BookingForm() {
     extras: [],
   });
 
-  const distance = useMemo(() => {
-    if (HAS_PLACES_KEY) {
-      return form.origin_place && form.destination_place 
-        ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
-        : null;
-    }
-    return null;
-  }, [form.origin_place, form.destination_place]);
+  const [distanceData, setDistanceData] = useState(null);
+  const [isLoadingDistance, setIsLoadingDistance] = useState(false);
+
+  // Fetch distance matrix when coordinates change
+  useEffect(() => {
+    const fetchDistanceMatrix = async () => {
+      if (!form.origin_place?.coords || !form.destination_place?.coords) {
+        setDistanceData(null);
+        return;
+      }
+
+      setIsLoadingDistance(true);
+      try {
+        const res = await base44.functions.invoke('calculateDistance', {
+          origin_lat: form.origin_place.coords.lat,
+          origin_lng: form.origin_place.coords.lng,
+          destination_lat: form.destination_place.coords.lat,
+          destination_lng: form.destination_place.coords.lng,
+        });
+        setDistanceData(res.data);
+      } catch (err) {
+        console.error('Distance calculation error:', err);
+        setDistanceData(null);
+      } finally {
+        setIsLoadingDistance(false);
+      }
+    };
+
+    fetchDistanceMatrix();
+  }, [form.origin_place?.coords, form.destination_place?.coords]);
+
+  const distance = distanceData?.distance_km || (HAS_PLACES_KEY && form.origin_place && form.destination_place 
+    ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
+    : null);
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const price = useMemo(() => Math.round((basePrice + extrasTotal) * 100) / 100, [basePrice, extrasTotal]);
@@ -210,6 +236,8 @@ export default function BookingForm() {
                       destination={form.destination_place?.address}
                       distance={distance}
                       price={basePrice}
+                      duration_minutes={distanceData?.duration_minutes}
+                      isLoading={isLoadingDistance}
                     />
                     <RouteMap 
                       originCoords={form.origin_place?.coords}

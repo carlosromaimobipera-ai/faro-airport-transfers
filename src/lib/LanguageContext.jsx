@@ -4,14 +4,7 @@ const LanguageContext = createContext({ lang: 'en', setLang: () => {} });
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
-    const stored = localStorage.getItem('lang');
-    // Detect browser language
-    if (!stored) {
-      const browser = navigator.language?.slice(0, 2);
-      const supported = ['pt', 'en', 'es', 'fr', 'de', 'nl'];
-      return supported.includes(browser) ? browser : 'en';
-    }
-    return stored;
+    return localStorage.getItem('lang') || 'en';
   });
 
   const changeLang = (code) => {

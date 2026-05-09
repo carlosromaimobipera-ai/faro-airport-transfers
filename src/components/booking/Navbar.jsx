@@ -30,7 +30,7 @@ export default function Navbar() {
           <img
             src="https://transfers-algarvestar.com/site/images/transfers.jpg"
             alt="Transfers Algarvestar"
-            className="h-16 w-auto object-contain"
+            className="h-24 w-auto object-contain"
           />
         </Link>
 

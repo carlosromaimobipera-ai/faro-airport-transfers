@@ -27,18 +27,11 @@ export default function Navbar() {
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className={cn(
-            "w-9 h-9 rounded-lg flex items-center justify-center transition-colors",
-            scrolled ? "bg-primary" : "bg-white/20 backdrop-blur-sm"
-          )}>
-            <Plane className={cn("w-5 h-5", scrolled ? "text-primary-foreground" : "text-white")} />
-          </div>
-          <span className={cn(
-            "font-display text-lg font-bold transition-colors",
-            scrolled ? "text-foreground" : "text-white"
-          )}>
-            Transfers Algarvestar
-          </span>
+          <img
+            src="https://transfers-algarvestar.com/site/images/transfers.jpg"
+            alt="Transfers Algarvestar"
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-2">

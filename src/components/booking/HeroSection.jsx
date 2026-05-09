@@ -23,11 +23,12 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <div className="flex items-center gap-2 mb-6">
-              <Plane className="w-5 h-5 text-secondary" />
-              <span className="text-sm font-medium tracking-widest uppercase text-secondary">
-                {t(lang, 'hero_badge')}
-              </span>
+            <div className="flex items-center gap-3 mb-6">
+              <img
+                src="https://transfers-algarvestar.com/site/images/transfers.jpg"
+                alt="Transfers Algarvestar"
+                className="h-14 w-auto object-contain"
+              />
             </div>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
               {t(lang, 'hero_title_1')}{' '}

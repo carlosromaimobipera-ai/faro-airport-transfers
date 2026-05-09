@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing coordinates' }, { status: 400 });
     }
 
-    const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    const googleApiKey = Deno.env.get('VITE_GOOGLE_PLACES_API_KEY');
     if (!googleApiKey) {
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }

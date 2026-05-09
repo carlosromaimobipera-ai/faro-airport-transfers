@@ -42,7 +42,7 @@ export default function Navbar() {
             {t(lang, 'nav_manage')}
           </Link>
           <Link to="/area-cliente" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
-            As Minhas Reservas
+            {t(lang, 'nav_myreservations')}
           </Link>
           <LanguageSwitcher dark={!scrolled} />
           <a href="#booking">
@@ -67,7 +67,7 @@ export default function Navbar() {
         <div className="md:hidden bg-background border-t border-border p-4 space-y-3">
           <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
-          <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>As Minhas Reservas</Link>
+          <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>
         </div>
       )}
     </nav>

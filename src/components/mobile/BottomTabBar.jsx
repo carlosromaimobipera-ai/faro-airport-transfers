@@ -2,19 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Car, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 const SCROLL_POSITIONS = {};
 
 export default function BottomTabBar() {
   const location = useLocation();
   const { user } = useAuth();
+  const { lang } = useLang();
   const [mounted, setMounted] = useState(false);
 
   const tabs = [
-    { path: '/', icon: Home, label: 'Início' },
-    { path: '/area-cliente', icon: BookOpen, label: 'Minhas Reservas' },
-    ...(user?.role === 'driver' ? [{ path: '/driver', icon: Car, label: 'Motorista' }] : []),
-    ...(user?.role === 'admin' ? [{ path: '/admin', icon: Settings, label: 'Gestão' }] : []),
+    { path: '/', icon: Home, labelKey: 'tab_home' },
+    { path: '/area-cliente', icon: BookOpen, labelKey: 'tab_reservations' },
+    ...(user?.role === 'driver' ? [{ path: '/driver', icon: Car, labelKey: 'tab_driver' }] : []),
+    ...(user?.role === 'admin' ? [{ path: '/admin', icon: Settings, labelKey: 'tab_management' }] : []),
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -54,7 +57,7 @@ export default function BottomTabBar() {
             }`}
           >
             <tab.icon className="w-6 h-6 mb-1" />
-            <span className="text-xs font-medium">{tab.label}</span>
+            <span className="text-xs font-medium">{t(lang, tab.labelKey)}</span>
           </Link>
         ))}
       </div>

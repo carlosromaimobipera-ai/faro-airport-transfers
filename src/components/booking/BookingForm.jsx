@@ -238,19 +238,19 @@ export default function BookingForm() {
                     label={t(lang, 'origin')}
                     value={form.origin_place}
                     onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, destination_place: null }))}
-                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                    placeholder={t(lang, 'select_place')}
                   />
                   <SimpleAddressPicker
                     label={t(lang, 'destination')}
                     value={form.destination_place}
                     onChange={(place) => setForm(prev => ({ ...prev, destination_place: place }))}
-                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                    placeholder={t(lang, 'select_place')}
                   />
                 </div>
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>Rota não permitida. Apenas Faro ↔ Lisboa ou Faro ↔ Sevilha.</span>
+                    <span>{t(lang, 'invalid_route')}</span>
                   </div>
                 )}
                 {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
@@ -296,18 +296,18 @@ export default function BookingForm() {
             {/* Step 3: Extras */}
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                <div>
-                  <h2 className="font-display text-2xl font-bold mb-1">Extras opcionais</h2>
-                  <p className="text-muted-foreground text-sm">Selecione serviços adicionais para a sua viagem (opcional)</p>
-                </div>
+               <div>
+                 <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'extras_title')}</h2>
+                 <p className="text-muted-foreground text-sm">{t(lang, 'extras_sub')}</p>
+               </div>
                 <ExtrasSelector
                   selected={form.extras}
                   onChange={(extras) => updateForm('extras', extras)}
                 />
                 {form.extras.length > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-                    <span className="text-sm text-green-700">{form.extras.length} extra(s) selecionado(s)</span>
-                    <span className="font-bold text-green-600">Grátis</span>
+                    <span className="text-sm text-green-700">{t(lang, 'extras_selected').replace('{count}', form.extras.length)}</span>
+                    <span className="font-bold text-green-600">{t(lang, 'free')}</span>
                   </div>
                 )}
               </motion.div>
@@ -401,9 +401,9 @@ export default function BookingForm() {
                     <span className="font-medium">{form.passengers}</span>
                     {form.extras.length > 0 && (
                       <>
-                        <span className="text-muted-foreground">Extras:</span>
+                        <span className="text-muted-foreground">{t(lang, 'extras_label')}:</span>
                         <span className="font-medium">
-                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')} <span className="text-green-600 text-xs">(grátis)</span>
+                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')} <span className="text-green-600 text-xs">({t(lang, 'free')})</span>
                         </span>
                       </>
                     )}
@@ -429,14 +429,14 @@ export default function BookingForm() {
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
                     <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-6 object-contain" />
-                    <span className="text-xs font-medium text-foreground">Pagar com PayPal</span>
+                    <span className="text-xs font-medium text-foreground">{t(lang, 'pay_paypal')}</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('cash')}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'cash' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
                     <span className="text-2xl">💵</span>
-                    <span className="text-xs font-medium text-foreground">Pagar em dinheiro ao motorista</span>
+                    <span className="text-xs font-medium text-foreground">{t(lang, 'pay_cash')}</span>
                   </button>
                 </div>
 
@@ -461,7 +461,7 @@ export default function BookingForm() {
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-secondary-foreground/30 border-t-secondary-foreground rounded-full animate-spin" />
                     ) : (
-                      <>Confirmar reserva — €{price.toFixed(2)} em dinheiro</>
+                      <>{t(lang, 'confirm_booking')} — €{price.toFixed(2)}</>
                     )}
                   </Button>
                 )}

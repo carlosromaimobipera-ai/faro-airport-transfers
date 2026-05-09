@@ -183,7 +183,7 @@ export default function BookingForm() {
       {/* Steps indicator */}
       <div className="flex items-center justify-center gap-2 mb-8">
         {steps.map((s, i) => (
-          <React.Fragment key={s.id}>
+          <div key={s.id} className="flex items-center gap-2">
             <button
               onClick={() => s.id < step && setStep(s.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
@@ -200,7 +200,7 @@ export default function BookingForm() {
             {i < steps.length - 1 && (
               <div className={`w-8 h-0.5 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
 

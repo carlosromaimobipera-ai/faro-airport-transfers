@@ -283,7 +283,7 @@ export default function BookingForm() {
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
                   <Calendar className="w-4 h-4 shrink-0" />
-                  As reservas têm de ser feitas com pelo menos <strong className="mx-1">24 horas de antecedência</strong>.
+                  {t(lang, 'advance_notice')}
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">

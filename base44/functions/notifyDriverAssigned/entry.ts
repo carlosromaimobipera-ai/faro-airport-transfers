@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
   await base44.integrations.Core.SendEmail({
     to: driver.email,
-    from_name: 'Transfers Algarvestar',
+    from_name: 'Transfers Algarvestar <info@transfers-algarvestar.com>',
     subject: `🚗 Nova viagem — ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
     body,
   });

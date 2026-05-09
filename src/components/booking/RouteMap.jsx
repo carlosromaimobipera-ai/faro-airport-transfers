@@ -1,6 +1,5 @@
 import React from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
-import { locations } from '@/lib/transferData';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -48,18 +47,9 @@ function FitBounds({ origin, destination }) {
   return null;
 }
 
-export default function RouteMap({ originId, destinationId, originCoords, destinationCoords }) {
-  // Support both location IDs and custom coordinates
-  const originLoc = originId ? locations.find(l => l.id === originId) : null;
-  const destLoc = destinationId ? locations.find(l => l.id === destinationId) : null;
-  
-  const origin = originCoords ? 
-    { coords: originCoords } : 
-    (originLoc ? { coords: originLoc.coords, name: originLoc.name } : null);
-  
-  const destination = destinationCoords ? 
-    { coords: destinationCoords } : 
-    (destLoc ? { coords: destLoc.coords, name: destLoc.name } : null);
+export default function RouteMap({ originCoords, destinationCoords }) {
+  const origin = originCoords ? { coords: originCoords } : null;
+  const destination = destinationCoords ? { coords: destinationCoords } : null;
   
   const center = origin 
     ? [origin.coords.lat, origin.coords.lng] 

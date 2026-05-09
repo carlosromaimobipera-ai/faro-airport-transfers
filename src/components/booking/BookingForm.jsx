@@ -45,24 +45,24 @@ export default function BookingForm() {
     extras: [],
   });
 
-  const allowedDestinations = useMemo(() => form.origin ? getAllowedDestinations(form.origin) : null, [form.origin]);
-  const distance = useMemo(() => getEffectiveDistance(form.origin, form.destination, priceConfigs), [form.origin, form.destination, priceConfigs]);
+  const distance = useMemo(() => {
+    if (HAS_PLACES_KEY) {
+      return form.origin_place && form.destination_place 
+        ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
+        : null;
+    }
+    return null;
+  }, [form.origin_place, form.destination_place]);
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const price = useMemo(() => Math.round((basePrice + extrasTotal) * 100) / 100, [basePrice, extrasTotal]);
   const updateForm = (field, value) => {
-    if (field === 'origin') {
-      setForm(prev => ({ ...prev, origin: value, destination: '' }));
-    } else {
-      setForm(prev => ({ ...prev, [field]: value }));
-    }
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const canProceed = () => {
     switch (step) {
-      case 1:
-        if (HAS_PLACES_KEY) return form.origin_place && form.destination_place;
-        return form.origin && form.destination && distance;
+      case 1: return form.origin_place && form.destination_place && distance;
       case 2: return form.vehicle_type;
       case 3: return true; // extras are optional
       case 4: {
@@ -79,12 +79,10 @@ export default function BookingForm() {
   const handleCashBooking = async () => {
     setIsSubmitting(true);
     setPaymentError('');
-    const originLoc = locations.find(l => l.id === form.origin);
-    const destLoc = locations.find(l => l.id === form.destination);
-    const originName = HAS_PLACES_KEY ? form.origin_place?.address : originLoc?.name;
-    const destName = HAS_PLACES_KEY ? form.destination_place?.address : destLoc?.name;
-    const originCoords = HAS_PLACES_KEY ? form.origin_place?.coords : originLoc?.coords;
-    const destCoords = HAS_PLACES_KEY ? form.destination_place?.coords : destLoc?.coords;
+    const originName = form.origin_place?.address;
+    const destName = form.destination_place?.address;
+    const originCoords = form.origin_place?.coords;
+    const destCoords = form.destination_place?.coords;
     const bookingRef = generateBookingRef();
     const booking = await base44.entities.Booking.create({
       booking_ref: bookingRef,
@@ -115,12 +113,10 @@ export default function BookingForm() {
   const handlePaymentSuccess = async () => {
     setIsSubmitting(true);
     setPaymentError('');
-    const originLoc = locations.find(l => l.id === form.origin);
-    const destLoc = locations.find(l => l.id === form.destination);
-    const originName = HAS_PLACES_KEY ? form.origin_place?.address : originLoc?.name;
-    const destName = HAS_PLACES_KEY ? form.destination_place?.address : destLoc?.name;
-    const originCoords = HAS_PLACES_KEY ? form.origin_place?.coords : originLoc?.coords;
-    const destCoords = HAS_PLACES_KEY ? form.destination_place?.coords : destLoc?.coords;
+    const originName = form.origin_place?.address;
+    const destName = form.destination_place?.address;
+    const originCoords = form.origin_place?.coords;
+    const destCoords = form.destination_place?.coords;
     const bookingRef = generateBookingRef();
     const booking = await base44.entities.Booking.create({
       booking_ref: bookingRef,
@@ -194,39 +190,28 @@ export default function BookingForm() {
                   <p className="text-muted-foreground text-sm">{t(lang, 'step1_sub')}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                   {HAS_PLACES_KEY ? (
-                     <>
-                       <AddressPickerWithMap
-                         label={t(lang, 'origin')}
-                         value={form.origin_place}
-                         onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, origin: 'custom', destination: '', destination_place: null }))}
-                         placeholder="Procurar morada, hotel ou clicar no mapa..."
-                       />
-                       <AddressPickerWithMap
-                         label={t(lang, 'destination')}
-                         value={form.destination_place}
-                         onChange={(place) => setForm(prev => ({ ...prev, destination_place: place, destination: 'custom' }))}
-                         placeholder="Procurar morada, hotel ou clicar no mapa..."
-                       />
-                     </>
-                   ) : (
-                     <>
-                       <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
-                       <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
-                     </>
-                   )}
-                 </div>
+                  <AddressPickerWithMap
+                    label={t(lang, 'origin')}
+                    value={form.origin_place}
+                    onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, destination_place: null }))}
+                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                  />
+                  <AddressPickerWithMap
+                    label={t(lang, 'destination')}
+                    value={form.destination_place}
+                    onChange={(place) => setForm(prev => ({ ...prev, destination_place: place }))}
+                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                  />
+                </div>
                 {distance && (
                   <>
                     <RouteInfoBadge 
-                      origin={HAS_PLACES_KEY ? form.origin_place?.address : locations.find(l => l.id === form.origin)?.name}
-                      destination={HAS_PLACES_KEY ? form.destination_place?.address : locations.find(l => l.id === form.destination)?.name}
+                      origin={form.origin_place?.address}
+                      destination={form.destination_place?.address}
                       distance={distance}
                       price={basePrice}
                     />
                     <RouteMap 
-                      originId={form.origin} 
-                      destinationId={form.destination}
                       originCoords={form.origin_place?.coords}
                       destinationCoords={form.destination_place?.coords}
                     />
@@ -353,7 +338,7 @@ export default function BookingForm() {
                   <h3 className="font-bold text-lg">{t(lang, 'summary')}</h3>
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     <span className="text-muted-foreground">{t(lang, 'route')}:</span>
-                    <span className="font-medium">{locations.find(l => l.id === form.origin)?.name} → {locations.find(l => l.id === form.destination)?.name}</span>
+                    <span className="font-medium">{form.origin_place?.address} → {form.destination_place?.address}</span>
                     <span className="text-muted-foreground">{t(lang, 'distance')}:</span>
                     <span className="font-medium">{distance} km</span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>

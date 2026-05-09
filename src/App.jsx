@@ -12,6 +12,8 @@ import Review from '@/pages/Review';
 import Driver from '@/pages/Driver';
 import CustomerArea from '@/pages/CustomerArea';
 import { LanguageProvider } from '@/lib/LanguageContext';
+import ThemeProvider from '@/lib/ThemeProvider';
+import BottomTabBar from '@/components/mobile/BottomTabBar';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,16 +50,19 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <AuthenticatedApp />
+              <BottomTabBar />
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

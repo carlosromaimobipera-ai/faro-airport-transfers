@@ -10,6 +10,7 @@ import Confirmation from '@/pages/Confirmation';
 import Admin from '@/pages/Admin';
 import Review from '@/pages/Review';
 import Driver from '@/pages/Driver';
+import CustomerArea from '@/pages/CustomerArea';
 import { LanguageProvider } from '@/lib/LanguageContext';
 
 const AuthenticatedApp = () => {
@@ -39,6 +40,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/review" element={<Review />} />
       <Route path="/driver" element={<Driver />} />
+      <Route path="/area-cliente" element={<CustomerArea />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

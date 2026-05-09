@@ -28,19 +28,23 @@ export function usePullToRefresh(onRefresh) {
       }
     };
 
-    const handleTouchEnd = (e) => {
+    const handleTouchEnd = async (e) => {
       const touchY = e.changedTouches[0].clientY;
       const diff = touchY - touchStartY.current;
       
       if (diff > 60 && container.scrollTop === 0 && !isRefreshing.current) {
         isRefreshing.current = true;
-        onRefresh?.then(() => {
+        try {
+          const result = onRefresh?.();
+          if (result instanceof Promise) {
+            await result;
+          }
+        } catch (err) {
+          console.error('Pull to refresh error:', err);
+        } finally {
           isRefreshing.current = false;
           setIsPulling(false);
-        }).catch(() => {
-          isRefreshing.current = false;
-          setIsPulling(false);
-        });
+        }
       } else {
         setIsPulling(false);
       }

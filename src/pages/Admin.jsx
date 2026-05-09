@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
 import DriverUnavailabilityManager from '@/components/admin/DriverUnavailabilityManager';
 import ReviewsStats from '@/components/admin/ReviewsStats';
 import PriceManager from '@/components/admin/PriceManager';
+import FinancialDashboard from '@/components/admin/FinancialDashboard';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -171,7 +172,10 @@ export default function Admin() {
 
         {/* Tabs */}
         <Tabs defaultValue="bookings">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="financial" className="gap-1.5">
+              <BarChart2 className="w-4 h-4" /> Financeiro
+            </TabsTrigger>
             <TabsTrigger value="bookings">Reservas</TabsTrigger>
             <TabsTrigger value="drivers" className="gap-1.5">
               <UserCheck className="w-4 h-4" /> Motoristas
@@ -183,6 +187,11 @@ export default function Admin() {
               <Tag className="w-4 h-4" /> Preços
             </TabsTrigger>
           </TabsList>
+
+          {/* ── Financeiro Tab ── */}
+          <TabsContent value="financial" className="mt-4">
+            <FinancialDashboard />
+          </TabsContent>
 
           {/* ── Reservas Tab ── */}
           <TabsContent value="bookings" className="space-y-4 mt-4">

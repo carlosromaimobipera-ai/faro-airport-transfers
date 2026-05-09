@@ -89,7 +89,8 @@ export default function BookingForm() {
   const distance = distanceData?.distance_km || (HAS_PLACES_KEY && form.origin_place && form.destination_place 
     ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
     : null);
-  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
+  const duration = distanceData?.duration_minutes || 0;
+  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration), [distance, form.vehicle_type, priceConfigs, duration]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const price = useMemo(() => Math.round((basePrice + extrasTotal) * 100) / 100, [basePrice, extrasTotal]);
   const updateForm = (field, value) => {
@@ -282,7 +283,7 @@ export default function BookingForm() {
                       vehicle={vehicle}
                       selected={form.vehicle_type === vehicle.id}
                       onSelect={(id) => updateForm('vehicle_type', id)}
-                      price={calculatePrice(distance, vehicle.id, priceConfigs)}
+                      price={calculatePrice(distance, vehicle.id, priceConfigs, duration)}
                     />
                   ))}
                 </div>

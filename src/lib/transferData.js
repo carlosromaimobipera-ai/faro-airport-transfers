@@ -109,22 +109,27 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Calculate price — uses fixed route prices or vehicle price per km
-export function calculatePrice(distanceKm, vehicleTypeId, routes = []) {
+// Calculate price — uses fixed route prices or vehicle price per km + time surcharge
+export function calculatePrice(distanceKm, vehicleTypeId, routes = [], durationMinutes = 0) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle) return 0;
   
-  // Se houver rota com preço fixo, usa esse
+  // Se houver rota com preço fixo, usa esse + taxa de tempo
   if (routes && routes.length > 0) {
     const priceField = `${vehicleTypeId}_price`;
     const fixedPrice = routes[0]?.[priceField];
-    if (fixedPrice) return fixedPrice;
+    if (fixedPrice) {
+      const timeSurcharge = durationMinutes * 0.10;
+      return Math.round((fixedPrice + timeSurcharge) * 100) / 100;
+    }
   }
   
-  // Fallback: usa preço por km
+  // Fallback: usa preço por km + taxa de tempo
   if (!distanceKm) return 0;
   
-  const calculatedPrice = Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
+  const distancePrice = Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
+  const timeSurcharge = durationMinutes * 0.10;
+  const calculatedPrice = distancePrice + timeSurcharge;
   
   // Apply minimum fare for routes under 10km
   const minimumFares = {

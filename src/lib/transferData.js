@@ -291,7 +291,7 @@ export const vehicleTypes = [
     seats: 4,
     luggage: 3,
     pricePerKm: 1.00,
-    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/a2d672c47_IMG-20210512-WA0010.png",
+    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/2f3fbb999_Kia_Ceed_SW.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
   {

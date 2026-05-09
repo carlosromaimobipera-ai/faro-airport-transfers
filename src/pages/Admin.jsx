@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
 import DriverUnavailabilityManager from '@/components/admin/DriverUnavailabilityManager';
+import ReviewsStats from '@/components/admin/ReviewsStats';
 
 const statusConfig = {
   pending:   { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -172,6 +173,9 @@ export default function Admin() {
             <TabsTrigger value="bookings">Reservas</TabsTrigger>
             <TabsTrigger value="drivers" className="gap-1.5">
               <UserCheck className="w-4 h-4" /> Motoristas
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="gap-1.5">
+              <Star className="w-4 h-4" /> Avaliações
             </TabsTrigger>
           </TabsList>
 
@@ -333,6 +337,11 @@ export default function Admin() {
                 </Table>
               </div>
             </Card>
+          </TabsContent>
+
+          {/* ── Avaliações Tab ── */}
+          <TabsContent value="reviews" className="mt-4">
+            <ReviewsStats />
           </TabsContent>
 
           {/* ── Motoristas Tab ── */}

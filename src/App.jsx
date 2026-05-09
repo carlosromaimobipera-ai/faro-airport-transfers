@@ -8,6 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home';
 import Confirmation from '@/pages/Confirmation';
 import Admin from '@/pages/Admin';
+import Review from '@/pages/Review';
 import { LanguageProvider } from '@/lib/LanguageContext';
 
 const AuthenticatedApp = () => {
@@ -35,6 +36,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/confirmacao" element={<Confirmation />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/review" element={<Review />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

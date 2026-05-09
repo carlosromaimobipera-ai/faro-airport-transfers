@@ -37,9 +37,14 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
     base44.functions.invoke('getGoogleApiKey', {}).then(res => {
       if (res.data?.apiKey) {
         setApiKey(res.data.apiKey);
-        loadGoogleMaps(res.data.apiKey).then(() => setReady(true));
+        loadGoogleMaps(res.data.apiKey).then(() => setReady(true)).catch(err => {
+          console.error('Erro ao carregar Google Maps:', err);
+          setReady(false);
+        });
       }
-    }).catch(err => console.log('API key fetch failed'));
+    }).catch(err => {
+      console.error('Erro ao obter chave API:', err);
+    });
   }, []);
 
   // Initialize autocomplete and map
@@ -139,7 +144,7 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
     });
   };
 
-  if (!apiKey) {
+  if (!apiKey || !ready) {
     return (
       <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
@@ -147,8 +152,20 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
           {label}
         </Label>
         <div className="h-12 px-4 flex items-center border border-amber-300 bg-amber-50 rounded-md text-xs text-amber-700">
-          A carregar... {ready ? 'Mapa ativado' : 'Configure VITE_GOOGLE_PLACES_API_KEY para ativar mapa'}
+          {!apiKey ? '⚠️ Chave API não configurada' : '⏳ A carregar mapa...'}
         </div>
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value.trim()) {
+              onChange({ address: e.target.value, coords: null });
+            }
+          }}
+          className="w-full h-12 px-4 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
+        />
       </div>
     );
   }

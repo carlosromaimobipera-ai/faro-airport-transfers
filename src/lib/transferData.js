@@ -6,9 +6,45 @@
 // Locations are now free-form via Google Places Autocomplete
 export const locations = [];
 
-// All destinations are allowed (free-form addresses)
-export function getAllowedDestinations() {
-  return [];
+// Define allowed regions
+const REGIONS = {
+  FARO: { name: 'Faro', bounds: { lat: [36.8, 37.3], lng: [-8.7, -7.8] } },
+  LISBON: { name: 'Lisboa', bounds: { lat: [38.6, 38.9], lng: [-9.3, -8.9] } },
+  SEVILLE: { name: 'Sevilha', bounds: { lat: [37.2, 37.5], lng: [-6.1, -5.8] } },
+};
+
+// Check if coordinates are in a region
+function getRegionFromCoords(lat, lng) {
+  for (const [key, region] of Object.entries(REGIONS)) {
+    if (lat >= region.bounds.lat[0] && lat <= region.bounds.lat[1] &&
+        lng >= region.bounds.lng[0] && lng <= region.bounds.lng[1]) {
+      return key;
+    }
+  }
+  return null;
+}
+
+// Validate if route is allowed
+export function isRouteAllowed(originCoords, destCoords) {
+  if (!originCoords || !destCoords) return false;
+  
+  const originRegion = getRegionFromCoords(originCoords.lat, originCoords.lng);
+  const destRegion = getRegionFromCoords(destCoords.lat, destCoords.lng);
+  
+  if (!originRegion || !destRegion) return false;
+  if (originRegion === destRegion) return false; // Same region not allowed
+  
+  // Only allow Faro ↔ Lisboa, Faro ↔ Sevilha
+  const isFaroRoute = (originRegion === 'FARO' && (destRegion === 'LISBON' || destRegion === 'SEVILLE')) ||
+                      (destRegion === 'FARO' && (originRegion === 'LISBON' || originRegion === 'SEVILLE'));
+  
+  return isFaroRoute;
+}
+
+// Get region name from coordinates
+export function getRegionName(lat, lng) {
+  const region = getRegionFromCoords(lat, lng);
+  return region ? REGIONS[region].name : null;
 }
 
 // Route distances calculated from coordinates via Google Maps API

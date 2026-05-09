@@ -6,14 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
 import RouteInfoBadge from './RouteInfoBadge';
-import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal } from '@/lib/transferData';
+import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName } from '@/lib/transferData';
 import { useQuery } from '@tanstack/react-query';
 
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
@@ -88,7 +88,11 @@ export default function BookingForm() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return form.origin_place && form.destination_place && distance;
+      case 1: {
+        if (!form.origin_place || !form.destination_place || !distance) return false;
+        // Validate route is allowed
+        return isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
+      }
       case 2: return form.vehicle_type;
       case 3: return true; // extras are optional
       case 4: {
@@ -229,7 +233,13 @@ export default function BookingForm() {
                     placeholder="Procurar morada, hotel ou clicar no mapa..."
                   />
                 </div>
-                {distance && (
+                {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>Rota não permitida. Apenas Faro ↔ Lisboa ou Faro ↔ Sevilha.</span>
+                  </div>
+                )}
+                {distance && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <>
                     <RouteInfoBadge 
                       origin={form.origin_place?.address}

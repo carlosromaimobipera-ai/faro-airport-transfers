@@ -67,6 +67,17 @@
       "type": "number",
       "description": "Total price in euros"
     },
+    "extras": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Selected extra services (IDs)"
+    },
+    "extras_price": {
+      "type": "number",
+      "description": "Total price of extras in euros"
+    },
     "transfer_date": {
       "type": "string",
       "format": "date",

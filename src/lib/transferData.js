@@ -244,6 +244,45 @@ export function generateBookingRef() {
   return ref;
 }
 
+// Booking extras
+export const BOOKING_EXTRAS = [
+  {
+    id: 'baby_seat',
+    label: 'Cadeira de bebé',
+    description: 'Cadeira homologada para crianças até 18 kg',
+    price: 10,
+    icon: 'Baby',
+  },
+  {
+    id: 'extra_stop',
+    label: 'Paragem extra',
+    description: 'Uma paragem adicional no percurso',
+    price: 15,
+    icon: 'MapPin',
+  },
+  {
+    id: 'extra_luggage',
+    label: 'Bagagem extra',
+    description: 'Transporte de bagagem adicional ou oversized',
+    price: 10,
+    icon: 'Luggage',
+  },
+  {
+    id: 'meet_greet',
+    label: 'Meet & Greet',
+    description: 'Motorista à chegada com placa com o seu nome',
+    price: 5,
+    icon: 'ShoppingBag',
+  },
+];
+
+// Calculate extras total
+export function calculateExtrasTotal(selectedExtras = []) {
+  return BOOKING_EXTRAS
+    .filter(e => selectedExtras.includes(e.id))
+    .reduce((sum, e) => sum + e.price, 0);
+}
+
 // Vehicle types with pricing
 export const vehicleTypes = [
   {

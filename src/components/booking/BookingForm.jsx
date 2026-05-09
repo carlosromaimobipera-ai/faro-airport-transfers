@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift } from 'lucide-react';
+import ExtrasSelector from './ExtrasSelector';
 import LocationSelector from './LocationSelector';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
-import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance } from '@/lib/transferData';
+import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal } from '@/lib/transferData';
 import { useQuery } from '@tanstack/react-query';
 
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
@@ -40,11 +41,14 @@ export default function BookingForm() {
     transfer_date: '', transfer_time: '', flight_number: '',
     passengers: 1, luggage: 1,
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
+    extras: [],
   });
 
   const allowedDestinations = useMemo(() => form.origin ? getAllowedDestinations(form.origin) : null, [form.origin]);
   const distance = useMemo(() => getEffectiveDistance(form.origin, form.destination, priceConfigs), [form.origin, form.destination, priceConfigs]);
-  const price = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
+  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs), [distance, form.vehicle_type, priceConfigs]);
+  const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
+  const price = useMemo(() => Math.round((basePrice + extrasTotal) * 100) / 100, [basePrice, extrasTotal]);
   const updateForm = (field, value) => {
     if (field === 'origin') {
       setForm(prev => ({ ...prev, origin: value, destination: '' }));
@@ -59,14 +63,14 @@ export default function BookingForm() {
         if (HAS_PLACES_KEY) return form.origin_place && form.destination_place;
         return form.origin && form.destination && distance;
       case 2: return form.vehicle_type;
-      case 3: {
+      case 3: return true; // extras are optional
+      case 4: {
         if (!form.transfer_date || !form.transfer_time) return false;
-        // Minimum 24h advance booking
         const bookingDateTime = new Date(`${form.transfer_date}T${form.transfer_time}`);
         const minAllowed = new Date(Date.now() + 24 * 60 * 60 * 1000);
         return bookingDateTime >= minAllowed;
       }
-      case 4: return form.customer_name && form.customer_email && form.customer_phone;
+      case 5: return form.customer_name && form.customer_email && form.customer_phone;
       default: return false;
     }
   };
@@ -93,6 +97,8 @@ export default function BookingForm() {
       vehicle_type: form.vehicle_type,
       distance_km: distance,
       price: price,
+      extras: form.extras,
+      extras_price: extrasTotal,
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
       flight_number: form.flight_number,
@@ -127,6 +133,8 @@ export default function BookingForm() {
       vehicle_type: form.vehicle_type,
       distance_km: distance,
       price: price,
+      extras: form.extras,
+      extras_price: extrasTotal,
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
       flight_number: form.flight_number,
@@ -140,10 +148,11 @@ export default function BookingForm() {
   };
 
   const steps = [
-    { id: 1, labelKey: 'step_route',   icon: MapPin },
-    { id: 2, labelKey: 'step_vehicle', icon: CircleDot },
-    { id: 3, labelKey: 'step_details', icon: Calendar },
-    { id: 4, labelKey: 'step_data',    icon: User },
+    { id: 1, label: 'Rota',      icon: MapPin },
+    { id: 2, label: 'Veículo',   icon: CircleDot },
+    { id: 3, label: 'Extras',    icon: Gift },
+    { id: 4, label: 'Detalhes',  icon: Calendar },
+    { id: 5, label: 'Dados',     icon: User },
   ];
 
   return (
@@ -163,7 +172,7 @@ export default function BookingForm() {
               }`}
             >
               <s.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{t(lang, s.labelKey)}</span>
+              <span className="hidden sm:inline">{s.label}</span>
             </button>
             {i < steps.length - 1 && (
               <div className={`w-8 h-0.5 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />
@@ -247,9 +256,29 @@ export default function BookingForm() {
               </motion.div>
             )}
 
-            {/* Step 3: Details */}
+            {/* Step 3: Extras */}
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div>
+                  <h2 className="font-display text-2xl font-bold mb-1">Extras opcionais</h2>
+                  <p className="text-muted-foreground text-sm">Selecione serviços adicionais para a sua viagem (opcional)</p>
+                </div>
+                <ExtrasSelector
+                  selected={form.extras}
+                  onChange={(extras) => updateForm('extras', extras)}
+                />
+                {form.extras.length > 0 && (
+                  <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Extras selecionados</span>
+                    <span className="font-bold text-primary">+€{extrasTotal.toFixed(2)}</span>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Step 4: Details */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                 <div>
                   <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'step3_title')}</h2>
                   <p className="text-muted-foreground text-sm">{t(lang, 'step3_sub')}</p>
@@ -295,9 +324,9 @@ export default function BookingForm() {
               </motion.div>
             )}
 
-            {/* Step 4: Customer Info */}
-            {step === 4 && (
-              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+            {/* Step 5: Customer Info */}
+            {step === 5 && (
+              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                 <div>
                   <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'step4_title')}</h2>
                   <p className="text-muted-foreground text-sm">{t(lang, 'step4_sub')}</p>
@@ -333,6 +362,18 @@ export default function BookingForm() {
                     <span className="font-medium">{form.transfer_date} {form.transfer_time}</span>
                     <span className="text-muted-foreground">{t(lang, 'passengers')}:</span>
                     <span className="font-medium">{form.passengers}</span>
+                    {form.extras.length > 0 && (
+                      <>
+                        <span className="text-muted-foreground">Extras:</span>
+                        <span className="font-medium">
+                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')}
+                        </span>
+                        <span className="text-muted-foreground">Transfer:</span>
+                        <span className="font-medium">€{basePrice.toFixed(2)}</span>
+                        <span className="text-muted-foreground">Extras:</span>
+                        <span className="font-medium">+€{extrasTotal.toFixed(2)}</span>
+                      </>
+                    )}
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">
@@ -346,7 +387,7 @@ export default function BookingForm() {
 
           {/* Navigation buttons */}
           <div className="mt-8 pt-6 border-t space-y-4">
-            {step === 4 && canProceed() && (
+            {step === 5 && canProceed() && (
               <>
                 {/* Payment method selector */}
                 <div className="grid grid-cols-2 gap-3">
@@ -397,7 +438,7 @@ export default function BookingForm() {
               <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 1} className="gap-2">
                 <ArrowLeft className="w-4 h-4" /> {t(lang, 'btn_back')}
               </Button>
-              {step < 4 && (
+              {step < 5 && (
                 <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed()} className="gap-2 bg-primary hover:bg-primary/90">
                   {t(lang, 'btn_next')} <ArrowRight className="w-4 h-4" />
                 </Button>

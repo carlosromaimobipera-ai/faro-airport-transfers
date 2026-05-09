@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,6 +19,7 @@ import ReviewsStats from '@/components/admin/ReviewsStats';
 import PriceManager from '@/components/admin/PriceManager';
 import FinancialDashboard from '@/components/admin/FinancialDashboard';
 import DriverLocationMap from '@/components/admin/DriverLocationMap';
+import BookingTableMobile from '@/components/admin/BookingTableMobile';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -248,115 +250,125 @@ export default function Admin() {
               </CardContent>
             </Card>
 
-            {/* Table */}
-            <Card>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Ref.</TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>Rota</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Veículo</TableHead>
-                      <TableHead>Preço</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Pagamento</TableHead>
-                      <TableHead>Motorista</TableHead>
-                      <TableHead>Alterar estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-12">
-                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-                        </TableCell>
-                      </TableRow>
-                    ) : filtered.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
-                          Nenhuma reserva encontrada
-                        </TableCell>
-                      </TableRow>
-                    ) : filtered.map(booking => (
-                      <TableRow key={booking.id}>
-                        <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
-                        <TableCell>
-                          <p className="font-medium text-sm">{booking.customer_name}</p>
-                          <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
-                          <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-start gap-1 text-xs max-w-[160px]">
-                            <MapPin className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-                            <span className="leading-tight">{booking.origin} → {booking.destination}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">
-                          {booking.transfer_date && format(new Date(booking.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
-                          <br /><span className="text-muted-foreground text-xs">{booking.transfer_time}</span>
-                        </TableCell>
-                        <TableCell className="text-xs">{vehicleLabel[booking.vehicle_type] || booking.vehicle_type}</TableCell>
-                        <TableCell className="font-bold text-primary">€{booking.price?.toFixed(0)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={statusConfig[booking.status]?.color}>
-                            {statusConfig[booking.status]?.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
-                            {paymentConfig[booking.payment_status]?.label}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Motorista */}
-                        <TableCell>
-                          <Select
-                            value={booking.driver_id || 'none'}
-                            onValueChange={val => assignDriver(booking, val === 'none' ? null : val)}
-                            disabled={updateMutation.isPending}
-                          >
-                            <SelectTrigger className="h-8 w-40 text-xs">
-                              <SelectValue placeholder="Sem motorista" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">— Sem motorista —</SelectItem>
-                              {drivers.filter(d => d.active).map(d => {
-                                const available = isDriverAvailable(d.id, booking.transfer_date);
-                                return (
-                                  <SelectItem key={d.id} value={d.id} disabled={!available}>
-                                    {d.name}{!available ? ' (indisponível)' : ''}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-
-                        {/* Estado */}
-                        <TableCell>
-                          <Select
-                            value={booking.status}
-                            onValueChange={val => updateMutation.mutate({ id: booking.id, data: { status: val } })}
-                            disabled={updateMutation.isPending}
-                          >
-                            <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pendente</SelectItem>
-                              <SelectItem value="confirmed">Confirmada</SelectItem>
-                              <SelectItem value="in_progress">Em curso</SelectItem>
-                              <SelectItem value="completed">Concluída</SelectItem>
-                              <SelectItem value="cancelled">Cancelada</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+            {/* Table (Desktop) / Cards (Mobile) */}
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>
-            </Card>
+            ) : filtered.length === 0 ? (
+              <Card>
+                <div className="text-center py-12 text-muted-foreground">
+                  Nenhuma reserva encontrada
+                </div>
+              </Card>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <Card className="hidden md:block">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ref.</TableHead>
+                          <TableHead>Cliente</TableHead>
+                          <TableHead>Rota</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Veículo</TableHead>
+                          <TableHead>Preço</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Pagamento</TableHead>
+                          <TableHead>Motorista</TableHead>
+                          <TableHead>Alterar estado</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filtered.map(booking => (
+                          <TableRow key={booking.id}>
+                            <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
+                            <TableCell>
+                              <p className="font-medium text-sm">{booking.customer_name}</p>
+                              <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
+                              <p className="text-xs text-muted-foreground">{booking.customer_phone}</p>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-start gap-1 text-xs max-w-[160px]">
+                                <MapPin className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+                                <span className="leading-tight">{booking.origin} → {booking.destination}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm whitespace-nowrap">
+                              {booking.transfer_date && format(new Date(booking.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
+                              <br /><span className="text-muted-foreground text-xs">{booking.transfer_time}</span>
+                            </TableCell>
+                            <TableCell className="text-xs">{vehicleLabel[booking.vehicle_type] || booking.vehicle_type}</TableCell>
+                            <TableCell className="font-bold text-primary">€{booking.price?.toFixed(0)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusConfig[booking.status]?.color}>
+                                {statusConfig[booking.status]?.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
+                                {paymentConfig[booking.payment_status]?.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={booking.driver_id || 'none'}
+                                onValueChange={val => assignDriver(booking, val === 'none' ? null : val)}
+                                disabled={updateMutation.isPending}
+                              >
+                                <SelectTrigger className="h-8 w-40 text-xs">
+                                  <SelectValue placeholder="Sem motorista" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">— Sem motorista —</SelectItem>
+                                  {drivers.filter(d => d.active).map(d => {
+                                    const available = isDriverAvailable(d.id, booking.transfer_date);
+                                    return (
+                                      <SelectItem key={d.id} value={d.id} disabled={!available}>
+                                        {d.name}{!available ? ' (indisponível)' : ''}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={booking.status}
+                                onValueChange={val => updateMutation.mutate({ id: booking.id, data: { status: val } })}
+                                disabled={updateMutation.isPending}
+                              >
+                                <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pendente</SelectItem>
+                                  <SelectItem value="confirmed">Confirmada</SelectItem>
+                                  <SelectItem value="in_progress">Em curso</SelectItem>
+                                  <SelectItem value="completed">Concluída</SelectItem>
+                                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </Card>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden">
+                  <BookingTableMobile
+                    bookings={filtered}
+                    drivers={drivers}
+                    unavailabilities={unavailabilities}
+                    onStatusChange={(id, status) => updateMutation.mutate({ id, data: { status } })}
+                    onAssignDriver={assignDriver}
+                  />
+                </div>
+              </>
+            )}
           </TabsContent>
 
           {/* ── Avaliações Tab ── */}

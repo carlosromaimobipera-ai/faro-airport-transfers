@@ -44,8 +44,8 @@ export default function ExtrasSelector({ selected, onChange }) {
               <p className="text-sm font-semibold leading-tight">{extra.label}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{extra.description}</p>
             </div>
-            <div className="text-sm font-bold text-primary shrink-0">
-              +€{extra.price.toFixed(2)}
+            <div className="text-sm font-bold text-green-600 shrink-0">
+              Grátis
             </div>
           </button>
         );

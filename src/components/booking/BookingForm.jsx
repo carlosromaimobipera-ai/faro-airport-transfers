@@ -268,9 +268,9 @@ export default function BookingForm() {
                   onChange={(extras) => updateForm('extras', extras)}
                 />
                 {form.extras.length > 0 && (
-                  <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Extras selecionados</span>
-                    <span className="font-bold text-primary">+€{extrasTotal.toFixed(2)}</span>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+                    <span className="text-sm text-green-700">{form.extras.length} extra(s) selecionado(s)</span>
+                    <span className="font-bold text-green-600">Grátis</span>
                   </div>
                 )}
               </motion.div>
@@ -366,12 +366,8 @@ export default function BookingForm() {
                       <>
                         <span className="text-muted-foreground">Extras:</span>
                         <span className="font-medium">
-                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')}
+                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')} <span className="text-green-600 text-xs">(grátis)</span>
                         </span>
-                        <span className="text-muted-foreground">Transfer:</span>
-                        <span className="font-medium">€{basePrice.toFixed(2)}</span>
-                        <span className="text-muted-foreground">Extras:</span>
-                        <span className="font-medium">+€{extrasTotal.toFixed(2)}</span>
                       </>
                     )}
                   </div>

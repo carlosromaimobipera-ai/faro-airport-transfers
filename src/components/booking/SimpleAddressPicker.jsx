@@ -125,7 +125,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         {/* Sugestões */}
         {showSuggestions && inputValue?.trim?.().length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-            {/* Nominatim results */}
+            {/* Google Places API results */}
             {suggestions.map((loc, idx) => (
               <button
                 key={idx}
@@ -137,8 +137,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
               </button>
             ))}
 
-            {/* Fallback: locais comuns */}
-            {suggestions.length === 0 && filteredCommon.length > 0 && (
+            {/* Fallback: localizações pré-definidas (mesmo se Places API retornar resultados) */}
+            {filteredCommon.length > 0 && (
               <>
                 {filteredCommon.map((location) => (
                   <button
@@ -152,6 +152,13 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 ))}
               </>
             )}
+
+            {/* Mensagem se não houver resultados */}
+            {suggestions.length === 0 && filteredCommon.length === 0 && (
+              <div className="px-4 py-3 text-sm text-muted-foreground text-center">
+                Nenhuma localização encontrada
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -160,7 +167,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
           <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-medium text-green-900">{value.address}</p>
+            <p className="font-medium text-green-900">{value.address || value.name}</p>
             <p className="text-xs text-green-700 mt-1">
               Coordenadas: {value.coords.lat.toFixed(4)}°, {value.coords.lng.toFixed(4)}°
             </p>

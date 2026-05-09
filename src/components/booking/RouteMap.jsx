@@ -48,16 +48,25 @@ function FitBounds({ origin, destination }) {
   return null;
 }
 
-export default function RouteMap({ originId, destinationId }) {
-  const origin = locations.find(l => l.id === originId);
-  const destination = locations.find(l => l.id === destinationId);
+export default function RouteMap({ originId, destinationId, originCoords, destinationCoords }) {
+  // Support both location IDs and custom coordinates
+  const originLoc = originId ? locations.find(l => l.id === originId) : null;
+  const destLoc = destinationId ? locations.find(l => l.id === destinationId) : null;
+  
+  const origin = originCoords ? 
+    { coords: originCoords } : 
+    (originLoc ? { coords: originLoc.coords, name: originLoc.name } : null);
+  
+  const destination = destinationCoords ? 
+    { coords: destinationCoords } : 
+    (destLoc ? { coords: destLoc.coords, name: destLoc.name } : null);
   
   const center = origin 
     ? [origin.coords.lat, origin.coords.lng] 
     : [37.0194, -7.9322]; // Default: Faro
 
   return (
-    <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden border border-border/60 shadow-sm">
+    <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden border border-border shadow-lg bg-muted">
       <MapContainer
         center={center}
         zoom={10}
@@ -65,7 +74,7 @@ export default function RouteMap({ originId, destinationId }) {
         scrollWheelZoom={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
@@ -86,9 +95,9 @@ export default function RouteMap({ originId, destinationId }) {
               [destination.coords.lat, destination.coords.lng],
             ]}
             color="hsl(199, 89%, 32%)"
-            weight={3}
-            dashArray="10, 10"
-            opacity={0.7}
+            weight={4}
+            dashArray="5, 5"
+            opacity={0.8}
           />
         )}
       </MapContainer>

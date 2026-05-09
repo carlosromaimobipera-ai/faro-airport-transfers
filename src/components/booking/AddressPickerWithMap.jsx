@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Loader2 } from 'lucide-react';
+import { MapPin, Search, Loader2, CheckCircle2 } from 'lucide-react';
 
 function loadGoogleMaps(apiKey) {
   if (window.google?.maps) return Promise.resolve();
@@ -22,12 +22,14 @@ const DEFAULT_CENTER = { lat: 37.0194, lng: -7.9322 }; // Faro, PT
 export default function AddressPickerWithMap({ label, value, onChange, placeholder = "Procurar morada, hotel ou clicar no mapa..." }) {
   const inputRef = useRef(null);
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
   const autocompleteRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [searching, setSearching] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [inputValue, setInputValue] = useState(value?.address || '');
+  const mapInitializedRef = useRef(false);
 
   // Load Google Maps
   useEffect(() => {
@@ -67,15 +69,19 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
 
   // Initialize map on first "show map" click
   useEffect(() => {
-    if (!showMap || !mapRef.current || !ready) return;
+    if (!showMap || !mapRef.current || !ready || mapInitializedRef.current) return;
+    mapInitializedRef.current = true;
 
     const center = value?.coords || DEFAULT_CENTER;
     const map = new window.google.maps.Map(mapRef.current, {
       zoom: 15,
       center,
-      mapTypeControl: true,
+      mapTypeControl: false,
       streetViewControl: false,
+      fullscreenControl: true,
+      zoomControl: true,
     });
+    mapInstanceRef.current = map;
 
     // Add marker for current location
     if (value?.coords) {
@@ -84,6 +90,7 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
         map,
         position: center,
         title: value.address,
+        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
       });
     }
 
@@ -104,20 +111,18 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
           };
           setInputValue(result.address);
           onChange(result);
-          updateMap(coords);
         }
       });
     });
 
     return () => {
-      mapClickListener;
+      window.google.maps.event.removeListener(mapClickListener);
     };
-  }, [showMap, ready, value]);
+  }, [showMap, ready]);
 
   const updateMap = (coords) => {
-    if (!mapRef.current) return;
-    const map = mapRef.current.map;
-    if (!map) return;
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
     
     map.panTo(coords);
     if (markerRef.current) markerRef.current.setMap(null);
@@ -125,6 +130,7 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
       map,
       position: coords,
       title: inputValue,
+      icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
     });
   };
 
@@ -151,15 +157,18 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={placeholder}
-          className="w-full h-12 px-4 pl-10 rounded-md border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+          className="w-full h-12 px-4 pl-10 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
         />
+        {value?.address && (
+          <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
+        )}
       </div>
 
       {/* Map Toggle */}
@@ -176,31 +185,32 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
 
       {/* Map Container */}
       {showMap && (
-        <div className="relative rounded-md overflow-hidden border border-border shadow-lg">
+        <div className="relative rounded-lg overflow-hidden border border-border shadow-lg bg-muted">
           <div
             ref={mapRef}
-            className="w-full h-80 bg-muted"
+            className="w-full h-96 bg-muted"
           />
           {searching && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm">
               <Loader2 className="w-6 h-6 animate-spin text-white" />
             </div>
           )}
-          <div className="absolute bottom-3 left-3 right-3 bg-white/95 rounded-lg p-2 text-xs text-muted-foreground border border-border">
-            👆 Clique no mapa para selecionar o local exato
+          <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 text-xs text-muted-foreground border border-border shadow-md">
+            <p className="font-medium text-foreground mb-1">📍 Clique no mapa para selecionar</p>
+            <p>A morada será atualizada automaticamente</p>
           </div>
         </div>
       )}
 
       {/* Selected Address Display */}
       {value?.address && (
-        <div className="flex items-start gap-2 p-3 bg-primary/5 border border-primary/10 rounded-md">
-          <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <div className="text-sm">
-            <p className="font-medium text-foreground">{value.address}</p>
+        <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-green-900">{value.address}</p>
             {value.coords && (
-              <p className="text-xs text-muted-foreground">
-                {value.coords.lat.toFixed(4)}, {value.coords.lng.toFixed(4)}
+              <p className="text-xs text-green-700 mt-1">
+                Coordenadas: {value.coords.lat.toFixed(4)}°, {value.coords.lng.toFixed(4)}°
               </p>
             )}
           </div>

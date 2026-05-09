@@ -12,6 +12,7 @@ import LocationSelector from './LocationSelector';
 import AddressPickerWithMap from './AddressPickerWithMap';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
+import RouteInfoBadge from './RouteInfoBadge';
 import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal } from '@/lib/transferData';
 import { useQuery } from '@tanstack/react-query';
 
@@ -215,20 +216,21 @@ export default function BookingForm() {
                      </>
                    )}
                  </div>
-                {(form.origin || form.destination) && (
-                  <RouteMap originId={form.origin} destinationId={form.destination} />
-                )}
                 {distance && (
-                  <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t(lang, 'est_distance')}</p>
-                      <p className="text-2xl font-bold text-primary">{distance} km</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">{t(lang, 'from_price')}</p>
-                      <p className="text-2xl font-bold text-secondary">€{(distance * 0.80).toFixed(0)}</p>
-                    </div>
-                  </div>
+                  <>
+                    <RouteInfoBadge 
+                      origin={HAS_PLACES_KEY ? form.origin_place?.address : locations.find(l => l.id === form.origin)?.name}
+                      destination={HAS_PLACES_KEY ? form.destination_place?.address : locations.find(l => l.id === form.destination)?.name}
+                      distance={distance}
+                      price={basePrice}
+                    />
+                    <RouteMap 
+                      originId={form.origin} 
+                      destinationId={form.destination}
+                      originCoords={form.origin_place?.coords}
+                      destinationCoords={form.destination_place?.coords}
+                    />
+                  </>
                 )}
               </motion.div>
             )}

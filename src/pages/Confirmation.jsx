@@ -10,9 +10,11 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phone, Mail, MessageCircle } from 'lucide-react';
 import { vehicleTypes } from '@/lib/transferData';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { pt, enUS, es, fr, de, nl } from 'date-fns/locale';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+
+const locales = { pt, en: enUS, es, fr, de, nl };
 
 export default function Confirmation() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -35,12 +37,12 @@ export default function Confirmation() {
   }
 
   if (!booking) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-muted-foreground">Reserva não encontrada</p>
-        <Link to="/"><Button>Voltar ao início</Button></Link>
-      </div>
-    );
+   return (
+     <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+       <p className="text-muted-foreground">{t(lang, 'conf_not_found')}</p>
+       <Link to="/"><Button>{t(lang, 'conf_back_home')}</Button></Link>
+     </div>
+   );
   }
 
   const vehicle = vehicleTypes.find(v => v.id === booking.vehicle_type);
@@ -98,9 +100,9 @@ export default function Confirmation() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {booking.transfer_date && format(new Date(booking.transfer_date), "d 'de' MMMM 'de' yyyy", { locale: pt })}
+                    {booking.transfer_date && format(new Date(booking.transfer_date), lang === 'pt' ? "d 'de' MMMM 'de' yyyy" : "PPP", { locale: locales[lang] || pt })}
                   </p>
-                  <p className="text-xs text-muted-foreground">Hora: {booking.transfer_time}</p>
+                  <p className="text-xs text-muted-foreground">{t(lang, 'conf_time_label')}: {booking.transfer_time}</p>
                 </div>
               </div>
 
@@ -111,7 +113,7 @@ export default function Confirmation() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{t(lang, vehicle?.nameKey)}</p>
-                  <p className="text-xs text-muted-foreground">{booking.passengers} passageiro(s), {booking.luggage} mala(s)</p>
+                  <p className="text-xs text-muted-foreground">{booking.passengers} {t(lang, 'conf_passengers')}, {booking.luggage} {t(lang, 'conf_luggage')}</p>
                 </div>
               </div>
 
@@ -132,7 +134,7 @@ export default function Confirmation() {
                     <Plane className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Voo: {booking.flight_number}</p>
+                    <p className="text-sm font-medium">{t(lang, 'conf_flight')}: {booking.flight_number}</p>
                   </div>
                 </div>
               )}
@@ -142,9 +144,9 @@ export default function Confirmation() {
               {/* Price */}
               <div className="bg-primary/5 rounded-xl p-5 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Valor total</p>
+                  <p className="text-sm text-muted-foreground">{t(lang, 'conf_total_price')}</p>
                   <Badge className={`mt-1 ${booking.payment_status === 'paid' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`} variant="outline">
-                  {booking.payment_status === 'paid' ? '✓ Pago via PayPal' : '💵 Pagamento em dinheiro ao motorista'}
+                  {booking.payment_status === 'paid' ? t(lang, 'conf_paid_paypal') : t(lang, 'conf_paid_cash')}
                 </Badge>
                 </div>
                 <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>
@@ -153,7 +155,7 @@ export default function Confirmation() {
               {/* WhatsApp Support */}
               <div className="space-y-3">
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center space-y-3">
-                  <p className="text-sm font-medium text-green-900">Precisa de suporte? Contacte-nos via WhatsApp</p>
+                  <p className="text-sm font-medium text-green-900">{t(lang, 'conf_support_title')}</p>
                   <a 
                     href={`https://wa.me/351913956971?text=Olá,%20tenho%20uma%20dúvida%20sobre%20minha%20reserva:%0AReferência:%20${booking.booking_ref}%0AData:%20${booking.transfer_date}%0AHora:%20${booking.transfer_time}%0ARota:%20${booking.origin}%20→%20${booking.destination}`}
                     target="_blank" 
@@ -161,7 +163,7 @@ export default function Confirmation() {
                     className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all"
                   >
                     <MessageCircle className="w-5 h-5" />
-                    Contactar via WhatsApp
+                    {t(lang, 'conf_whatsapp_btn')}
                   </a>
                 </div>
 
@@ -169,8 +171,8 @@ export default function Confirmation() {
                 <div className="bg-muted/50 rounded-xl p-4 text-center space-y-2">
                   <p className="text-sm font-medium">{t(lang, 'conf_contact')}</p>
                   <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-                    <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 913 956 971</span>
-                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@transfers-algarvestar.com</span>
+                    <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {t(lang, 'conf_phone')}</span>
+                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {t(lang, 'conf_email')}</span>
                   </div>
                 </div>
               </div>
@@ -178,7 +180,7 @@ export default function Confirmation() {
               <div className="text-center">
                 <Link to="/">
                   <Button variant="outline" className="gap-2">
-                    <Home className="w-4 h-4" /> {t(lang, 'conf_back')}
+                    <Home className="w-4 h-4" /> {t(lang, 'conf_back_home')}
                   </Button>
                 </Link>
               </div>

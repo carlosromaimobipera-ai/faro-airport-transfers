@@ -8,19 +8,38 @@ export const locations = [];
 
 // Define allowed regions
 const REGIONS = {
-  FARO: { name: 'Faro', bounds: { lat: [36.8, 37.3], lng: [-8.7, -7.8] } },
+  FARO_MUNICIPALITY: { name: 'Faro (Município)', bounds: { lat: [36.94, 37.06], lng: [-8.63, -7.99] } },
+  FARO_DISTRICT: { name: 'Faro (Distrito)', bounds: { lat: [36.8, 37.3], lng: [-8.7, -7.8] } },
   LISBON: { name: 'Lisboa', bounds: { lat: [38.6, 38.9], lng: [-9.3, -8.9] } },
   SEVILLE: { name: 'Sevilha', bounds: { lat: [37.2, 37.5], lng: [-6.1, -5.8] } },
 };
 
 // Check if coordinates are in a region
 function getRegionFromCoords(lat, lng) {
-  for (const [key, region] of Object.entries(REGIONS)) {
-    if (lat >= region.bounds.lat[0] && lat <= region.bounds.lat[1] &&
-        lng >= region.bounds.lng[0] && lng <= region.bounds.lng[1]) {
-      return key;
-    }
+  // Verifica município de Faro primeiro (mais específico)
+  if (lat >= REGIONS.FARO_MUNICIPALITY.bounds.lat[0] && lat <= REGIONS.FARO_MUNICIPALITY.bounds.lat[1] &&
+      lng >= REGIONS.FARO_MUNICIPALITY.bounds.lng[0] && lng <= REGIONS.FARO_MUNICIPALITY.bounds.lng[1]) {
+    return 'FARO_MUNICIPALITY';
   }
+  
+  // Depois verifica distrito de Faro
+  if (lat >= REGIONS.FARO_DISTRICT.bounds.lat[0] && lat <= REGIONS.FARO_DISTRICT.bounds.lat[1] &&
+      lng >= REGIONS.FARO_DISTRICT.bounds.lng[0] && lng <= REGIONS.FARO_DISTRICT.bounds.lng[1]) {
+    return 'FARO_DISTRICT';
+  }
+  
+  // Verifica Lisboa
+  if (lat >= REGIONS.LISBON.bounds.lat[0] && lat <= REGIONS.LISBON.bounds.lat[1] &&
+      lng >= REGIONS.LISBON.bounds.lng[0] && lng <= REGIONS.LISBON.bounds.lng[1]) {
+    return 'LISBON';
+  }
+  
+  // Verifica Sevilha
+  if (lat >= REGIONS.SEVILLE.bounds.lat[0] && lat <= REGIONS.SEVILLE.bounds.lat[1] &&
+      lng >= REGIONS.SEVILLE.bounds.lng[0] && lng <= REGIONS.SEVILLE.bounds.lng[1]) {
+    return 'SEVILLE';
+  }
+  
   return null;
 }
 
@@ -33,14 +52,21 @@ export function isRouteAllowed(originCoords, destCoords) {
   
   if (!originRegion || !destRegion) return false;
   
-  // Block same region routes (including internal Faro routes)
-  if (originRegion === destRegion) return false;
+  // Block only rotas within Faro municipality
+  if (originRegion === 'FARO_MUNICIPALITY' && destRegion === 'FARO_MUNICIPALITY') return false;
   
-  // Only allow: Faro ↔ Lisboa OR Faro ↔ Sevilha
-  const isFaroRoute = (originRegion === 'FARO' && (destRegion === 'LISBON' || destRegion === 'SEVILLE')) ||
-                      (destRegion === 'FARO' && (originRegion === 'LISBON' || originRegion === 'SEVILLE'));
+  // Allow rotas within Faro district (Faro ↔ Albufeira, Faro ↔ Lagos, etc)
+  const faroDistrictRoute = (originRegion === 'FARO_MUNICIPALITY' || originRegion === 'FARO_DISTRICT') &&
+                            (destRegion === 'FARO_MUNICIPALITY' || destRegion === 'FARO_DISTRICT');
+  if (faroDistrictRoute) return true;
   
-  return isFaroRoute;
+  // Allow Faro ↔ Lisboa or Faro ↔ Sevilha
+  const isFaroToOther = ((originRegion === 'FARO_MUNICIPALITY' || originRegion === 'FARO_DISTRICT') && 
+                         (destRegion === 'LISBON' || destRegion === 'SEVILLE')) ||
+                        ((destRegion === 'FARO_MUNICIPALITY' || destRegion === 'FARO_DISTRICT') && 
+                         (originRegion === 'LISBON' || originRegion === 'SEVILLE'));
+  
+  return isFaroToOther;
 }
 
 // Get region name from coordinates

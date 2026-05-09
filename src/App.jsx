@@ -15,6 +15,7 @@ import CustomerArea from '@/pages/CustomerArea';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
+import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
 
 const RouteWrapper = ({ children }) => {
   const location = useLocation();
@@ -88,6 +89,7 @@ function App() {
             <Router>
               <AuthenticatedApp />
               <BottomTabBar />
+              <WhatsAppFloatingButton />
             </Router>
             <Toaster />
           </QueryClientProvider>

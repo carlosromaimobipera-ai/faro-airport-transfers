@@ -56,11 +56,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fallback to Nominatim
+    // Fallback to Nominatim (restricted to Portugal and Spain)
     const nomUrl = new URL('https://nominatim.openstreetmap.org/search');
     nomUrl.searchParams.set('q', input);
     nomUrl.searchParams.set('format', 'json');
     nomUrl.searchParams.set('limit', '8');
+    nomUrl.searchParams.set('viewbox', '-10.0,36.0,3.3,43.8');
+    nomUrl.searchParams.set('bounded', '1');
     
     const nomResponse = await fetch(nomUrl.toString(), {
       headers: { 'User-Agent': 'TransfersApp/1.0' }

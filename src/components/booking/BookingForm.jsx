@@ -90,8 +90,8 @@ export default function BookingForm() {
     switch (step) {
       case 1: {
         if (!form.origin_place || !form.destination_place || !distance) return false;
-        // Validate route is allowed
-        return isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
+        const allowed = isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
+        return allowed;
       }
       case 2: return form.vehicle_type;
       case 3: return true; // extras are optional

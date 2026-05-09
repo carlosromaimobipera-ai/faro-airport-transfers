@@ -32,9 +32,11 @@ export function isRouteAllowed(originCoords, destCoords) {
   const destRegion = getRegionFromCoords(destCoords.lat, destCoords.lng);
   
   if (!originRegion || !destRegion) return false;
-  if (originRegion === destRegion) return false; // Same region not allowed
   
-  // Only allow Faro ↔ Lisboa, Faro ↔ Sevilha
+  // Block same region routes (including internal Faro routes)
+  if (originRegion === destRegion) return false;
+  
+  // Only allow: Faro ↔ Lisboa OR Faro ↔ Sevilha
   const isFaroRoute = (originRegion === 'FARO' && (destRegion === 'LISBON' || destRegion === 'SEVILLE')) ||
                       (destRegion === 'FARO' && (originRegion === 'LISBON' || originRegion === 'SEVILLE'));
   

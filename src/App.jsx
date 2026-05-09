@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -15,8 +16,27 @@ import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
 
+const RouteWrapper = ({ children }) => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -100, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="route-content min-h-screen overflow-y-auto"
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -36,15 +56,26 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/confirmacao" element={<Confirmation />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/review" element={<Review />} />
-      <Route path="/driver" element={<Driver />} />
-      <Route path="/area-cliente" element={<CustomerArea />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -100, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="route-content min-h-screen overflow-y-auto"
+      >
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/confirmacao" element={<Confirmation />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/driver" element={<Driver />} />
+          <Route path="/area-cliente" element={<CustomerArea />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

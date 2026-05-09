@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format, addDays } from 'date-fns';
@@ -36,6 +37,15 @@ export default function Driver() {
   const today = format(new Date(), 'yyyy-MM-dd');
   const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['driver-bookings-day'] }),
+      queryClient.refetchQueries({ queryKey: ['driver-bookings-upcoming'] }),
+    ]);
+  };
+
+  const { containerRef, isPulling } = usePullToRefresh(handleRefresh);
+
   // Today / selected date bookings
   const { data: dayBookings = [], isLoading: isDayLoading } = useQuery({
     queryKey: ['driver-bookings-day', driver?.id, selectedDate],
@@ -58,6 +68,23 @@ export default function Driver() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.Booking.update(id, { status }),
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['driver-bookings-day'] });
+      await queryClient.cancelQueries({ queryKey: ['driver-bookings-upcoming'] });
+      const prevDay = queryClient.getQueryData(['driver-bookings-day', driver?.id, selectedDate]);
+      const prevUpcoming = queryClient.getQueryData(['driver-bookings-upcoming', driver?.id]);
+      queryClient.setQueryData(['driver-bookings-day', driver?.id, selectedDate], (old) =>
+        old?.map(b => b.id === id ? { ...b, status } : b)
+      );
+      queryClient.setQueryData(['driver-bookings-upcoming', driver?.id], (old) =>
+        old?.map(b => b.id === id ? { ...b, status } : b)
+      );
+      return { prevDay, prevUpcoming };
+    },
+    onError: (err, vars, ctx) => {
+      if (ctx?.prevDay) queryClient.setQueryData(['driver-bookings-day', driver?.id, selectedDate], ctx.prevDay);
+      if (ctx?.prevUpcoming) queryClient.setQueryData(['driver-bookings-upcoming', driver?.id], ctx.prevUpcoming);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['driver-bookings-day'] });
       queryClient.invalidateQueries({ queryKey: ['driver-bookings-upcoming'] });
@@ -111,7 +138,12 @@ export default function Driver() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div ref={containerRef} className="min-h-screen bg-background overflow-y-auto">
+      {isPulling && (
+        <div className="flex justify-center pt-4">
+          <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+      )}
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-4 pt-10 pb-14">
         <div className="max-w-xl mx-auto">

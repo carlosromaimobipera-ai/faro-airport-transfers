@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Euro, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import MobileSelectDrawer from './MobileSelectDrawer';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800" },
@@ -85,45 +85,41 @@ export default function BookingTableMobile({ bookings, drivers, unavailabilities
             {/* Driver Assignment */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground">Motorista</label>
-              <Select
+              <MobileSelectDrawer
                 value={booking.driver_id || 'none'}
-                onValueChange={val => onAssignDriver(booking, val === 'none' ? null : val)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Sem motorista" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— Sem motorista —</SelectItem>
-                  {drivers.filter(d => d.active).map(d => {
-                    const available = isDriverAvailable(d.id, booking.transfer_date);
-                    return (
-                      <SelectItem key={d.id} value={d.id} disabled={!available}>
-                        {d.name}{!available ? ' (indisponível)' : ''}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                onSelect={val => onAssignDriver(booking, val === 'none' ? null : val)}
+                options={[
+                  { value: 'none', label: '— Sem motorista —' },
+                  ...drivers
+                    .filter(d => d.active)
+                    .map(d => {
+                      const available = isDriverAvailable(d.id, booking.transfer_date);
+                      return {
+                        value: d.id,
+                        label: `${d.name}${!available ? ' (indisponível)' : ''}`,
+                        disabled: !available,
+                      };
+                    }),
+                ]}
+                trigger={<div className="hidden" />}
+              />
             </div>
 
             {/* Status Change */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground">Alterar Estado</label>
-              <Select
+              <MobileSelectDrawer
                 value={booking.status}
-                onValueChange={val => onStatusChange(booking.id, val)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="confirmed">Confirmada</SelectItem>
-                  <SelectItem value="in_progress">Em curso</SelectItem>
-                  <SelectItem value="completed">Concluída</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
+                onSelect={val => onStatusChange(booking.id, val)}
+                options={[
+                  { value: 'pending', label: 'Pendente' },
+                  { value: 'confirmed', label: 'Confirmada' },
+                  { value: 'in_progress', label: 'Em curso' },
+                  { value: 'completed', label: 'Concluída' },
+                  { value: 'cancelled', label: 'Cancelada' },
+                ]}
+                trigger={<div className="hidden" />}
+              />
             </div>
           </CardContent>
         </Card>

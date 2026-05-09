@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +18,20 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 export default function CustomerArea() {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); // all | upcoming | past
+
+  const handleRefresh = async () => {
+    if (!user) return;
+    await loadBookings(user.email);
+  };
+
+  const { containerRef, isPulling } = usePullToRefresh(handleRefresh);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -96,7 +106,7 @@ export default function CustomerArea() {
   // ── Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div ref={containerRef} className="min-h-screen bg-background flex flex-col">
         {/* Header */}
         <div className="bg-primary text-primary-foreground px-4 pt-10 pb-14">
           <div className="max-w-lg mx-auto">
@@ -138,7 +148,12 @@ export default function CustomerArea() {
 
   // ── Logged in
   return (
-    <div className="min-h-screen bg-background">
+    <div ref={containerRef} className="min-h-screen bg-background overflow-y-auto">
+      {isPulling && (
+        <div className="flex justify-center pt-4">
+          <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+      )}
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-4 pt-10 pb-16">
         <div className="max-w-2xl mx-auto">

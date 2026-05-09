@@ -87,6 +87,17 @@ export default function Admin() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Booking.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['bookings-admin'] });
+      const prev = queryClient.getQueryData(['bookings-admin']);
+      queryClient.setQueryData(['bookings-admin'], (old) =>
+        old?.map(b => b.id === id ? { ...b, ...data } : b)
+      );
+      return { prev };
+    },
+    onError: (err, vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['bookings-admin'], ctx.prev);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bookings-admin'] }),
   });
 

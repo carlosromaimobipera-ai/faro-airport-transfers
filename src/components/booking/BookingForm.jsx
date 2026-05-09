@@ -43,6 +43,7 @@ export default function BookingForm() {
     passengers: 1, luggage: 1,
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
     extras: [],
+    language: lang,
   });
 
   const [distanceData, setDistanceData] = useState(null);
@@ -147,6 +148,7 @@ export default function BookingForm() {
       notes: form.notes,
       status: 'pending',
       payment_status: 'unpaid',
+      language: lang,
     });
     navigate(`/confirmacao?id=${booking.id}`);
   };
@@ -181,6 +183,7 @@ export default function BookingForm() {
       notes: form.notes,
       status: 'pending',
       payment_status: 'paid',
+      language: lang,
     });
     navigate(`/confirmacao?id=${booking.id}`);
   };

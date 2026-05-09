@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const langTexts = {
+  pt: { subject: 'Voucher {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMADO / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'MO - MONETÁRIO / Cash / Espèces' },
+  en: { subject: 'Voucher {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMED / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'CASH / Cash / Espèces' },
+  es: { subject: 'Comprobante {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMADO / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'EFECTIVO / Cash / Espèces' },
+  fr: { subject: 'Bon {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMÉ / Confirmed / Confirmé', paymentOnline: 'En ligne — PayPal', paymentCash: 'ESPÈCES / Cash / Espèces' },
+  de: { subject: 'Gutschein {ref} — Transfers AlgarveStar | {date} {time}', status: 'BESTÄTIGT / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'BARZAHLUNG / Cash / Espèces' },
+  nl: { subject: 'Voucher {ref} — Transfers AlgarveStar | {date} {time}', status: 'BEVESTIGD / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'CONTANT / Cash / Espèces' }
+};
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
@@ -10,12 +19,13 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
+  const lang = booking.language || 'pt';
+  const langText = langTexts[lang] || langTexts['pt'];
+
   const vehicleLabels = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
   const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
 
-  const paymentMethod = booking.payment_status === 'paid'
-    ? 'Online — PayPal'
-    : 'MO - MONETÁRIO / Cash / Espèces';
+  const paymentMethod = booking.payment_status === 'paid' ? langText.paymentOnline : langText.paymentCash;
 
   const paymentAmount = `€${Number(booking.price || 0).toFixed(2)}`;
 
@@ -63,7 +73,7 @@ Deno.serve(async (req) => {
     <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; margin-top:0;">
       <tr style="background:#e8f0e0;">
         <td style="padding:8px 12px; font-size:12px; color:#2d6a2d; font-weight:bold; border-right:1px solid #ccc;">
-          Estado / Status / État : &nbsp;<strong>CONFIRMADO / Confirmed / Confirmé</strong>
+          Estado / Status / État : &nbsp;<strong>${langText.status}</strong>
         </td>
         <td style="padding:8px 12px; font-size:12px; color:#333; border-right:1px solid #ccc; white-space:nowrap;">
           📅 ${booking.transfer_date || '—'} &nbsp; 🕐 ${booking.transfer_time || '—'}
@@ -174,7 +184,7 @@ Deno.serve(async (req) => {
   await base44.integrations.Core.SendEmail({
     to: booking.customer_email,
     from_name: 'Transfers Algarvestar <info@transfers-algarvestar.com>',
-    subject: `Voucher ${booking.booking_ref} — Transfers AlgarveStar | ${booking.transfer_date} ${booking.transfer_time}`,
+    subject: langText.subject.replace('{ref}', booking.booking_ref).replace('{date}', booking.transfer_date).replace('{time}', booking.transfer_time),
     body,
   });
 

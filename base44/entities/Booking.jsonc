@@ -136,6 +136,19 @@
     "google_calendar_event_id": {
       "type": "string",
       "description": "ID do evento criado no Google Calendar"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "pt",
+        "en",
+        "es",
+        "fr",
+        "de",
+        "nl"
+      ],
+      "default": "pt",
+      "description": "Idioma selecionado na reserva"
     }
   },
   "required": [

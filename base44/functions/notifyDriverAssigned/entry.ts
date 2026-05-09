@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const langTexts = {
+  pt: { subject: '🚗 Nova viagem — {ref} | {date} {time}', newAssignment: '🚗 Nova Viagem Atribuída', message: 'Foi-lhe atribuída uma nova reserva. Por favor, confirme a sua disponibilidade e esteja pronto a horas.' },
+  en: { subject: '🚗 New Trip — {ref} | {date} {time}', newAssignment: '🚗 New Trip Assigned', message: 'You have been assigned a new booking. Please confirm your availability and be ready on time.' },
+  es: { subject: '🚗 Nuevo Viaje — {ref} | {date} {time}', newAssignment: '🚗 Nuevo Viaje Asignado', message: 'Se le ha asignado una nueva reserva. Por favor, confirme su disponibilidad y esté listo a tiempo.' },
+  fr: { subject: '🚗 Nouveau Trajet — {ref} | {date} {time}', newAssignment: '🚗 Nouveau Trajet Attribué', message: 'Un nouveau trajet vous a été attribué. Veuillez confirmer votre disponibilité et être prêt à l\'heure.' },
+  de: { subject: '🚗 Neue Fahrt — {ref} | {date} {time}', newAssignment: '🚗 Neue Fahrt Zugewiesen', message: 'Ihnen wurde eine neue Buchung zugewiesen. Bitte bestätigen Sie Ihre Verfügbarkeit und seien Sie pünktlich bereit.' },
+  nl: { subject: '🚗 Nieuwe Rit — {ref} | {date} {time}', newAssignment: '🚗 Nieuwe Rit Toegewezen', message: 'U bent een nieuwe boeking toegewezen. Bevestig alstublieft uw beschikbaarheid en wees op tijd klaar.' }
+};
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
@@ -22,6 +31,9 @@ Deno.serve(async (req) => {
     return Response.json({ skipped: 'driver has no email' });
   }
 
+  const lang = booking.language || 'pt';
+  const langText = langTexts[lang] || langTexts['pt'];
+
   const vehicleLabels = { sedan: 'Sedan / Kia', minivan: 'VW Caddy Maxi', minibus: 'Mercedes Vito' };
   const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
 
@@ -33,15 +45,15 @@ Deno.serve(async (req) => {
   <div style="max-width:560px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f); padding:28px 32px; text-align:center;">
-      <h1 style="color:#fff; margin:0; font-size:20px;">🚗 Nova Viagem Atribuída</h1>
+      <h1 style="color:#fff; margin:0; font-size:20px;">${langText.newAssignment}</h1>
       <p style="color:rgba(255,255,255,0.75); margin:8px 0 0; font-size:13px;">Transfers Algarvestar</p>
     </div>
 
     <!-- Body -->
     <div style="padding:28px 32px;">
-      <p style="color:#334155; font-size:16px; margin:0 0 16px;">Olá <strong>${driver.name}</strong>,</p>
+      <p style="color:#334155; font-size:16px; margin:0 0 16px;">${lang === 'en' ? 'Hello' : lang === 'es' ? 'Hola' : lang === 'fr' ? 'Bonjour' : lang === 'de' ? 'Hallo' : lang === 'nl' ? 'Hallo' : 'Olá'} <strong>${driver.name}</strong>,</p>
       <p style="color:#475569; font-size:14px; line-height:1.7; margin:0 0 24px;">
-        Foi-lhe atribuída uma nova reserva. Por favor, confirme a sua disponibilidade e esteja pronto a horas.
+        ${langText.message}
       </p>
 
       <!-- Ref Badge -->
@@ -117,7 +129,7 @@ Deno.serve(async (req) => {
   await base44.integrations.Core.SendEmail({
     to: driver.email,
     from_name: 'Transfers Algarvestar <info@transfers-algarvestar.com>',
-    subject: `🚗 Nova viagem — ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
+    subject: langText.subject.replace('{ref}', booking.booking_ref).replace('{date}', booking.transfer_date).replace('{time}', booking.transfer_time),
     body,
   });
 

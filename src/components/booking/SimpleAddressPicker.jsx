@@ -86,8 +86,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
 
   const handleSelect = (location) => {
-    setInputValue(location.name);
-    onChange({ address: location.name, coords: location.coords });
+    const address = location.address || location.name;
+    setInputValue(address);
+    onChange({ address, coords: location.coords });
     setShowSuggestions(false);
   };
 

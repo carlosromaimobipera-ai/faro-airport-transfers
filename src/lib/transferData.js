@@ -119,7 +119,18 @@ export function calculatePrice(distanceKm, vehicleTypeId, routes = []) {
   
   // Fallback: usa preço por km
   if (!distanceKm) return 0;
-  return Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
+  
+  const calculatedPrice = Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
+  
+  // Apply minimum fare for routes under 10km
+  const minimumFares = {
+    sedan: 15,
+    minivan: 20,
+    minibus: 25
+  };
+  
+  const minimumFare = minimumFares[vehicleTypeId] || 0;
+  return Math.max(calculatedPrice, minimumFare);
 }
 
 // Distance is calculated from coordinates using Haversine formula

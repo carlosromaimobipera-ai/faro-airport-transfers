@@ -132,6 +132,10 @@
     "driver_name": {
       "type": "string",
       "description": "Nome do motorista (cache)"
+    },
+    "google_calendar_event_id": {
+      "type": "string",
+      "description": "ID do evento criado no Google Calendar"
     }
   },
   "required": [

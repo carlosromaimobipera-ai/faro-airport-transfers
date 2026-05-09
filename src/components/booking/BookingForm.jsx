@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import LocationSelector from './LocationSelector';
-import SimpleAddressPicker from './SimpleAddressPicker';
+import LocationPickerSimple from './LocationPickerSimple';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
 import RouteInfoBadge from './RouteInfoBadge';
@@ -220,17 +220,17 @@ export default function BookingForm() {
                   <p className="text-muted-foreground text-sm">{t(lang, 'step1_sub')}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <SimpleAddressPicker
+                  <LocationPickerSimple
                     label={t(lang, 'origin')}
                     value={form.origin_place}
                     onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, destination_place: null }))}
-                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                    placeholder="Procurar localização..."
                   />
-                  <SimpleAddressPicker
+                  <LocationPickerSimple
                     label={t(lang, 'destination')}
                     value={form.destination_place}
                     onChange={(place) => setForm(prev => ({ ...prev, destination_place: place }))}
-                    placeholder="Procurar morada, hotel ou clicar no mapa..."
+                    placeholder="Procurar localização..."
                   />
                 </div>
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (

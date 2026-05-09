@@ -1,10 +1,32 @@
-// Location types:
-// "faro_district" = distrito de Faro (aeroporto + cidades algarve) → pode ir para qualquer lado
-// "lisboa_district" = distrito de Lisboa → só pode ir para distrito de Faro
-// "spain" = Espanha → só pode ir para distrito de Faro
+// Localizações pré-definidas com coordenadas
+export const COMMON_LOCATIONS = [
+  // Aeroportos
+  { id: 'fao', name: 'Aeroporto de Faro (FAO)', coords: { lat: 37.0144, lng: -7.9699 }, type: 'airport' },
+  { id: 'lis', name: 'Aeroporto de Lisboa (Humberto Delgado)', coords: { lat: 38.6747, lng: -9.1283 }, type: 'airport' },
+  { id: 'svq', name: 'Aeroporto de Sevilha (SVQ)', coords: { lat: 37.4174, lng: -5.8892 }, type: 'airport' },
+  
+  // Algarve - Cidades
+  { id: 'faro_center', name: 'Centro de Faro', coords: { lat: 37.0194, lng: -7.9322 }, type: 'city' },
+  { id: 'vilamoura', name: 'Vilamoura', coords: { lat: 37.0662, lng: -8.1212 }, type: 'city' },
+  { id: 'albufeira', name: 'Albufeira', coords: { lat: 37.0901, lng: -8.2506 }, type: 'city' },
+  { id: 'armacao', name: 'Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 }, type: 'city' },
+  { id: 'carmo', name: 'Carmo (Faro)', coords: { lat: 37.0139, lng: -7.9275 }, type: 'city' },
+  { id: 'lagos', name: 'Lagos', coords: { lat: 37.1063, lng: -8.6705 }, type: 'city' },
+  { id: 'portimao', name: 'Portimão', coords: { lat: 37.1412, lng: -8.5292 }, type: 'city' },
+  { id: 'silves', name: 'Silves', coords: { lat: 37.2425, lng: -8.4384 }, type: 'city' },
+  { id: 'tavira', name: 'Tavira', coords: { lat: 36.9625, lng: -7.6533 }, type: 'city' },
+  
+  // Lisboa
+  { id: 'lis_center', name: 'Centro de Lisboa', coords: { lat: 38.7223, lng: -9.1393 }, type: 'city' },
+  { id: 'chiado', name: 'Chiado, Lisboa', coords: { lat: 38.7111, lng: -9.1415 }, type: 'city' },
+  { id: 'belem', name: 'Belém, Lisboa', coords: { lat: 38.7175, lng: -9.2033 }, type: 'city' },
+  
+  // Sevilha
+  { id: 'seville_center', name: 'Centro de Sevilha', coords: { lat: 37.3860, lng: -5.9844 }, type: 'city' },
+];
 
-// Locations are now free-form via Google Places Autocomplete
-export const locations = [];
+// Legacy: locations array para compatibilidade
+export const locations = COMMON_LOCATIONS;
 
 // Define allowed regions
 const REGIONS = {

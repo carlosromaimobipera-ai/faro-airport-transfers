@@ -28,9 +28,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img
-            src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/72b92b563_0.jpg"
+            src="https://transfers-algarvestar.com/site/images/transfers.jpg"
             alt="Transfers Algarvestar"
-            className="h-20 w-auto object-contain"
+            className="h-28 w-auto object-contain"
           />
         </Link>
 

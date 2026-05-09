@@ -150,15 +150,28 @@ export default function Confirmation() {
                 <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>
               </div>
 
-              {/* Contact info */}
-              <div className="bg-muted/50 rounded-xl p-4 text-center space-y-2">
-                <p className="text-sm font-medium">{t(lang, 'conf_contact')}</p>
-                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 913 956 971</span>
-                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@transfers-algarvestar.com</span>
-                  <a href="https://wa.me/351913956971" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:text-green-700">
-                    <MessageCircle className="w-3 h-3" /> WhatsApp
+              {/* WhatsApp Support */}
+              <div className="space-y-3">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center space-y-3">
+                  <p className="text-sm font-medium text-green-900">Precisa de suporte? Contacte-nos via WhatsApp</p>
+                  <a 
+                    href={`https://wa.me/351913956971?text=Olá,%20tenho%20uma%20dúvida%20sobre%20minha%20reserva:%0AReferência:%20${booking.booking_ref}%0AData:%20${booking.transfer_date}%0AHora:%20${booking.transfer_time}%0ARota:%20${booking.origin}%20→%20${booking.destination}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Contactar via WhatsApp
                   </a>
+                </div>
+
+                {/* Contact info */}
+                <div className="bg-muted/50 rounded-xl p-4 text-center space-y-2">
+                  <p className="text-sm font-medium">{t(lang, 'conf_contact')}</p>
+                  <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+                    <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> +351 913 956 971</span>
+                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> info@transfers-algarvestar.com</span>
+                  </div>
                 </div>
               </div>
 

@@ -87,13 +87,21 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Calculate price — accepts optional priceConfigs array from DB to override defaults
-export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = []) {
+// Calculate price — uses fixed route prices or vehicle price per km
+export function calculatePrice(distanceKm, vehicleTypeId, routes = []) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
-  if (!vehicle || !distanceKm) return 0;
-  const override = priceConfigs.find(c => c.key === `vehicle_${vehicleTypeId}`);
-  const pricePerKm = override ? override.value : vehicle.pricePerKm;
-  return Math.round(distanceKm * pricePerKm * 100) / 100;
+  if (!vehicle) return 0;
+  
+  // Se houver rota com preço fixo, usa esse
+  if (routes && routes.length > 0) {
+    const priceField = `${vehicleTypeId}_price`;
+    const fixedPrice = routes[0]?.[priceField];
+    if (fixedPrice) return fixedPrice;
+  }
+  
+  // Fallback: usa preço por km
+  if (!distanceKm) return 0;
+  return Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
 }
 
 // Distance is calculated from coordinates using Haversine formula

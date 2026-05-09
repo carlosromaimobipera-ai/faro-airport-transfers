@@ -1,0 +1,84 @@
+{
+  "name": "Route",
+  "type": "object",
+  "properties": {
+    "origin": {
+      "type": "string",
+      "description": "Origem (ex: Faro Airport)"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Destino (ex: Albufeira)"
+    },
+    "origin_coords": {
+      "type": "object",
+      "description": "Coordenadas da origem",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      }
+    },
+    "destination_coords": {
+      "type": "object",
+      "description": "Coordenadas do destino",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      }
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Dist\u00e2ncia em km"
+    },
+    "sedan_price": {
+      "type": "number",
+      "description": "Pre\u00e7o fixo para Sedan"
+    },
+    "minivan_price": {
+      "type": "number",
+      "description": "Pre\u00e7o fixo para Minivan"
+    },
+    "minibus_price": {
+      "type": "number",
+      "description": "Pre\u00e7o fixo para Minibus"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Rota ativa"
+    }
+  },
+  "required": [
+    "origin",
+    "destination",
+    "sedan_price",
+    "minivan_price",
+    "minibus_price"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

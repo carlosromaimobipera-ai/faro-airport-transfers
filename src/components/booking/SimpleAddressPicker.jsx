@@ -92,7 +92,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   };
 
   const filteredCommon = COMMON_LOCATIONS.filter(loc =>
-    loc.name.toLowerCase().includes(inputValue.toLowerCase())
+    loc?.name?.toLowerCase?.()?.includes(inputValue?.toLowerCase?.() || '') || false
   );
 
   return (

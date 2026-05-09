@@ -10,95 +10,162 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  const vehicleLabels = { sedan: 'Sedan / Kia', minivan: 'VW Caddy Maxi', minibus: 'Mercedes Vito' };
+  const vehicleLabels = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
   const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
 
-  const paymentInfo = booking.payment_status === 'paid'
-    ? '✅ <strong>Pago online via PayPal</strong>'
-    : '💵 <strong>Pagamento em dinheiro ao motorista</strong>';
+  const paymentMethod = booking.payment_status === 'paid'
+    ? 'Online — PayPal'
+    : 'MO - MONETÁRIO / Cash / Espèces';
+
+  const paymentAmount = `€${Number(booking.price || 0).toFixed(2)}`;
+
+  const row = (label, value) => `
+    <tr>
+      <td style="padding:7px 10px; border:1px solid #ccc; background:#f9f9f9; color:#333; font-size:12px; white-space:nowrap;">${label}</td>
+      <td style="padding:7px 10px; border:1px solid #ccc; color:#111; font-size:12px;">${value || '—'}</td>
+    </tr>`;
+
+  const headerRow = (label) => `
+    <tr>
+      <td colspan="2" style="padding:6px 10px; background:#c8a951; color:#fff; font-size:12px; font-weight:bold; border:1px solid #b8962f; letter-spacing:0.5px;">${label}</td>
+    </tr>`;
 
   const body = `
 <!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="font-family: 'Segoe UI', Arial, sans-serif; background:#f4f7fb; margin:0; padding:24px;">
-  <div style="max-width:580px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voucher — ${booking.booking_ref}</title>
+</head>
+<body style="font-family: Arial, sans-serif; background:#ececec; margin:0; padding:20px;">
+  <div style="max-width:620px; margin:0 auto; background:#fff; border:1px solid #ccc;">
+
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#0369a1,#0284c7); padding:32px 32px 24px; text-align:center;">
-      <h1 style="color:#fff; margin:0; font-size:22px; letter-spacing:-0.3px;">✈️ Transfers Algarvestar</h1>
-      <p style="color:rgba(255,255,255,0.85); margin:8px 0 0; font-size:14px;">Reserva Confirmada!</p>
-    </div>
+    <table style="width:100%; border-collapse:collapse; padding:0; background:#fff;">
+      <tr>
+        <td style="padding:16px 20px; vertical-align:middle;">
+          <img src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo_tas.png"
+               alt="Transfers AlgarveStar"
+               style="height:60px; object-fit:contain;"
+               onerror="this.style.display='none'" />
+          <div style="font-size:20px; font-weight:bold; color:#1a3a5c; margin-top:4px;">TRANSFERS<br/><span style="color:#c8a951;">ALGARVESTAR</span></div>
+        </td>
+        <td style="padding:16px 20px; text-align:right; vertical-align:top; font-size:12px; color:#444; line-height:1.8;">
+          <strong>+351 913956971</strong><br/>
+          Urbanização Quinta Da Torre, Lote 22, R/C A<br/>
+          <a href="mailto:info@transfers-algarvestar.com" style="color:#1a3a5c;">info@transfers-algarvestar.com</a>
+        </td>
+      </tr>
+    </table>
 
-    <!-- Body -->
-    <div style="padding:32px;">
-      <p style="color:#334155; font-size:16px; margin:0 0 20px;">Olá <strong>${booking.customer_name}</strong>,</p>
-      <p style="color:#475569; font-size:14px; line-height:1.7; margin:0 0 24px;">
-        A sua reserva foi recebida com sucesso. Aqui estão os detalhes da sua viagem:
-      </p>
+    <hr style="border:none; border-top:2px solid #c8a951; margin:0;" />
 
-      <!-- Ref -->
-      <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; padding:16px; text-align:center; margin-bottom:24px;">
-        <p style="color:#0369a1; font-size:12px; margin:0 0 4px; text-transform:uppercase; letter-spacing:1px;">Referência da Reserva</p>
-        <p style="color:#0369a1; font-size:28px; font-weight:700; font-family:monospace; margin:0; letter-spacing:3px;">${booking.booking_ref}</p>
-      </div>
+    <!-- Status bar -->
+    <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; margin-top:0;">
+      <tr style="background:#e8f0e0;">
+        <td style="padding:8px 12px; font-size:12px; color:#2d6a2d; font-weight:bold; border-right:1px solid #ccc;">
+          Estado / Status / État : &nbsp;<strong>CONFIRMADO / Confirmed / Confirmé</strong>
+        </td>
+        <td style="padding:8px 12px; font-size:12px; color:#333; border-right:1px solid #ccc; white-space:nowrap;">
+          📅 ${booking.transfer_date || '—'} &nbsp; 🕐 ${booking.transfer_time || '—'}
+        </td>
+        <td style="padding:8px 12px; font-size:12px; color:#333; border-right:1px solid #ccc; white-space:nowrap;">
+          ${booking.distance_km ? `🚗 ${booking.distance_km} Km` : ''}
+        </td>
+        <td style="padding:8px 12px; font-size:12px; font-weight:bold; color:#1a3a5c; text-align:right;">
+          Voucher: <span style="font-family:monospace; font-size:14px; color:#c8a951;">${booking.booking_ref}</span>
+        </td>
+      </tr>
+    </table>
 
-      <!-- Details -->
-      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+    <!-- Main content -->
+    <div style="padding:16px 20px;">
+
+      <!-- Cliente -->
+      <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+        ${headerRow('Cliente / Client')}
         <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px; width:40%;">🗺️ Origem</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${booking.origin}</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333; width:30%;">Nome / Name / Nom</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111; width:35%;"><strong>${booking.customer_name || '—'}</strong></td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333; width:15%;">Email</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.customer_email || '—'}</td>
         </tr>
         <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px;">📍 Destino</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${booking.destination}</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Telefone / Phone</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.customer_phone || '—'}</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Passageiros / Passengers</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.passengers || '—'}</td>
         </tr>
         <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px;">📅 Data</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${booking.transfer_date} às ${booking.transfer_time}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px;">🚗 Veículo</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${vehicleLabel}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px;">👥 Passageiros</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${booking.passengers} passageiro(s), ${booking.luggage} mala(s)</td>
-        </tr>
-        ${booking.flight_number ? `
-        <tr>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#64748b; font-size:14px;">✈️ Voo</td>
-          <td style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:14px; font-weight:500;">${booking.flight_number}</td>
-        </tr>` : ''}
-        <tr>
-          <td style="padding:10px 0; color:#64748b; font-size:14px;">💳 Pagamento</td>
-          <td style="padding:10px 0; color:#1e293b; font-size:14px;">${paymentInfo}</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Bagagem / Luggage</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.luggage || 0}</td>
+          ${booking.flight_number ? `
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Nº Voo / Flight Nº</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.flight_number}</td>
+          ` : `<td colspan="2" style="border:1px solid #ccc;"></td>`}
         </tr>
       </table>
 
-      <!-- Price -->
-      <div style="background:#f8fafc; border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <span style="color:#475569; font-size:14px;">Valor total</span>
-        <span style="color:#0369a1; font-size:26px; font-weight:700;">€${Number(booking.price).toFixed(2)}</span>
-      </div>
+      <!-- Serviço -->
+      <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+        ${headerRow('Serviço / Service')}
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333; width:30%;">Recolha / Pickup</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.origin || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Entrega / Dropoff</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.destination || '—'}</td>
+        </tr>
+        ${booking.notes ? `
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Observações / Comments</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.notes}</td>
+        </tr>` : ''}
+      </table>
 
-      <!-- Notes -->
-      ${booking.notes ? `
-      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px; margin-bottom:24px;">
-        <p style="color:#92400e; font-size:13px; margin:0;"><strong>Notas:</strong> ${booking.notes}</p>
-      </div>` : ''}
+      <!-- Pagamento & Categoria -->
+      <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333; width:30%;">Proveniência / Provenance</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">WEBSITE</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Pagamento / Payment</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:13px; font-weight:bold; color:#1a3a5c;">${paymentAmount}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Método Pagamento / Payment Method</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;" colspan="3">${paymentMethod}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Categoria / Category</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">AIRPORT TRANSFER</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Grupo</td>
+          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111; text-transform:uppercase;">${vehicleLabel}</td>
+        </tr>
+      </table>
 
-      <!-- Contact -->
-      <div style="background:#f8fafc; border-radius:10px; padding:16px; text-align:center;">
-        <p style="color:#475569; font-size:13px; margin:0 0 8px; font-weight:600;">Precisa de ajuda?</p>
-        <p style="color:#64748b; font-size:13px; margin:0;">📞 +351 913 956 971 &nbsp;|&nbsp; 📧 info@transfers-algarvestar.com</p>
-        <p style="margin:6px 0 0;"><a href="https://wa.me/351913956971" style="color:#16a34a; font-size:13px; text-decoration:none;">💬 WhatsApp</a></p>
-      </div>
+      <!-- Recomendações -->
+      <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+        ${headerRow('Recomendações')}
+        <tr>
+          <td style="padding:10px 12px; border:1px solid #ccc; font-size:12px; color:#333; line-height:1.7;">
+            <ul style="margin:0; padding-left:18px;">
+              <li>When you land at Faro airport, please switch on your phone to receive messages or calls from the driver, who will be waiting for you in the arrivals hall, holding a sign or phone with your name on it. He will assist you with your luggage and guide you to the vehicle reserved for you outside the terminal.</li>
+              <li style="margin-top:8px;">If you are travelling with extra luggage (large suitcases, golf bags, etc.) please inform us when booking so that the vehicle is suitable.</li>
+              <li style="margin-top:8px;">If you have children under the age of 12 or under 1.35 metres tall, you must inform us so that suitable seating can be provided at no extra cost.</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+
     </div>
 
     <!-- Footer -->
-    <div style="background:#f8fafc; padding:16px 32px; text-align:center; border-top:1px solid #e2e8f0;">
-      <p style="color:#94a3b8; font-size:12px; margin:0;">© ${new Date().getFullYear()} Transfers Algarvestar. Algarve, Portugal.</p>
+    <hr style="border:none; border-top:1px solid #ccc; margin:0;" />
+    <div style="padding:10px 20px; text-align:center; font-size:11px; color:#555;">
+      <strong>Transfers AlgarveStar</strong> | NIF: 514346744 | RNAVT: 6855 | Tel: +351 913956971 | 
+      <a href="https://transfers-algarvestar.com" style="color:#1a3a5c;">https://transfers-algarvestar.com</a>
     </div>
+
   </div>
 </body>
 </html>
@@ -106,7 +173,7 @@ Deno.serve(async (req) => {
 
   await base44.integrations.Core.SendEmail({
     to: booking.customer_email,
-    subject: `✅ Reserva Confirmada — ${booking.booking_ref} | Transfers Algarvestar`,
+    subject: `Voucher ${booking.booking_ref} — Transfers AlgarveStar | ${booking.transfer_date} ${booking.transfer_time}`,
     body,
   });
 

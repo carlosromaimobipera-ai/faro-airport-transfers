@@ -5,35 +5,35 @@
 
 export const locations = [
   // Faro District - Airport
-  { id: "faro_airport", name: "Aeroporto de Faro (FAO)", coords: { lat: 37.0144, lng: -7.9659 }, district: "faro" },
+  { id: "faro_airport", name: "Aeroporto Internacional de Faro (FAO)", coords: { lat: 37.0144, lng: -7.9659 }, district: "faro" },
 
   // Faro District - Algarve Cities (faro_city excluded from faro_airport routes - see getDistance)
-  { id: "faro_city",        name: "Faro (Centro)",              coords: { lat: 37.0194, lng: -7.9322 }, district: "faro" },
-  { id: "albufeira",        name: "Albufeira",                  coords: { lat: 37.0882, lng: -8.2503 }, district: "faro" },
-  { id: "vilamoura",        name: "Vilamoura",                  coords: { lat: 37.0769, lng: -8.1137 }, district: "faro" },
-  { id: "quarteira",        name: "Quarteira",                  coords: { lat: 37.0686, lng: -8.1006 }, district: "faro" },
-  { id: "loule",            name: "Loulé",                      coords: { lat: 37.1389, lng: -8.0200 }, district: "faro" },
-  { id: "olhao",            name: "Olhão",                      coords: { lat: 37.0257, lng: -7.8411 }, district: "faro" },
-  { id: "tavira",           name: "Tavira",                     coords: { lat: 37.1275, lng: -7.6506 }, district: "faro" },
-  { id: "vrsa",             name: "Vila Real de Santo António", coords: { lat: 37.1947, lng: -7.4178 }, district: "faro" },
-  { id: "lagos",            name: "Lagos",                      coords: { lat: 37.1028, lng: -8.6731 }, district: "faro" },
-  { id: "portimao",         name: "Portimão",                   coords: { lat: 37.1386, lng: -8.5378 }, district: "faro" },
-  { id: "silves",           name: "Silves",                     coords: { lat: 37.1892, lng: -8.4392 }, district: "faro" },
-  { id: "lagoa",            name: "Lagoa",                      coords: { lat: 37.1350, lng: -8.4533 }, district: "faro" },
-  { id: "carvoeiro",        name: "Carvoeiro",                  coords: { lat: 37.0944, lng: -8.4722 }, district: "faro" },
-  { id: "sagres",           name: "Sagres",                     coords: { lat: 37.0089, lng: -8.9403 }, district: "faro" },
-  { id: "monte_gordo",      name: "Monte Gordo",                coords: { lat: 37.1831, lng: -7.4497 }, district: "faro" },
-  { id: "cabanas_tavira",   name: "Cabanas de Tavira",          coords: { lat: 37.1300, lng: -7.6000 }, district: "faro" },
+  { id: "faro_city",        name: "Faro - Centro Histórico",    coords: { lat: 37.0194, lng: -7.9322 }, district: "faro" },
+  { id: "albufeira",        name: "Albufeira - Praia da Oura",  coords: { lat: 37.0882, lng: -8.2503 }, district: "faro" },
+  { id: "vilamoura",        name: "Vilamoura - Marina Resort",  coords: { lat: 37.0769, lng: -8.1137 }, district: "faro" },
+  { id: "quarteira",        name: "Quarteira - Praia e Marina", coords: { lat: 37.0686, lng: -8.1006 }, district: "faro" },
+  { id: "loule",            name: "Loulé - Centro da Cidade",   coords: { lat: 37.1389, lng: -8.0200 }, district: "faro" },
+  { id: "olhao",            name: "Olhão - Waterfront & Marina",coords: { lat: 37.0257, lng: -7.8411 }, district: "faro" },
+  { id: "tavira",           name: "Tavira - Castelo Histórico", coords: { lat: 37.1275, lng: -7.6506 }, district: "faro" },
+  { id: "vrsa",             name: "Vila Real de Santo António",  coords: { lat: 37.1947, lng: -7.4178 }, district: "faro" },
+  { id: "lagos",            name: "Lagos - Praia da Dona Ana",  coords: { lat: 37.1028, lng: -8.6731 }, district: "faro" },
+  { id: "portimao",         name: "Portimão - Centro e Praia",  coords: { lat: 37.1386, lng: -8.5378 }, district: "faro" },
+  { id: "silves",           name: "Silves - Castelo Medieval",  coords: { lat: 37.1892, lng: -8.4392 }, district: "faro" },
+  { id: "lagoa",            name: "Lagoa - Algarve Wine Region",coords: { lat: 37.1350, lng: -8.4533 }, district: "faro" },
+  { id: "carvoeiro",        name: "Carvoeiro - Praia Dourada",  coords: { lat: 37.0944, lng: -8.4722 }, district: "faro" },
+  { id: "sagres",           name: "Sagres - Ponta da Sagres",   coords: { lat: 37.0089, lng: -8.9403 }, district: "faro" },
+  { id: "monte_gordo",      name: "Monte Gordo - Estância Balnear", coords: { lat: 37.1831, lng: -7.4497 }, district: "faro" },
+  { id: "cabanas_tavira",   name: "Cabanas de Tavira - Praia",  coords: { lat: 37.1300, lng: -7.6000 }, district: "faro" },
 
   // Lisboa District
-  { id: "lisboa",           name: "Lisboa",                     coords: { lat: 38.7223, lng: -9.1393 }, district: "lisboa" },
-  { id: "sintra",           name: "Sintra",                     coords: { lat: 38.7979, lng: -9.3917 }, district: "lisboa" },
-  { id: "cascais",          name: "Cascais",                    coords: { lat: 38.6979, lng: -9.4213 }, district: "lisboa" },
-  { id: "setubal",          name: "Setúbal",                    coords: { lat: 38.5244, lng: -8.8882 }, district: "lisboa" },
+  { id: "lisboa",           name: "Lisboa - Centro (Marquês de Pombal)", coords: { lat: 38.7223, lng: -9.1393 }, district: "lisboa" },
+  { id: "sintra",           name: "Sintra - Palácio da Pena",   coords: { lat: 38.7979, lng: -9.3917 }, district: "lisboa" },
+  { id: "cascais",          name: "Cascais - Estoril Beach",    coords: { lat: 38.6979, lng: -9.4213 }, district: "lisboa" },
+  { id: "setubal",          name: "Setúbal - Baía de Setúbal",  coords: { lat: 38.5244, lng: -8.8882 }, district: "lisboa" },
 
   // Spain
-  { id: "sevilha",          name: "Sevilha (Espanha)",          coords: { lat: 37.3891, lng: -5.9845 }, district: "spain" },
-  { id: "huelva",           name: "Huelva (Espanha)",           coords: { lat: 37.2601, lng: -6.9498 }, district: "spain" },
+  { id: "sevilha",          name: "Sevilha (Espanha) - Centro", coords: { lat: 37.3891, lng: -5.9845 }, district: "spain" },
+  { id: "huelva",           name: "Huelva (Espanha) - Centro",  coords: { lat: 37.2601, lng: -6.9498 }, district: "spain" },
 ];
 
 // Returns allowed destination IDs given a pickup ID

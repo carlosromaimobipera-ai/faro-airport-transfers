@@ -129,6 +129,12 @@ export const translations = {
     footer_contact: 'Contacto',
     footer_desc: 'Transfers Algarvestar — serviço premium de transfers privados no Algarve. Do aeroporto ao seu destino com conforto e segurança.',
     footer_rights: 'Todos os direitos reservados.',
+    common_location_airport: 'Aeroporto de Faro',
+    common_location_center: 'Centro Faro',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 
   en: {
@@ -225,6 +231,12 @@ export const translations = {
     footer_contact: 'Contact',
     footer_desc: 'Transfers Algarvestar — premium private transfer service in the Algarve. From the airport to your destination in comfort and safety.',
     footer_rights: 'All rights reserved.',
+    common_location_airport: 'Faro Airport',
+    common_location_center: 'Faro Center',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 
   es: {
@@ -321,6 +333,12 @@ export const translations = {
     footer_contact: 'Contacto',
     footer_desc: 'Transfers Algarvestar — servicio premium de traslados privados en el Algarve. Desde el aeropuerto hasta tu destino con comodidad y seguridad.',
     footer_rights: 'Todos los derechos reservados.',
+    common_location_airport: 'Aeropuerto de Faro',
+    common_location_center: 'Centro Faro',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 
   fr: {
@@ -417,6 +435,12 @@ export const translations = {
     footer_contact: 'Contact',
     footer_desc: 'Transfers Algarvestar — service premium de transferts privés en Algarve. De l\'aéroport à votre destination en confort et sécurité.',
     footer_rights: 'Tous droits réservés.',
+    common_location_airport: 'Aéroport de Faro',
+    common_location_center: 'Centre Faro',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 
   de: {
@@ -513,6 +537,12 @@ export const translations = {
     footer_contact: 'Kontakt',
     footer_desc: 'Transfers Algarvestar — Premium-Privattransferservice an der Algarve. Vom Flughafen zu Ihrem Ziel in Komfort und Sicherheit.',
     footer_rights: 'Alle Rechte vorbehalten.',
+    common_location_airport: 'Flughafen Faro',
+    common_location_center: 'Faro-Zentrum',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 
   nl: {
@@ -609,6 +639,12 @@ export const translations = {
     footer_contact: 'Contact',
     footer_desc: 'Transfers Algarvestar — premium privétransferservice in de Algarve. Van de luchthaven naar uw bestemming in comfort en veiligheid.',
     footer_rights: 'Alle rechten voorbehouden.',
+    common_location_airport: 'Faro Luchthaven',
+    common_location_center: 'Faro Centrum',
+    common_location_vilamoura: 'Vilamoura',
+    common_location_albufeira: 'Albufeira',
+    common_location_armacao: 'Armação de Pêra',
+    common_location_carmo: 'Carmo (Faro)',
   },
 };
 

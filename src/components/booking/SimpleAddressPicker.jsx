@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { MapPin, CheckCircle2 } from 'lucide-react';
-
-const COMMON_LOCATIONS = [
-  { name: 'Aeroporto de Faro', coords: { lat: 37.0144, lng: -7.9699 } },
-  { name: 'Centro Faro', coords: { lat: 37.0194, lng: -7.9322 } },
-  { name: 'Vilamoura', coords: { lat: 37.0662, lng: -8.1212 } },
-  { name: 'Albufeira', coords: { lat: 37.0901, lng: -8.2506 } },
-  { name: 'Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 } },
-  { name: 'Carmo (Faro)', coords: { lat: 37.0139, lng: -7.9275 } },
-];
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 export default function SimpleAddressPicker({ label, value, onChange, placeholder = "Procurar morada ou selecionar..." }) {
+  const { lang } = useLang();
+
+  const COMMON_LOCATIONS = [
+    { name: t(lang, 'common_location_airport'), coords: { lat: 37.0144, lng: -7.9699 } },
+    { name: t(lang, 'common_location_center'), coords: { lat: 37.0194, lng: -7.9322 } },
+    { name: t(lang, 'common_location_vilamoura'), coords: { lat: 37.0662, lng: -8.1212 } },
+    { name: t(lang, 'common_location_albufeira'), coords: { lat: 37.0901, lng: -8.2506 } },
+    { name: t(lang, 'common_location_armacao'), coords: { lat: 37.0845, lng: -8.3642 } },
+    { name: t(lang, 'common_location_carmo'), coords: { lat: 37.0139, lng: -7.9275 } },
+  ];
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [showSuggestions, setShowSuggestions] = useState(false);
 

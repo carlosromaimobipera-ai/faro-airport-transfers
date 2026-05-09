@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MapPin, Search, Loader2, CheckCircle2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 function loadGoogleMaps(apiKey) {
   if (window.google?.maps) return Promise.resolve();
@@ -16,7 +17,6 @@ function loadGoogleMaps(apiKey) {
   return window._googleMapsLoading;
 }
 
-const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 const DEFAULT_CENTER = { lat: 37.0194, lng: -7.9322 }; // Faro, PT
 
 export default function AddressPickerWithMap({ label, value, onChange, placeholder = "Procurar morada, hotel ou clicar no mapa..." }) {
@@ -25,16 +25,21 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
   const autocompleteRef = useRef(null);
+  const [apiKey, setApiKey] = useState(null);
   const [ready, setReady] = useState(false);
   const [searching, setSearching] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [inputValue, setInputValue] = useState(value?.address || '');
   const mapInitializedRef = useRef(false);
 
-  // Load Google Maps
+  // Load API key and Google Maps
   useEffect(() => {
-    if (!API_KEY) return;
-    loadGoogleMaps(API_KEY).then(() => setReady(true));
+    base44.functions.invoke('getGoogleApiKey', {}).then(res => {
+      if (res.data?.apiKey) {
+        setApiKey(res.data.apiKey);
+        loadGoogleMaps(res.data.apiKey).then(() => setReady(true));
+      }
+    }).catch(err => console.log('API key fetch failed'));
   }, []);
 
   // Initialize autocomplete and map
@@ -134,7 +139,7 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
     });
   };
 
-  if (!API_KEY) {
+  if (!apiKey) {
     return (
       <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
@@ -142,7 +147,7 @@ export default function AddressPickerWithMap({ label, value, onChange, placehold
           {label}
         </Label>
         <div className="h-12 px-4 flex items-center border border-amber-300 bg-amber-50 rounded-md text-xs text-amber-700">
-          Configure VITE_GOOGLE_PLACES_API_KEY para ativar mapa
+          A carregar... {ready ? 'Mapa ativado' : 'Configure VITE_GOOGLE_PLACES_API_KEY para ativar mapa'}
         </div>
       </div>
     );

@@ -65,20 +65,6 @@ export const BOOKING_EXTRAS = [
     icon: 'Baby',
   },
   {
-    id: 'extra_stop',
-    label: 'Paragem extra',
-    description: 'Uma paragem adicional no percurso',
-    price: 0,
-    icon: 'MapPin',
-  },
-  {
-    id: 'extra_luggage',
-    label: 'Bagagem extra',
-    description: 'Transporte de bagagem adicional ou oversized',
-    price: 0,
-    icon: 'Luggage',
-  },
-  {
     id: 'meet_greet',
     label: 'Meet & Greet',
     description: 'Motorista à chegada com placa com o seu nome',

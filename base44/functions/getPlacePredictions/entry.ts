@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
     const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
     url.searchParams.set('input', input);
     url.searchParams.set('key', apiKey);
-    url.searchParams.set('components', 'country:pt|country:es');
     url.searchParams.set('language', 'pt');
 
     const response = await fetch(url.toString());

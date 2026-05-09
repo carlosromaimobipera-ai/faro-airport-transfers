@@ -122,7 +122,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         )}
 
         {/* Sugestões */}
-        {showSuggestions && inputValue.trim().length > 0 && (
+        {showSuggestions && inputValue?.trim?.().length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
             {/* Nominatim results */}
             {suggestions.map((loc, idx) => (

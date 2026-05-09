@@ -108,6 +108,7 @@
       "enum": [
         "pending",
         "confirmed",
+        "in_progress",
         "completed",
         "cancelled"
       ],
@@ -153,13 +154,27 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "driver"
+          }
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "driver"
+          }
+        }
+      ]
     },
     "delete": {
       "user_condition": {

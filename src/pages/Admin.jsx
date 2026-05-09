@@ -18,10 +18,11 @@ import ReviewsStats from '@/components/admin/ReviewsStats';
 import PriceManager from '@/components/admin/PriceManager';
 
 const statusConfig = {
-  pending:   { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-  confirmed: { label: "Confirmada", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  completed: { label: "Concluída",  color: "bg-green-100 text-green-800 border-green-200" },
-  cancelled: { label: "Cancelada",  color: "bg-red-100 text-red-800 border-red-200" },
+  pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  confirmed:   { label: "Confirmada", color: "bg-blue-100 text-blue-800 border-blue-200" },
+  in_progress: { label: "Em curso",   color: "bg-orange-100 text-orange-800 border-orange-200" },
+  completed:   { label: "Concluída",  color: "bg-green-100 text-green-800 border-green-200" },
+  cancelled:   { label: "Cancelada",  color: "bg-red-100 text-red-800 border-red-200" },
 };
 
 const paymentConfig = {
@@ -205,6 +206,7 @@ export default function Admin() {
                       <SelectItem value="all">Todos os estados</SelectItem>
                       <SelectItem value="pending">Pendente</SelectItem>
                       <SelectItem value="confirmed">Confirmada</SelectItem>
+                      <SelectItem value="in_progress">Em curso</SelectItem>
                       <SelectItem value="completed">Concluída</SelectItem>
                       <SelectItem value="cancelled">Cancelada</SelectItem>
                     </SelectContent>
@@ -330,6 +332,7 @@ export default function Admin() {
                             <SelectContent>
                               <SelectItem value="pending">Pendente</SelectItem>
                               <SelectItem value="confirmed">Confirmada</SelectItem>
+                              <SelectItem value="in_progress">Em curso</SelectItem>
                               <SelectItem value="completed">Concluída</SelectItem>
                               <SelectItem value="cancelled">Cancelada</SelectItem>
                             </SelectContent>

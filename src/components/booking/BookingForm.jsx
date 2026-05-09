@@ -388,9 +388,9 @@ export default function BookingForm() {
                     <span className="text-muted-foreground">{t(lang, 'route')}:</span>
                     <span className="font-medium">{form.origin_place?.address} → {form.destination_place?.address}</span>
                     <span className="text-muted-foreground">{t(lang, 'distance')}:</span>
-                    <span className="font-medium">{distance} km</span>
+                    <span className="font-medium">{distance ? `${distance} km` : '—'}</span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>
-                    <span className="font-medium">{t(lang, vehicleTypes.find(v => v.id === form.vehicle_type)?.nameKey)}</span>
+                    <span className="font-medium">{form.vehicle_type && t(lang, vehicleTypes.find(v => v.id === form.vehicle_type)?.nameKey || '')}</span>
                     <span className="text-muted-foreground">{t(lang, 'date')}:</span>
                     <span className="font-medium">{form.transfer_date} {form.transfer_time}</span>
                     <span className="text-muted-foreground">{t(lang, 'passengers')}:</span>

@@ -6,11 +6,11 @@ import { t } from '@/lib/i18n';
 import { base44 } from '@/api/base44Client';
 
 function loadGoogleMaps(apiKey) {
-  if (window.google?.maps?.places) return Promise.resolve();
+  if (window.google?.maps) return Promise.resolve();
   if (window._googleMapsLoading) return window._googleMapsLoading;
   window._googleMapsLoading = new Promise((resolve) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geocoding`;
     script.async = true;
     script.onload = resolve;
     document.head.appendChild(script);
@@ -72,7 +72,6 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       const response = await autocompleteRef.current.getPlacePredictions({
         input: text,
         componentRestrictions: { country: ['pt', 'es'] },
-        types: ['geocode', 'establishment'],
       });
 
       setSuggestions(response.predictions || []);
@@ -91,26 +90,22 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
 
     try {
-      // Fetch place details to get coordinates
-      const placesService = new window.google.maps.places.PlacesService(document.createElement('div'));
-      placesService.getDetails(
-        { placeId: prediction.place_id, fields: ['geometry', 'formatted_address', 'name'] },
-        (place, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
-            onChange({
-              address: place.formatted_address || prediction.description,
-              coords: {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng(),
-              },
-            });
-          } else {
-            // Fallback: use description without coords (indicates unverified location)
-            onChange({ address: prediction.description, coords: null });
-          }
-          setLoading(false);
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+        if (status === window.google.maps.GeocoderStatus.OK && results?.[0]) {
+          const result = results[0];
+          onChange({
+            address: result.formatted_address,
+            coords: {
+              lat: result.geometry.location.lat(),
+              lng: result.geometry.location.lng(),
+            },
+          });
+        } else {
+          onChange({ address: prediction.description, coords: null });
         }
-      );
+        setLoading(false);
+      });
     } catch (err) {
       console.error('Erro ao obter detalhes do local:', err);
       setLoading(false);

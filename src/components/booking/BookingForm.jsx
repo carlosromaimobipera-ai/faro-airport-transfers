@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import LocationSelector from './LocationSelector';
-import PlacesAutocomplete from './PlacesAutocomplete';
+import AddressPickerWithMap from './AddressPickerWithMap';
 import VehicleCard from './VehicleCard';
 import RouteMap from './RouteMap';
 import { locations, vehicleTypes, getDistance, calculatePrice, generateBookingRef, getAllowedDestinations, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal } from '@/lib/transferData';
@@ -193,30 +193,28 @@ export default function BookingForm() {
                   <p className="text-muted-foreground text-sm">{t(lang, 'step1_sub')}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {HAS_PLACES_KEY ? (
-                    <>
-                      <PlacesAutocomplete
-                        label={t(lang, 'origin')}
-                        value={form.origin_place}
-                        onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, origin: 'custom', destination: '', destination_place: null }))}
-                        icon={CircleDot}
-                        placeholder="Morada de origem..."
-                      />
-                      <PlacesAutocomplete
-                        label={t(lang, 'destination')}
-                        value={form.destination_place}
-                        onChange={(place) => setForm(prev => ({ ...prev, destination_place: place, destination: 'custom' }))}
-                        icon={MapPin}
-                        placeholder="Morada de destino..."
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
-                      <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
-                    </>
-                  )}
-                </div>
+                   {HAS_PLACES_KEY ? (
+                     <>
+                       <AddressPickerWithMap
+                         label={t(lang, 'origin')}
+                         value={form.origin_place}
+                         onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, origin: 'custom', destination: '', destination_place: null }))}
+                         placeholder="Procurar morada, hotel ou clicar no mapa..."
+                       />
+                       <AddressPickerWithMap
+                         label={t(lang, 'destination')}
+                         value={form.destination_place}
+                         onChange={(place) => setForm(prev => ({ ...prev, destination_place: place, destination: 'custom' }))}
+                         placeholder="Procurar morada, hotel ou clicar no mapa..."
+                       />
+                     </>
+                   ) : (
+                     <>
+                       <LocationSelector label={t(lang, 'origin')} value={form.origin} onChange={(v) => updateForm('origin', v)} icon={CircleDot} excludeId={form.destination} />
+                       <LocationSelector label={t(lang, 'destination')} value={form.destination} onChange={(v) => updateForm('destination', v)} icon={MapPin} excludeId={form.origin} allowedIds={allowedDestinations} />
+                     </>
+                   )}
+                 </div>
                 {(form.origin || form.destination) && (
                   <RouteMap originId={form.origin} destinationId={form.destination} />
                 )}

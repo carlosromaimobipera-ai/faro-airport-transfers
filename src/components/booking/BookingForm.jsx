@@ -249,7 +249,7 @@ export default function BookingForm() {
                     <span>Rota não permitida. Apenas Faro ↔ Lisboa ou Faro ↔ Sevilha.</span>
                   </div>
                 )}
-                {distance && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <>
                     <RouteInfoBadge 
                       origin={form.origin_place?.address}

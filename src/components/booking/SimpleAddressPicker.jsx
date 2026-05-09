@@ -70,7 +70,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
       try {
+        console.log('Buscando:', inputValue);
         const res = await base44.functions.invoke('getPlacePredictions', { input: inputValue });
+        console.log('Resultados:', res.data?.suggestions);
         setSuggestions(res.data?.suggestions || []);
       } catch (err) {
         console.error('Erro ao buscar moradas:', err);
@@ -78,7 +80,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       } finally {
         setLoading(false);
       }
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(debounceTimer.current);
   }, [inputValue]);
@@ -125,10 +127,10 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         {/* Sugestões */}
         {showSuggestions && inputValue?.trim?.().length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-            {/* Google Places API results */}
+            {/* Google Places API results (prioritário) */}
             {suggestions.map((loc, idx) => (
               <button
-                key={idx}
+                key={`api-${idx}`}
                 onClick={() => handleSelect(loc)}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border last:border-0 flex items-center gap-2"
               >
@@ -137,12 +139,12 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
               </button>
             ))}
 
-            {/* Fallback: localizações pré-definidas (mesmo se Places API retornar resultados) */}
+            {/* Localizações pré-definidas (sempre mostrar como fallback) */}
             {filteredCommon.length > 0 && (
               <>
                 {filteredCommon.map((location) => (
                   <button
-                    key={location.name}
+                    key={`common-${location.name}`}
                     onClick={() => handleSelect(location)}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border last:border-0 flex items-center gap-2"
                   >
@@ -154,7 +156,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             )}
 
             {/* Mensagem se não houver resultados */}
-            {suggestions.length === 0 && filteredCommon.length === 0 && (
+            {suggestions.length === 0 && filteredCommon.length === 0 && !loading && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
                 Nenhuma localização encontrada
               </div>

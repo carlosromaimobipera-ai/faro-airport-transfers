@@ -58,7 +58,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [loading, setLoading] = useState(false);
   const [apiReady, setApiReady] = useState(false);
 
-  // Fetch suggestions via Nominatim quando user digita
+  // Fetch suggestions via Google Places API
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -70,7 +70,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
       try {
-        const res = await base44.functions.invoke('geocodeAddress', { address: inputValue });
+        const res = await base44.functions.invoke('getPlacePredictions', { input: inputValue });
         setSuggestions(res.data?.suggestions || []);
       } catch (err) {
         console.error('Erro ao buscar moradas:', err);

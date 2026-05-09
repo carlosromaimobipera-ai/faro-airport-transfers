@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
@@ -20,6 +20,7 @@ import PriceManager from '@/components/admin/PriceManager';
 import FinancialDashboard from '@/components/admin/FinancialDashboard';
 import DriverLocationMap from '@/components/admin/DriverLocationMap';
 import BookingTableMobile from '@/components/admin/BookingTableMobile';
+import UsersManager from '@/components/admin/UsersManager';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -204,6 +205,9 @@ export default function Admin() {
             <TabsTrigger value="bookings">Reservas</TabsTrigger>
             <TabsTrigger value="drivers" className="gap-1.5">
               <UserCheck className="w-4 h-4" /> Motoristas
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-1.5">
+              <Users className="w-4 h-4" /> Utilizadores
             </TabsTrigger>
             <TabsTrigger value="locations" className="gap-1.5">
               <Navigation className="w-4 h-4" /> Localização
@@ -415,6 +419,11 @@ export default function Admin() {
           <TabsContent value="drivers" className="mt-4 space-y-4">
             <DriversManager />
             <DriverUnavailabilityManager />
+          </TabsContent>
+
+          {/* ── Utilizadores Tab ── */}
+          <TabsContent value="users" className="mt-4">
+            <UsersManager />
           </TabsContent>
         </Tabs>
 

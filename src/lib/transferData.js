@@ -292,7 +292,7 @@ export const vehicleTypes = [
     luggage: 3,
     pricePerKm: 1.00,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/a2d672c47_IMG-20210512-WA0010.png",
-    featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_baby"],
+    featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
   {
     id: "minivan",
@@ -301,7 +301,7 @@ export const vehicleTypes = [
     luggage: 5,
     pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/6db18abaf_VK_Caddy_Maxi.jpg",
-    featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_luggage", "feat_baby"],
+    featureKeys: ["feat_ac", "feat_wifi", "feat_luggage", "feat_baby"],
   },
   {
     id: "minibus",
@@ -310,6 +310,6 @@ export const vehicleTypes = [
     luggage: 8,
     pricePerKm: 1.40,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/5e228dd60_Mercedes_vito.jpg",
-    featureKeys: ["feat_ac", "feat_wifi", "feat_water", "feat_space", "feat_group", "feat_baby"],
+    featureKeys: ["feat_ac", "feat_wifi", "feat_space", "feat_group", "feat_baby"],
   },
 ];

@@ -50,17 +50,12 @@ export default function VehicleCard({ vehicle, selected, onSelect, price }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            €{vehicle.pricePerKm.toFixed(2)}{t(lang, 'per_km')}
-          </span>
-          {price > 0 && (
-            <div className="text-right">
-              <p className="text-2xl font-bold text-primary">€{price.toFixed(0)}</p>
-              <p className="text-xs text-muted-foreground">{t(lang, 'total_price')}</p>
-            </div>
-          )}
-        </div>
+        {price > 0 && (
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">€{price.toFixed(0)}</p>
+            <p className="text-xs text-muted-foreground">{t(lang, 'total_price')}</p>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-1.5">
           {vehicle.featureKeys.slice(0, 3).map((fk) => (

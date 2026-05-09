@@ -26,15 +26,30 @@ function loadGoogleMaps(apiKey) {
 export default function SimpleAddressPicker({ label, value, onChange, placeholder = "Procurar morada ou selecionar..." }) {
   const { lang } = useLang();
   const debounceTimer = useRef(null);
-  const geocoderRef = useRef(null);
 
   const COMMON_LOCATIONS = [
-    { name: t(lang, 'common_location_airport'), coords: { lat: 37.0144, lng: -7.9699 } },
-    { name: t(lang, 'common_location_center'), coords: { lat: 37.0194, lng: -7.9322 } },
-    { name: t(lang, 'common_location_vilamoura'), coords: { lat: 37.0662, lng: -8.1212 } },
-    { name: t(lang, 'common_location_albufeira'), coords: { lat: 37.0901, lng: -8.2506 } },
-    { name: t(lang, 'common_location_armacao'), coords: { lat: 37.0845, lng: -8.3642 } },
-    { name: t(lang, 'common_location_carmo'), coords: { lat: 37.0139, lng: -7.9275 } },
+    // Algarve
+    { name: 'Aeroporto de Faro (FAO)', coords: { lat: 37.0144, lng: -7.9699 } },
+    { name: 'Centro de Faro', coords: { lat: 37.0194, lng: -7.9322 } },
+    { name: 'Vilamoura', coords: { lat: 37.0662, lng: -8.1212 } },
+    { name: 'Albufeira', coords: { lat: 37.0901, lng: -8.2506 } },
+    { name: 'Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 } },
+    { name: 'Carmo (Faro)', coords: { lat: 37.0139, lng: -7.9275 } },
+    { name: 'Lagos', coords: { lat: 37.1063, lng: -8.6705 } },
+    { name: 'Portimão', coords: { lat: 37.1412, lng: -8.5292 } },
+    { name: 'Silves', coords: { lat: 37.2425, lng: -8.4384 } },
+    { name: 'Tavira', coords: { lat: 36.9625, lng: -7.6533 } },
+    // Lisboa
+    { name: 'Aeroporto de Lisboa (Humberto Delgado)', coords: { lat: 38.6747, lng: -9.1283 } },
+    { name: 'Centro de Lisboa', coords: { lat: 38.7223, lng: -9.1393 } },
+    { name: 'Chiado, Lisboa', coords: { lat: 38.7111, lng: -9.1415 } },
+    { name: 'Belém, Lisboa', coords: { lat: 38.7175, lng: -9.2033 } },
+    { name: 'Parque das Nações, Lisboa', coords: { lat: 38.7592, lng: -9.0331 } },
+    // Sevilha
+    { name: 'Aeroporto de Sevilha (SVQ)', coords: { lat: 37.4174, lng: -5.8892 } },
+    { name: 'Centro de Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
+    { name: 'Catedral de Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
+    { name: 'Plaza de España, Sevilha', coords: { lat: 37.3760, lng: -5.9883 } },
   ];
 
   const [inputValue, setInputValue] = useState(value?.address || '');
@@ -43,25 +58,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [loading, setLoading] = useState(false);
   const [apiReady, setApiReady] = useState(false);
 
-  // Load Google Maps Geocoder
-  useEffect(() => {
-    base44.functions.invoke('getGoogleApiKey', {})
-      .then(res => {
-        if (res.data?.apiKey) {
-          loadGoogleMaps(res.data.apiKey)
-            .then(() => {
-              if (window.google?.maps?.Geocoder) {
-                geocoderRef.current = new window.google.maps.Geocoder();
-                setApiReady(true);
-              }
-            })
-            .catch(err => console.error('Erro ao carregar Google Maps:', err));
-        }
-      })
-      .catch(err => console.error('Erro ao obter chave API:', err));
-  }, []);
-
-  // Fetch suggestions via backend quando user digita
+  // Fetch suggestions via Nominatim quando user digita
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -73,8 +70,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
       try {
-        const res = await base44.functions.invoke('getPlacePredictions', { input: inputValue });
-        setSuggestions(res.data?.predictions || []);
+        const res = await base44.functions.invoke('geocodeAddress', { address: inputValue });
+        setSuggestions(res.data?.suggestions || []);
       } catch (err) {
         console.error('Erro ao buscar moradas:', err);
         setSuggestions([]);
@@ -86,27 +83,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     return () => clearTimeout(debounceTimer.current);
   }, [inputValue]);
 
-  const handleSelectPrediction = (prediction) => {
-    setInputValue(prediction.description);
-    setShowSuggestions(false);
-    setLoading(true);
 
-    if (geocoderRef.current) {
-      geocoderRef.current.geocode({ placeId: prediction.place_id }, (results, status) => {
-        if (status === 'OK' && results?.[0]) {
-          const location = results[0];
-          onChange({
-            address: location.formatted_address,
-            coords: {
-              lat: location.geometry.location.lat(),
-              lng: location.geometry.location.lng(),
-            },
-          });
-        }
-        setLoading(false);
-      });
-    }
-  };
 
   const handleSelect = (location) => {
     setInputValue(location.name);
@@ -147,15 +124,15 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         {/* Sugestões */}
         {showSuggestions && inputValue.trim().length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-            {/* Google Places predictions */}
-            {suggestions.map((pred, idx) => (
+            {/* Nominatim results */}
+            {suggestions.map((loc, idx) => (
               <button
                 key={idx}
-                onClick={() => handleSelectPrediction(pred)}
+                onClick={() => handleSelect(loc)}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border last:border-0 flex items-center gap-2"
               >
                 <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <span className="truncate">{pred.description}</span>
+                <span className="truncate">{loc.address}</span>
               </button>
             ))}
 

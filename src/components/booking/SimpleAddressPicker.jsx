@@ -6,15 +6,15 @@ import { t } from '@/lib/i18n';
 import { base44 } from '@/api/base44Client';
 
 function loadGoogleMaps(apiKey) {
-  if (window.google?.maps?.places?.getPlacePredictions) return Promise.resolve();
+  if (window.google?.maps?.Geocoder) return Promise.resolve();
   if (window._googleMapsLoading) return window._googleMapsLoading;
   
   window._googleMapsLoading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
     script.async = true;
     script.onload = () => {
-      if (window.google?.maps) resolve();
+      if (window.google?.maps?.Geocoder) resolve();
       else reject(new Error('Google Maps não carregou corretamente'));
     };
     script.onerror = () => reject(new Error('Erro ao carregar Google Maps'));
@@ -43,7 +43,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [loading, setLoading] = useState(false);
   const [apiReady, setApiReady] = useState(false);
 
-  // Load Google Maps
+  // Load Google Maps Geocoder
   useEffect(() => {
     base44.functions.invoke('getGoogleApiKey', {})
       .then(res => {
@@ -61,11 +61,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       .catch(err => console.error('Erro ao obter chave API:', err));
   }, []);
 
-  // Fetch suggestions via Google Places API quando user digita
+  // Fetch suggestions via backend quando user digita
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    if (!inputValue.trim() || !apiReady) {
+    if (!inputValue.trim()) {
       setSuggestions([]);
       return;
     }
@@ -73,16 +73,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
       try {
-        const response = await window.google.maps.places.getPlacePredictions({
-          input: inputValue,
-          componentRestrictions: { country: ['pt', 'es'] },
-        });
-
-        if (response.predictions?.length > 0) {
-          setSuggestions(response.predictions);
-        } else {
-          setSuggestions([]);
-        }
+        const res = await base44.functions.invoke('getPlacePredictions', { input: inputValue });
+        setSuggestions(res.data?.predictions || []);
       } catch (err) {
         console.error('Erro ao buscar moradas:', err);
         setSuggestions([]);
@@ -92,7 +84,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     }, 500);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [inputValue, apiReady]);
+  }, [inputValue]);
 
   const handleSelectPrediction = (prediction) => {
     setInputValue(prediction.description);

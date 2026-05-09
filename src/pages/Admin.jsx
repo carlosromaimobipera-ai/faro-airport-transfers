@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
@@ -143,6 +143,17 @@ export default function Admin() {
   };
   const hasFilters = filterStatus !== 'all' || filterPayment !== 'all' || filterDateFrom || filterDateTo || search;
 
+  const exportCSV = async () => {
+    const res = await base44.functions.invoke('exportBookingsCSV', {});
+    const blob = new Blob([res.data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reservas-${format(new Date(), 'yyyy-MM-dd-HHmmss')}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (authLoading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -251,6 +262,9 @@ export default function Admin() {
                     <span className="text-muted-foreground text-sm">→</span>
                     <Input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-9 w-36" />
                   </div>
+                  <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 h-9">
+                    <Download className="w-4 h-4" /> Exportar CSV
+                  </Button>
                   {hasFilters && (
                     <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-muted-foreground h-9">
                       <FilterX className="w-4 h-4" /> Limpar

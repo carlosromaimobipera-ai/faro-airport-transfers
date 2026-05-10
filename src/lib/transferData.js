@@ -167,15 +167,15 @@ export function generateBookingRef() {
 export const BOOKING_EXTRAS = [
   {
     id: 'baby_seat',
-    label: 'Cadeira de bebé',
-    description: 'Cadeira homologada para crianças até 18 kg',
+    labelKey: 'extra_baby_seat',
+    descriptionKey: 'extra_baby_seat_desc',
     price: 0,
     icon: 'Baby',
   },
   {
     id: 'meet_greet',
-    label: 'Meet & Greet',
-    description: 'Motorista à chegada com placa com o seu nome',
+    labelKey: 'extra_meet_greet',
+    descriptionKey: 'extra_meet_greet_desc',
     price: 0,
     icon: 'ShoppingBag',
   },

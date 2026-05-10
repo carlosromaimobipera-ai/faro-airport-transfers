@@ -195,6 +195,10 @@ export const translations = {
     trip_type_label: 'Tipo de viagem',
     return_date: 'Data de regresso',
     return_time: 'Hora de regresso',
+    extra_baby_seat: 'Cadeira de bebé',
+    extra_baby_seat_desc: 'Cadeira homologada para crianças até 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Motorista à chegada com placa com o seu nome',
   },
 
   en: {
@@ -357,6 +361,10 @@ export const translations = {
     trip_type_label: 'Trip type',
     return_date: 'Return date',
     return_time: 'Return time',
+    extra_baby_seat: 'Baby seat',
+    extra_baby_seat_desc: 'Approved seat for children up to 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Driver waiting with a name sign on arrival',
   },
 
   es: {
@@ -519,6 +527,10 @@ export const translations = {
     trip_type_label: 'Tipo de viaje',
     return_date: 'Fecha de regreso',
     return_time: 'Hora de regreso',
+    extra_baby_seat: 'Silla de bebé',
+    extra_baby_seat_desc: 'Silla homologada para niños hasta 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Conductor esperando con cartel con su nombre',
   },
 
   fr: {
@@ -681,6 +693,10 @@ export const translations = {
     trip_type_label: 'Type de trajet',
     return_date: 'Date de retour',
     return_time: 'Heure de retour',
+    extra_baby_seat: 'Siège bébé',
+    extra_baby_seat_desc: 'Siège homologué pour enfants jusqu\'à 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Chauffeur à l\'arrivée avec panneau à votre nom',
   },
 
   de: {
@@ -843,6 +859,10 @@ export const translations = {
     trip_type_label: 'Reisetyp',
     return_date: 'Rückfahrtdatum',
     return_time: 'Rückfahrtzeit',
+    extra_baby_seat: 'Kindersitz',
+    extra_baby_seat_desc: 'Zugelassener Sitz für Kinder bis 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Fahrer wartet mit Namensschild bei Ankunft',
   },
 
   nl: {
@@ -1005,6 +1025,10 @@ export const translations = {
     trip_type_label: 'Reistype',
     return_date: 'Retourdatum',
     return_time: 'Retourtijd',
+    extra_baby_seat: 'Kinderzitje',
+    extra_baby_seat_desc: 'Goedgekeurd zitje voor kinderen tot 18 kg',
+    extra_meet_greet: 'Meet & Greet',
+    extra_meet_greet_desc: 'Chauffeur wacht met naambordje bij aankomst',
   },
 };
 

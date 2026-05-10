@@ -350,6 +350,7 @@ export default function BookingForm() {
                 <ExtrasSelector
                   selected={form.extras}
                   onChange={(extras) => updateForm('extras', extras)}
+                  lang={lang}
                 />
                 {form.extras.length > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
@@ -483,7 +484,7 @@ export default function BookingForm() {
                       <>
                         <span className="text-muted-foreground">{t(lang, 'extras_label')}:</span>
                         <span className="font-medium">
-                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')} <span className="text-green-600 text-xs">({t(lang, 'free')})</span>
+                          {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => t(lang, e.labelKey)).join(', ')} <span className="text-green-600 text-xs">({t(lang, 'free')})</span>
                         </span>
                       </>
                     )}

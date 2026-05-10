@@ -1,6 +1,7 @@
 import React from 'react';
 import { Baby, MapPin, Luggage, Wifi, ShoppingBag } from 'lucide-react';
 import { BOOKING_EXTRAS } from '@/lib/transferData';
+import { t } from '@/lib/i18n';
 
 const ICONS = {
   Baby,
@@ -10,7 +11,7 @@ const ICONS = {
   ShoppingBag,
 };
 
-export default function ExtrasSelector({ selected, onChange }) {
+export default function ExtrasSelector({ selected, onChange, lang = 'pt' }) {
   const toggle = (id) => {
     if (selected.includes(id)) {
       onChange(selected.filter(s => s !== id));
@@ -41,11 +42,11 @@ export default function ExtrasSelector({ selected, onChange }) {
               <Icon className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-tight">{extra.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{extra.description}</p>
+              <p className="text-sm font-semibold leading-tight">{t(lang, extra.labelKey)}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t(lang, extra.descriptionKey)}</p>
             </div>
             <div className="text-sm font-bold text-green-600 shrink-0">
-              Grátis
+              {t(lang, 'free')}
             </div>
           </button>
         );

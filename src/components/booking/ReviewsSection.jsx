@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, ExternalLink } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
@@ -112,6 +112,34 @@ export default function ReviewsSection() {
             </motion.div>
           ))}
         </div>
+
+        {/* CTA – Deixar avaliação no Google */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-12 text-center"
+        >
+          <p className="text-sm text-muted-foreground mb-4">
+            Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!
+          </p>
+          <a
+            href="https://share.google/RiunZ7e9uscROIZZo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-white border border-border hover:border-primary/40 hover:shadow-md text-foreground font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+          >
+            <svg width="20" height="20" viewBox="0 0 48 48" className="shrink-0">
+              <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.3 35.3 26.8 36 24 36c-5.2 0-9.6-3.2-11.3-7.8l-6.6 5.1C9.6 39.5 16.3 44 24 44z"/>
+              <path fill="#1565C0" d="M43.6 20H24v8h11.3c-.9 2.5-2.6 4.6-4.8 6l6.2 5.3C40.8 35.6 44 30.2 44 24c0-1.3-.1-2.7-.4-4z"/>
+            </svg>
+            Avaliar no Google
+            <ExternalLink className="w-4 h-4 text-muted-foreground" />
+          </a>
+        </motion.div>
       </div>
     </section>
   );

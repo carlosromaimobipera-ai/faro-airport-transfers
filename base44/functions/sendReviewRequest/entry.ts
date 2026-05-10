@@ -1,23 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const FROM = 'Transfers Algarvestar <onboarding@resend.dev>';
+
+async function sendEmail({ to, subject, body }) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html: body }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Resend error: ${err}`);
+  }
+  return res.json();
+}
+
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-  const payload = await req.json();
-  const { data: booking } = payload;
+  try {
+    const base44 = createClientFromRequest(req);
+    const payload = await req.json();
+    const { data: booking } = payload;
 
-  if (!booking?.customer_email || !booking?.id) {
-    return Response.json({ skipped: 'invalid payload' });
-  }
+    if (!booking?.customer_email || !booking?.id) return Response.json({ skipped: 'invalid payload' });
+    if (booking.status !== 'completed') return Response.json({ skipped: 'booking not completed' });
 
-  // Only send for completed bookings
-  if (booking.status !== 'completed') {
-    return Response.json({ skipped: 'booking not completed' });
-  }
+    const reviewUrl = `https://transfers-algarvestar.com/review?booking_id=${booking.id}&ref=${booking.booking_ref}`;
 
-  const appUrl = Deno.env.get('BASE44_APP_URL') || 'https://app.base44.com';
-  const reviewUrl = `${appUrl}/review?booking_id=${booking.id}&ref=${booking.booking_ref}`;
-
-  const body = `
+    const body = `
 <!DOCTYPE html>
 <html lang="pt">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -39,9 +49,7 @@ Deno.serve(async (req) => {
           ⭐ Classificar a minha viagem
         </a>
       </div>
-      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
-        Reserva: <strong>${booking.booking_ref}</strong> · ${booking.transfer_date}
-      </p>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">Reserva: <strong>${booking.booking_ref}</strong> · ${booking.transfer_date}</p>
     </div>
     <div style="background:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
       <p style="color:#94a3b8;font-size:12px;margin:0;">© ${new Date().getFullYear()} Transfers Algarvestar — info@transfers-algarvestar.com</p>
@@ -50,12 +58,15 @@ Deno.serve(async (req) => {
 </body>
 </html>`.trim();
 
-  await base44.integrations.Core.SendEmail({
-    to: booking.customer_email,
-    from_name: 'Transfers Algarvestar',
-    subject: `⭐ Como foi a sua viagem? — ${booking.booking_ref}`,
-    body,
-  });
+    await sendEmail({
+      to: booking.customer_email,
+      subject: `⭐ Como foi a sua viagem? — ${booking.booking_ref}`,
+      body,
+    });
 
-  return Response.json({ ok: true });
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error('sendReviewRequest error:', error?.message || error);
+    return Response.json({ error: error?.message }, { status: 500 });
+  }
 });

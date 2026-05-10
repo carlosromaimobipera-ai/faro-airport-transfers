@@ -1,5 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const FROM = 'Transfers Algarvestar <onboarding@resend.dev>';
+const ADMIN_EMAIL = 'info@transfers-algarvestar.com';
+
+async function sendEmail({ to, subject, body }) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html: body }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Resend error: ${err}`);
+  }
+  return res.json();
+}
+
 const langTexts = {
   pt: { subject: 'Voucher {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMADO / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'MO - MONETÁRIO / Cash / Espèces' },
   en: { subject: 'Voucher {ref} — Transfers AlgarveStar | {date} {time}', status: 'CONFIRMED / Confirmed / Confirmé', paymentOnline: 'Online — PayPal', paymentCash: 'CASH / Cash / Espèces' },
@@ -11,37 +28,34 @@ const langTexts = {
 
 Deno.serve(async (req) => {
   try {
-  const base44 = createClientFromRequest(req);
+    const base44 = createClientFromRequest(req);
+    const payload = await req.json();
+    const { data: booking } = payload;
 
-  const payload = await req.json();
-  const { data: booking } = payload;
+    if (!booking || !booking.customer_email) {
+      return Response.json({ error: 'Invalid payload' }, { status: 400 });
+    }
 
-  if (!booking || !booking.customer_email) {
-    return Response.json({ error: 'Invalid payload' }, { status: 400 });
-  }
+    const lang = booking.language || 'pt';
+    const langText = langTexts[lang] || langTexts['pt'];
 
-  const lang = booking.language || 'pt';
-  const langText = langTexts[lang] || langTexts['pt'];
+    const vehicleLabels = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
+    const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
+    const paymentMethod = booking.payment_status === 'paid' ? langText.paymentOnline : langText.paymentCash;
+    const paymentAmount = `€${Number(booking.price || 0).toFixed(2)}`;
 
-  const vehicleLabels = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
-  const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
-
-  const paymentMethod = booking.payment_status === 'paid' ? langText.paymentOnline : langText.paymentCash;
-
-  const paymentAmount = `€${Number(booking.price || 0).toFixed(2)}`;
-
-  const row = (label, value) => `
+    const row = (label, value) => `
     <tr>
       <td style="padding:7px 10px; border:1px solid #ccc; background:#f9f9f9; color:#333; font-size:12px; white-space:nowrap;">${label}</td>
       <td style="padding:7px 10px; border:1px solid #ccc; color:#111; font-size:12px;">${value || '—'}</td>
     </tr>`;
 
-  const headerRow = (label) => `
+    const headerRow = (label) => `
     <tr>
       <td colspan="2" style="padding:6px 10px; background:#c8a951; color:#fff; font-size:12px; font-weight:bold; border:1px solid #b8962f; letter-spacing:0.5px;">${label}</td>
     </tr>`;
 
-  const body = `
+    const customerBody = `
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,15 +63,10 @@ Deno.serve(async (req) => {
 </head>
 <body style="font-family: Arial, sans-serif; background:#ececec; margin:0; padding:20px;">
   <div style="max-width:620px; margin:0 auto; background:#fff; border:1px solid #ccc;">
-
-    <!-- Header -->
     <table style="width:100%; border-collapse:collapse; padding:0; background:#fff;">
       <tr>
         <td style="padding:16px 20px; vertical-align:middle;">
-          <img src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo_tas.png"
-               alt="Transfers AlgarveStar"
-               style="height:60px; object-fit:contain;"
-               onerror="this.style.display='none'" />
+          <img src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo_tas.png" alt="Transfers AlgarveStar" style="height:60px; object-fit:contain;" onerror="this.style.display='none'" />
           <div style="font-size:20px; font-weight:bold; color:#1a3a5c; margin-top:4px;">TRANSFERS<br/><span style="color:#c8a951;">ALGARVESTAR</span></div>
         </td>
         <td style="padding:16px 20px; text-align:right; vertical-align:top; font-size:12px; color:#444; line-height:1.8;">
@@ -67,10 +76,7 @@ Deno.serve(async (req) => {
         </td>
       </tr>
     </table>
-
     <hr style="border:none; border-top:2px solid #c8a951; margin:0;" />
-
-    <!-- Status bar -->
     <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; margin-top:0;">
       <tr style="background:#e8f0e0;">
         <td style="padding:8px 12px; font-size:12px; color:#2d6a2d; font-weight:bold; border-right:1px solid #ccc;">
@@ -87,11 +93,7 @@ Deno.serve(async (req) => {
         </td>
       </tr>
     </table>
-
-    <!-- Main content -->
     <div style="padding:16px 20px;">
-
-      <!-- Cliente -->
       <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
         ${headerRow('Cliente / Client')}
         <tr>
@@ -115,8 +117,6 @@ Deno.serve(async (req) => {
           ` : `<td colspan="2" style="border:1px solid #ccc;"></td>`}
         </tr>
       </table>
-
-      <!-- Serviço -->
       <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
         ${headerRow('Serviço / Service')}
         <tr>
@@ -127,14 +127,8 @@ Deno.serve(async (req) => {
           <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Entrega / Dropoff</td>
           <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.destination || '—'}</td>
         </tr>
-        ${booking.notes ? `
-        <tr>
-          <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Observações / Comments</td>
-          <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.notes}</td>
-        </tr>` : ''}
+        ${booking.notes ? `<tr><td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333;">Observações / Comments</td><td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111;">${booking.notes}</td></tr>` : ''}
       </table>
-
-      <!-- Pagamento & Categoria -->
       <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
         <tr>
           <td style="padding:6px 10px; border:1px solid #ccc; background:#f9f9f9; font-size:12px; color:#333; width:30%;">Proveniência / Provenance</td>
@@ -153,8 +147,6 @@ Deno.serve(async (req) => {
           <td style="padding:6px 10px; border:1px solid #ccc; font-size:12px; color:#111; text-transform:uppercase;">${vehicleLabel}</td>
         </tr>
       </table>
-
-      <!-- Recomendações -->
       <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
         ${headerRow('Recomendações')}
         <tr>
@@ -167,45 +159,38 @@ Deno.serve(async (req) => {
           </td>
         </tr>
       </table>
-
     </div>
-
-    <!-- Footer -->
     <hr style="border:none; border-top:1px solid #ccc; margin:0;" />
     <div style="padding:10px 20px; text-align:center; font-size:11px; color:#555;">
       <strong>Transfers AlgarveStar</strong> | NIF: 514346744 | RNAVT: 6855 | Tel: +351 913956971 | 
       <a href="https://transfers-algarvestar.com" style="color:#1a3a5c;">https://transfers-algarvestar.com</a>
     </div>
-
   </div>
 </body>
-</html>
-  `.trim();
+</html>`.trim();
 
-  // Email ao cliente
-  await base44.integrations.Core.SendEmail({
-    to: booking.customer_email,
-    from_name: 'Transfers Algarvestar',
-    subject: langText.subject.replace('{ref}', booking.booking_ref).replace('{date}', booking.transfer_date).replace('{time}', booking.transfer_time),
-    body,
-  });
+    // Email ao cliente
+    await sendEmail({
+      to: booking.customer_email,
+      subject: langText.subject.replace('{ref}', booking.booking_ref).replace('{date}', booking.transfer_date).replace('{time}', booking.transfer_time),
+      body: customerBody,
+    });
 
-  // Cópia ao admin (usa asServiceRole para permitir envio para email externo)
-  const adminBody = `<p>Nova reserva recebida: <strong>${booking.booking_ref}</strong></p>
+    // Email ao admin
+    const adminBody = `<p>Nova reserva recebida: <strong>${booking.booking_ref}</strong></p>
 <p>Cliente: ${booking.customer_name} (${booking.customer_email})<br/>
 Rota: ${booking.origin} → ${booking.destination}<br/>
 Data: ${booking.transfer_date} ${booking.transfer_time}<br/>
 Veículo: ${booking.vehicle_type} | €${Number(booking.price||0).toFixed(2)} | ${booking.payment_status === 'paid' ? 'Pago (PayPal)' : 'A pagar (Cash)'}</p>
 <p><a href="https://transfers-algarvestar.com/admin">Ver no painel de administração →</a></p>`;
 
-  await base44.asServiceRole.integrations.Core.SendEmail({
-    to: 'info@transfers-algarvestar.com',
-    from_name: 'Transfers Algarvestar - Sistema',
-    subject: `🚗 Nova Reserva: ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
-    body: adminBody,
-  });
+    await sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `🚗 Nova Reserva: ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
+      body: adminBody,
+    });
 
-  return Response.json({ ok: true });
+    return Response.json({ ok: true });
   } catch (err) {
     console.error('notifyBookingCreated error:', err?.message || err);
     return Response.json({ error: err?.message }, { status: 500 });

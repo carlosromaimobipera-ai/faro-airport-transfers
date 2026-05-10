@@ -19,35 +19,84 @@ const COMMON_LOCATIONS = [
   { name: '📍 Centro de Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
+// Load Google Maps script once
+let googleMapsPromise = null;
+function loadGoogleMaps(apiKey) {
+  if (googleMapsPromise) return googleMapsPromise;
+  if (window.google?.maps?.places) {
+    googleMapsPromise = Promise.resolve();
+    return googleMapsPromise;
+  }
+  googleMapsPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=pt`;
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return googleMapsPromise;
+}
+
 export default function SimpleAddressPicker({ label, value, onChange, placeholder = "Procurar morada ou selecionar..." }) {
-  const debounceTimer = useRef(null);
+  const inputRef = useRef(null);
   const containerRef = useRef(null);
+  const autocompleteRef = useRef(null);
 
   const [inputValue, setInputValue] = useState(value?.address || '');
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCommon, setShowCommon] = useState(false);
+  const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
+  const [fallbackMode, setFallbackMode] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const debounceTimer = useRef(null);
 
-  // Close on outside click
+  // Load API key and init Google Autocomplete
   useEffect(() => {
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setShowSuggestions(false);
+    base44.functions.invoke('getGoogleApiKey', {}).then(async (res) => {
+      const apiKey = res.data?.apiKey;
+      if (!apiKey) { setFallbackMode(true); return; }
+      try {
+        await loadGoogleMaps(apiKey);
+        setApiKeyLoaded(true);
+      } catch {
+        setFallbackMode(true);
       }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    }).catch(() => setFallbackMode(true));
   }, []);
 
-  // Fetch Google Places suggestions with debounce
+  // Init Google Places Autocomplete after script loads
   useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (!apiKeyLoaded || !inputRef.current || autocompleteRef.current) return;
 
+    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+      fields: ['formatted_address', 'geometry', 'name'],
+      componentRestrictions: { country: ['pt', 'es'] },
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry?.location) return;
+      const address = place.formatted_address || place.name;
+      const coords = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      };
+      setInputValue(address);
+      onChange({ address, coords });
+      setShowCommon(false);
+    });
+
+    autocompleteRef.current = autocomplete;
+  }, [apiKeyLoaded]);
+
+  // Fallback: backend predictions
+  useEffect(() => {
+    if (!fallbackMode) return;
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     const trimmed = inputValue.trim();
-    if (!trimmed) {
-      setSuggestions([]);
-      return;
-    }
+    if (!trimmed || value?.coords) { setSuggestions([]); return; }
 
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
@@ -62,13 +111,24 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     }, 400);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [inputValue]);
+  }, [inputValue, fallbackMode]);
+
+  // Close common locations on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowCommon(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleSelect = (location) => {
-    const address = location.address || location.name?.replace(/^[^\w]+/, '').trim();
+    const address = location.address || location.name?.replace(/^[^\w\u00C0-\u024F✈️📍]+/, '').trim();
     setInputValue(address);
     onChange({ address, coords: location.coords });
-    setShowSuggestions(false);
+    setShowCommon(false);
     setSuggestions([]);
   };
 
@@ -76,13 +136,15 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setInputValue('');
     onChange(null);
     setSuggestions([]);
+    if (inputRef.current) inputRef.current.focus();
   };
 
   const filteredCommon = COMMON_LOCATIONS.filter(loc =>
     !inputValue.trim() || loc.name.toLowerCase().includes(inputValue.toLowerCase())
   );
 
-  const showDropdown = showSuggestions && (loading || suggestions.length > 0 || filteredCommon.length > 0);
+  const showDropdown = showCommon && filteredCommon.length > 0;
+  const showFallbackDropdown = fallbackMode && (loading || suggestions.length > 0 || filteredCommon.length > 0);
 
   return (
     <div className="space-y-2" ref={containerRef}>
@@ -93,15 +155,17 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
-            onChange(null); // reset selection when typing
-            setShowSuggestions(true);
+            onChange(null);
+            if (!apiKeyLoaded) setShowCommon(true);
           }}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={() => setShowCommon(true)}
           placeholder={placeholder}
+          autoComplete="off"
           className="w-full h-12 px-4 pr-10 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -114,9 +178,27 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           ) : null}
         </div>
 
-        {showDropdown && (
+        {/* Common locations dropdown (shown when Google Maps is active - user can pick quickly) */}
+        {showDropdown && !fallbackMode && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+            <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
+              Locais populares
+            </div>
+            {filteredCommon.map((location) => (
+              <button
+                key={location.name}
+                onMouseDown={() => handleSelect(location)}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
+              >
+                <span className="truncate">{location.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Fallback dropdown */}
+        {showFallbackDropdown && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
-            {/* API results */}
             {suggestions.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
@@ -134,8 +216,6 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 ))}
               </>
             )}
-
-            {/* Common locations */}
             {filteredCommon.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
@@ -152,7 +232,6 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 ))}
               </>
             )}
-
             {!loading && suggestions.length === 0 && filteredCommon.length === 0 && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
                 Nenhuma localização encontrada

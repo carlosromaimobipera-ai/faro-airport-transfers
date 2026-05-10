@@ -143,6 +143,7 @@ export default function BookingForm() {
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
       flight_number: form.flight_number,
+      return_flight_number: form.return_flight_number || '',
       passengers: form.passengers,
       luggage: form.luggage,
       notes: form.notes,
@@ -178,6 +179,7 @@ export default function BookingForm() {
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
       flight_number: form.flight_number,
+      return_flight_number: form.return_flight_number || '',
       passengers: form.passengers,
       luggage: form.luggage,
       notes: form.notes,
@@ -251,6 +253,20 @@ export default function BookingForm() {
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>Rota não disponível. O Algarve deve ser a origem ou o destino da viagem.</span>
+                  </div>
+                )}
+                {/* Estimated price preview */}
+                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+                    <p className="text-xs text-muted-foreground mb-1">{t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span></p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
+                      {vehicleTypes.map(v => (
+                        <span key={v.id} className="text-sm font-bold text-primary">
+                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, priceConfigs, distanceData?.duration_minutes || 0).toFixed(0)}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
@@ -343,6 +359,10 @@ export default function BookingForm() {
                     <Label>{t(lang, 'flight_no')}</Label>
                     <Input placeholder={t(lang, 'flight_ph')} value={form.flight_number} onChange={(e) => updateForm('flight_number', e.target.value)} className="h-12" />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Número do voo de retorno (opcional)</Label>
+                    <Input placeholder="Ex: TP1235" value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t(lang, 'passengers')}</Label>
@@ -405,6 +425,12 @@ export default function BookingForm() {
                         <span className="font-medium">
                           {BOOKING_EXTRAS.filter(e => form.extras.includes(e.id)).map(e => e.label).join(', ')} <span className="text-green-600 text-xs">({t(lang, 'free')})</span>
                         </span>
+                      </>
+                    )}
+                    {form.return_flight_number && (
+                      <>
+                        <span className="text-muted-foreground">Voo de retorno:</span>
+                        <span className="font-medium">{form.return_flight_number}</span>
                       </>
                     )}
                   </div>

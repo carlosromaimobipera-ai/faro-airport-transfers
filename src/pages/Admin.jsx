@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useBookingNotifications } from '@/hooks/useBookingNotifications';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,8 @@ export default function Admin() {
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  useBookingNotifications(!!user);
 
   const [filterStatus,   setFilterStatus]   = useState('all');
   const [filterPayment,  setFilterPayment]   = useState('all');

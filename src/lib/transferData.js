@@ -86,6 +86,13 @@ export function isRouteAllowed(originCoords, destCoords) {
   // Permite rotas dentro do Algarve (ambos no Algarve mas locais diferentes)
   if (originInAlgarve && destInAlgarve) return true;
 
+  // Permite Lisboa ↔ Sevilha
+  const originInPortugal = originRegion === 'PORTUGAL';
+  const destInPortugal = destRegion === 'PORTUGAL';
+  const originInSeville = originRegion === 'SEVILLE';
+  const destInSeville = destRegion === 'SEVILLE';
+  if ((originInPortugal && destInSeville) || (originInSeville && destInPortugal)) return true;
+
   return false;
 }
 

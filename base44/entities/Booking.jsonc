@@ -91,6 +91,10 @@
       "type": "string",
       "description": "Flight number (optional)"
     },
+    "return_flight_number": {
+      "type": "string",
+      "description": "Return flight number (optional)"
+    },
     "passengers": {
       "type": "number",
       "description": "Number of passengers"
@@ -101,7 +105,11 @@
     },
     "notes": {
       "type": "string",
-      "description": "Special requests or notes"
+      "description": "Special requests or notes (visible to customer and driver)"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal notes visible only to admin"
     },
     "status": {
       "type": "string",

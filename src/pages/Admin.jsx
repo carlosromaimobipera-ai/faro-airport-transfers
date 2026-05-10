@@ -22,6 +22,7 @@ import FinancialDashboard from '@/components/admin/FinancialDashboard';
 import DriverLocationMap from '@/components/admin/DriverLocationMap';
 import BookingTableMobile from '@/components/admin/BookingTableMobile';
 import UsersManager from '@/components/admin/UsersManager';
+import AdminNotesCell from '@/components/admin/AdminNotesCell';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -310,6 +311,7 @@ export default function Admin() {
                           <TableHead>Estado</TableHead>
                           <TableHead>Pagamento</TableHead>
                           <TableHead>Motorista</TableHead>
+                          <TableHead>Notas internas</TableHead>
                           <TableHead>Alterar estado</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -365,6 +367,9 @@ export default function Admin() {
                                   })}
                                 </SelectContent>
                               </Select>
+                            </TableCell>
+                            <TableCell>
+                              <AdminNotesCell booking={booking} onSave={(id, notes) => updateMutation.mutate({ id, data: { admin_notes: notes } })} />
                             </TableCell>
                             <TableCell>
                               <Select

@@ -1,72 +1,100 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote, ExternalLink } from 'lucide-react';
+import { Star, Quote, ExternalLink, Loader2 } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { format } from 'date-fns';
 
-const reviews = [
+// Static fallback reviews (used when no DB reviews exist)
+const STATIC_REVIEWS = [
   {
-    name: "Sarah Mitchell",
+    customer_name: "Sarah Mitchell",
     flag: "🇬🇧",
     rating: 5,
-    text: "Absolutely fantastic service! The driver was waiting for us at arrivals with a sign, the car was spotless and the journey to Albufeira was very comfortable. Will definitely book again!",
+    comment: "Absolutely fantastic service! The driver was waiting for us at arrivals with a sign, the car was spotless and the journey to Albufeira was very comfortable. Will definitely book again!",
     route: "Faro Airport → Albufeira",
-    date: "Abril 2025",
+    transfer_date: "2025-04-10",
   },
   {
-    name: "Hans Becker",
+    customer_name: "Hans Becker",
     flag: "🇩🇪",
     rating: 5,
-    text: "Sehr professioneller Service. Pünktlich, freundlich und das Fahrzeug war sehr sauber. Der Transfer von Faro nach Vilamoura verlief reibungslos. Sehr empfehlenswert!",
+    comment: "Sehr professioneller Service. Pünktlich, freundlich und das Fahrzeug war sehr sauber. Der Transfer von Faro nach Vilamoura verlief reibungslos. Sehr empfehlenswert!",
     route: "Aeroporto Faro → Vilamoura",
-    date: "Março 2025",
+    transfer_date: "2025-03-15",
   },
   {
-    name: "João Ferreira",
+    customer_name: "João Ferreira",
     flag: "🇵🇹",
     rating: 5,
-    text: "Serviço de excelência! Pontual, profissional e veículo muito confortável. Fiz a viagem Lisboa-Faro e correu tudo na perfeição. Preço justo e sem surpresas.",
+    comment: "Serviço de excelência! Pontual, profissional e veículo muito confortável. Fiz a viagem Lisboa-Faro e correu tudo na perfeição. Preço justo e sem surpresas.",
     route: "Lisboa → Aeroporto Faro",
-    date: "Fevereiro 2025",
+    transfer_date: "2025-02-20",
   },
   {
-    name: "Marie Dupont",
+    customer_name: "Marie Dupont",
     flag: "🇫🇷",
     rating: 5,
-    text: "Service impeccable! Le chauffeur était très sympathique et ponctuel. Le trajet depuis l'aéroport de Faro jusqu'à Lagos était confortable. Je recommande vivement!",
+    comment: "Service impeccable! Le chauffeur était très sympathique et ponctuel. Le trajet depuis l'aéroport de Faro jusqu'à Lagos était confortable. Je recommande vivement!",
     route: "Aeroporto Faro → Lagos",
-    date: "Janeiro 2025",
+    transfer_date: "2025-01-05",
   },
   {
-    name: "Carlos García",
+    customer_name: "Carlos García",
     flag: "🇪🇸",
     rating: 5,
-    text: "Excelente servicio de traslado desde Sevilla hasta Albufeira. El conductor llegó puntual, el vehículo era amplio y limpio. Precio muy competitivo. Muy recomendable.",
+    comment: "Excelente servicio de traslado desde Sevilla hasta Albufeira. El conductor llegó puntual, el vehículo era amplio y limpio. Precio muy competitivo. Muy recomendable.",
     route: "Sevilha → Albufeira",
-    date: "Dezembro 2024",
+    transfer_date: "2024-12-10",
   },
   {
-    name: "Lena van der Berg",
+    customer_name: "Lena van der Berg",
     flag: "🇳🇱",
     rating: 5,
-    text: "Geweldige service! De chauffeur was vriendelijk en punctueel. De rit van Faro Airport naar Portimão was erg comfortabel. We zullen zeker weer gebruik maken van deze service.",
+    comment: "Geweldige service! De chauffeur was vriendelijk en punctueel. De rit van Faro Airport naar Portimão was erg comfortabel. We zullen zeker weer gebruik maken van deze service.",
     route: "Aeroporto Faro → Portimão",
-    date: "Novembro 2024",
+    transfer_date: "2024-11-20",
   },
 ];
 
-function StarRating({ rating }) {
+function StarRating({ rating, size = 'sm' }) {
+  const sz = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} className={`w-4 h-4 ${i <= rating ? 'text-secondary fill-secondary' : 'text-muted'}`} />
+        <Star key={i} className={`${sz} ${i <= rating ? 'text-secondary fill-secondary' : 'text-muted'}`} />
       ))}
     </div>
   );
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    return format(new Date(dateStr + 'T00:00:00'), 'MMM yyyy');
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function ReviewsSection() {
   const { lang } = useLang();
+
+  const { data: dbReviews = [], isLoading } = useQuery({
+    queryKey: ['reviews-public'],
+    queryFn: () => base44.entities.Review.list('-created_date', 12),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Use DB reviews if available (with a comment), otherwise fallback to static
+  const dbWithComments = dbReviews.filter(r => r.comment && r.rating >= 4);
+  const reviews = dbWithComments.length >= 3 ? dbWithComments : STATIC_REVIEWS;
+
+  const avgRating = reviews.length
+    ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
+    : '5.0';
 
   return (
     <section className="py-20 bg-background">
@@ -74,46 +102,52 @@ export default function ReviewsSection() {
         <div className="text-center mb-14">
           <div className="flex items-center justify-center gap-2 mb-3">
             <StarRating rating={5} />
-            <span className="text-sm font-semibold text-muted-foreground">4.9/5 · 200+ avaliações</span>
+            <span className="text-sm font-semibold text-muted-foreground">
+              {avgRating}/5 · {reviews.length}+ avaliações
+            </span>
           </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            Reviews
-          </h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">Reviews</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             {t(lang, 'reviews_sub') || 'Centenas de viajantes satisfeitos em toda a Europa'}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviews.map((review, i) => (
-            <motion.div
-              key={review.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="bg-card border border-border/40 rounded-2xl p-6 hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-col gap-4"
-            >
-              <div className="flex items-start justify-between">
-                <Quote className="w-8 h-8 text-primary/20" />
-                <StarRating rating={review.rating} />
-              </div>
-              <p className="text-sm text-foreground/80 leading-relaxed flex-1">"{review.text}"</p>
-              <div className="border-t border-border/40 pt-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{review.flag}</span>
-                  <div>
-                    <p className="font-semibold text-sm">{review.name}</p>
-                    <p className="text-xs text-muted-foreground">{review.date}</p>
-                  </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviews.slice(0, 6).map((review, i) => (
+              <motion.div
+                key={review.id || review.customer_name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="bg-card border border-border/40 rounded-2xl p-6 hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-col gap-4"
+              >
+                <div className="flex items-start justify-between">
+                  <Quote className="w-8 h-8 text-primary/20" />
+                  <StarRating rating={review.rating || 5} />
                 </div>
-                <span className="text-xs text-primary bg-primary/5 px-2 py-1 rounded-full">{review.route}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <p className="text-sm text-foreground/80 leading-relaxed flex-1">"{review.comment}"</p>
+                <div className="border-t border-border/40 pt-4 flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{review.flag || '🌍'}</span>
+                    <div>
+                      <p className="font-semibold text-sm">{review.customer_name}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(review.transfer_date)}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-primary bg-primary/5 px-2 py-1 rounded-full">{review.route}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-        {/* CTA – Deixar avaliação no Google */}
+        {/* CTA Google */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -195,6 +195,19 @@ export default function BookingCard({ booking, onUpdateStatus, showDate = false 
                 </Badge>
               </div>
 
+              {/* Full route navigation button */}
+              {booking.origin_coords && booking.destination_coords && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&origin=${booking.origin_coords.lat},${booking.origin_coords.lng}&destination=${booking.destination_coords.lat},${booking.destination_coords.lng}&travelmode=driving`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
+                >
+                  <Navigation className="w-4 h-4" />
+                  Navegar rota completa no Google Maps
+                </a>
+              )}
+
               {/* Action buttons */}
               {!isCompleted && !isCancelled && (
                 <div className="flex gap-2 pt-1">

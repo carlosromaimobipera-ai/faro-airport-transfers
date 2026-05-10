@@ -105,6 +105,14 @@ export default function BookingTableMobile({ bookings, drivers, unavailabilities
               />
             </div>
 
+            {/* Admin notes */}
+            {booking.admin_notes && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+                <p className="font-semibold mb-0.5">Nota interna</p>
+                {booking.admin_notes}
+              </div>
+            )}
+
             {/* Status Change */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground">Alterar Estado</label>

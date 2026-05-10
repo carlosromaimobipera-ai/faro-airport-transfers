@@ -32,34 +32,35 @@ export const locations = COMMON_LOCATIONS;
 const REGIONS = {
   FARO_MUNICIPALITY: { name: 'Faro (Município)', bounds: { lat: [36.94, 37.06], lng: [-8.63, -7.99] } },
   ALGARVE: { name: 'Algarve', bounds: { lat: [36.8, 37.3], lng: [-8.7, -7.8] } },
-  LISBON: { name: 'Lisboa', bounds: { lat: [38.6, 38.9], lng: [-9.3, -8.9] } },
+  PORTUGAL: { name: 'Portugal', bounds: { lat: [36.8, 42.2], lng: [-9.6, -6.1] } },
   SEVILLE: { name: 'Sevilha', bounds: { lat: [37.2, 37.5], lng: [-6.1, -5.8] } },
+  SPAIN: { name: 'Espanha', bounds: { lat: [35.9, 43.8], lng: [-9.4, 4.4] } },
 };
 
 // Check if coordinates are in a region
 function getRegionFromCoords(lat, lng) {
-  // Verifica município de Faro primeiro (mais específico)
-  if (lat >= REGIONS.FARO_MUNICIPALITY.bounds.lat[0] && lat <= REGIONS.FARO_MUNICIPALITY.bounds.lat[1] &&
-      lng >= REGIONS.FARO_MUNICIPALITY.bounds.lng[0] && lng <= REGIONS.FARO_MUNICIPALITY.bounds.lng[1]) {
-    return 'FARO_MUNICIPALITY';
-  }
-  
-  // Depois verifica Algarve (inclui o distrito de Faro)
+  // Verifica Algarve primeiro (mais específico dentro de Portugal)
   if (lat >= REGIONS.ALGARVE.bounds.lat[0] && lat <= REGIONS.ALGARVE.bounds.lat[1] &&
       lng >= REGIONS.ALGARVE.bounds.lng[0] && lng <= REGIONS.ALGARVE.bounds.lng[1]) {
     return 'ALGARVE';
   }
   
-  // Verifica Lisboa
-  if (lat >= REGIONS.LISBON.bounds.lat[0] && lat <= REGIONS.LISBON.bounds.lat[1] &&
-      lng >= REGIONS.LISBON.bounds.lng[0] && lng <= REGIONS.LISBON.bounds.lng[1]) {
-    return 'LISBON';
-  }
-  
-  // Verifica Sevilha
+  // Verifica Sevilha (mais específico dentro de Espanha)
   if (lat >= REGIONS.SEVILLE.bounds.lat[0] && lat <= REGIONS.SEVILLE.bounds.lat[1] &&
       lng >= REGIONS.SEVILLE.bounds.lng[0] && lng <= REGIONS.SEVILLE.bounds.lng[1]) {
     return 'SEVILLE';
+  }
+
+  // Verifica Portugal continental
+  if (lat >= REGIONS.PORTUGAL.bounds.lat[0] && lat <= REGIONS.PORTUGAL.bounds.lat[1] &&
+      lng >= REGIONS.PORTUGAL.bounds.lng[0] && lng <= REGIONS.PORTUGAL.bounds.lng[1]) {
+    return 'PORTUGAL';
+  }
+
+  // Verifica Espanha
+  if (lat >= REGIONS.SPAIN.bounds.lat[0] && lat <= REGIONS.SPAIN.bounds.lat[1] &&
+      lng >= REGIONS.SPAIN.bounds.lng[0] && lng <= REGIONS.SPAIN.bounds.lng[1]) {
+    return 'SPAIN';
   }
   
   return null;
@@ -74,21 +75,18 @@ export function isRouteAllowed(originCoords, destCoords) {
   
   if (!originRegion || !destRegion) return false;
   
-  // Block only Faro municipality to Faro municipality
-  if (originRegion === 'FARO_MUNICIPALITY' && destRegion === 'FARO_MUNICIPALITY') return false;
-  
-  // Allow any route within Algarve (from any Algarve location to any Algarve location)
-  const originInAlgarve = originRegion === 'FARO_MUNICIPALITY' || originRegion === 'ALGARVE';
-  const destInAlgarve = destRegion === 'FARO_MUNICIPALITY' || destRegion === 'ALGARVE';
+  // Bloqueia rota dentro do Algarve para o mesmo ponto (origem = destino exato)
+  if (originCoords.lat === destCoords.lat && originCoords.lng === destCoords.lng) return false;
+
+  // Permite qualquer rota cujo destino OU origem seja o Algarve
+  const originInAlgarve = originRegion === 'ALGARVE';
+  const destInAlgarve = destRegion === 'ALGARVE';
+  if (originInAlgarve || destInAlgarve) return true;
+
+  // Permite rotas dentro do Algarve (ambos no Algarve mas locais diferentes)
   if (originInAlgarve && destInAlgarve) return true;
-  
-  // Allow Faro to Lisboa or Faro to Sevilha
-  const isFaroToOther = ((originRegion === 'FARO_MUNICIPALITY' || originRegion === 'ALGARVE') && 
-                         (destRegion === 'LISBON' || destRegion === 'SEVILLE')) ||
-                        ((destRegion === 'FARO_MUNICIPALITY' || destRegion === 'ALGARVE') && 
-                         (originRegion === 'LISBON' || originRegion === 'SEVILLE'));
-  
-  return isFaroToOther;
+
+  return false;
 }
 
 // Get region name from coordinates

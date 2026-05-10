@@ -250,7 +250,7 @@ export default function BookingForm() {
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{t(lang, 'invalid_route')}</span>
+                    <span>Rota não disponível. O Algarve deve ser a origem ou o destino da viagem.</span>
                   </div>
                 )}
                 {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (

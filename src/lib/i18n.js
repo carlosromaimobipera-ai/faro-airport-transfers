@@ -117,7 +117,7 @@ export const translations = {
 
     // Vehicle names
     veh_sedan: 'Sedan Conforto',
-    veh_minivan: 'Minivan Premium',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Minibus Grupo',
 
     // Vehicle features
@@ -274,7 +274,7 @@ export const translations = {
     conf_contact: 'The driver will contact you',
     conf_back: 'Back to home',
     veh_sedan: 'Comfort Sedan',
-    veh_minivan: 'Premium Minivan',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Group Minibus',
     feat_ac: 'Air conditioning',
     feat_wifi: 'Wi-Fi',
@@ -427,7 +427,7 @@ export const translations = {
     conf_contact: 'El conductor se pondrá en contacto contigo',
     conf_back: 'Volver al inicio',
     veh_sedan: 'Sedan Confort',
-    veh_minivan: 'Minivan Premium',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Minibús Grupo',
     feat_ac: 'Aire acondicionado',
     feat_wifi: 'Wi-Fi',
@@ -580,7 +580,7 @@ export const translations = {
     conf_contact: 'Le chauffeur vous contactera',
     conf_back: 'Retour à l\'accueil',
     veh_sedan: 'Berline Confort',
-    veh_minivan: 'Minivan Premium',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Minibus Groupe',
     feat_ac: 'Climatisation',
     feat_wifi: 'Wi-Fi',
@@ -733,7 +733,7 @@ export const translations = {
     conf_contact: 'Der Fahrer wird sich mit Ihnen in Verbindung setzen',
     conf_back: 'Zurück zur Startseite',
     veh_sedan: 'Komfort-Limousine',
-    veh_minivan: 'Premium-Minivan',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Gruppen-Minibus',
     feat_ac: 'Klimaanlage',
     feat_wifi: 'WLAN',
@@ -886,7 +886,7 @@ export const translations = {
     conf_contact: 'De chauffeur neemt contact met u op',
     conf_back: 'Terug naar home',
     veh_sedan: 'Comfort Sedan',
-    veh_minivan: 'Premium Minivan',
+    veh_minivan: 'Minivan',
     veh_minibus: 'Groeps Minibus',
     feat_ac: 'Airconditioning',
     feat_wifi: 'Wi-Fi',

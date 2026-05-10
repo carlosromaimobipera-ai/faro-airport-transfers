@@ -159,7 +159,7 @@ export default function ReviewsSection() {
             Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!
           </p>
           <a
-            href="https://share.google/RiunZ7e9uscROIZZo"
+            href="https://share.google/34spD6KqwNNsJqG75"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-white border border-border hover:border-primary/40 hover:shadow-md text-foreground font-semibold py-3 px-6 rounded-xl transition-all duration-200"

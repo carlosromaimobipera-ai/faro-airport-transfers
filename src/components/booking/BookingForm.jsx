@@ -509,22 +509,28 @@ export default function BookingForm() {
           <div className="mt-8 pt-6 border-t space-y-4">
             {step === 5 && canProceed() && (
               <>
-                {/* Payment method selector */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Payment method selector — 3 buttons */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setPaymentMethod('card')}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
+                  >
+                    <span className="text-xl">💳</span>
+                    <span className="text-xs font-medium text-foreground text-center leading-tight">{t(lang, 'pay_card')}</span>
+                  </button>
                   <button
                     onClick={() => setPaymentMethod('paypal')}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
-                    <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-6 object-contain" />
-                    <span className="text-xs font-medium text-foreground">{t(lang, 'pay_paypal')}</span>
-                    <span className="text-xs text-muted-foreground">{t(lang, 'pay_paypal_sub')}</span>
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-5 object-contain" />
+                    <span className="text-xs font-medium text-foreground">PayPal</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('cash')}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'cash' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${paymentMethod === 'cash' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
-                    <span className="text-2xl">💵</span>
-                    <span className="text-xs font-medium text-foreground">{t(lang, 'pay_cash')}</span>
+                    <span className="text-xl">💵</span>
+                    <span className="text-xs font-medium text-foreground text-center leading-tight">{t(lang, 'pay_cash_short')}</span>
                   </button>
                 </div>
 
@@ -532,11 +538,21 @@ export default function BookingForm() {
                   <p className="text-sm text-destructive text-center">{paymentError}</p>
                 )}
 
+                {paymentMethod === 'card' && (
+                  <PayPalButton
+                    amount={price}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(msg) => setPaymentError(msg)}
+                    fundingSource="CARD"
+                  />
+                )}
+
                 {paymentMethod === 'paypal' && (
                   <PayPalButton
                     amount={price}
                     onSuccess={handlePaymentSuccess}
                     onError={(msg) => setPaymentError(msg)}
+                    fundingSource="PAYPAL"
                   />
                 )}
 

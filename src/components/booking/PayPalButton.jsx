@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from '@paypal/react-paypal-js';
 import { base44 } from '@/api/base44Client';
 
-export default function PayPalButton({ amount, onSuccess, onError }) {
+export default function PayPalButton({ amount, onSuccess, onError, fundingSource = null }) {
   const [loading, setLoading] = useState(false);
   const [clientId, setClientId] = useState(null);
 
@@ -54,20 +54,24 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
         )}
-        <PayPalButtons
-          fundingSource={FUNDING.PAYPAL}
-          style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', tagline: false, height: 45 }}
-          createOrder={createOrder}
-          onApprove={onApprove}
-          onError={(err) => onError(err?.message || 'Erro no pagamento PayPal.')}
-        />
-        <PayPalButtons
-          fundingSource={FUNDING.CARD}
-          style={{ layout: 'vertical', shape: 'rect', height: 45 }}
-          createOrder={createOrder}
-          onApprove={onApprove}
-          onError={(err) => onError(err?.message || 'Erro no pagamento com cartão.')}
-        />
+        {(fundingSource === null || fundingSource === 'PAYPAL') && (
+          <PayPalButtons
+            fundingSource={FUNDING.PAYPAL}
+            style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', tagline: false, height: 45 }}
+            createOrder={createOrder}
+            onApprove={onApprove}
+            onError={(err) => onError(err?.message || 'Erro no pagamento PayPal.')}
+          />
+        )}
+        {(fundingSource === null || fundingSource === 'CARD') && (
+          <PayPalButtons
+            fundingSource={FUNDING.CARD}
+            style={{ layout: 'vertical', shape: 'rect', height: 45 }}
+            createOrder={createOrder}
+            onApprove={onApprove}
+            onError={(err) => onError(err?.message || 'Erro no pagamento com cartão.')}
+          />
+        )}
       </div>
     </PayPalScriptProvider>
   );

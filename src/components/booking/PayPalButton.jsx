@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { base44 } from '@/api/base44Client';
 
-const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
-
 export default function PayPalButton({ amount, onSuccess, onError }) {
   const [loading, setLoading] = useState(false);
+  const [clientId, setClientId] = useState(null);
+
+  useEffect(() => {
+    base44.functions.invoke('getPaypalClientId', {}).then(res => {
+      setClientId(res.data.clientId);
+    }).catch(() => {
+      onError('Erro ao carregar PayPal. Por favor tente mais tarde.');
+    });
+  }, []);
 
   const createOrder = async () => {
     setLoading(true);
@@ -31,8 +38,16 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
     }
   };
 
+  if (!clientId) {
+    return (
+      <div className="flex justify-center py-4">
+        <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'EUR' }}>
+    <PayPalScriptProvider options={{ clientId, currency: 'EUR' }}>
       <div className="w-full">
         {loading && (
           <div className="flex justify-center mb-3">

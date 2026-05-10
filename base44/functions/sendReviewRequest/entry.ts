@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     if (!booking?.customer_email || !booking?.id) return Response.json({ skipped: 'invalid payload' });
     if (booking.status !== 'completed') return Response.json({ skipped: 'booking not completed' });
 
-    const reviewUrl = `https://transfers-algarvestar.com/review?booking_id=${booking.id}&ref=${booking.booking_ref}`;
+    const reviewUrl = `https://g.page/r/CeOr3i7UjtNxEBM/review`;
 
     const body = `
 <!DOCTYPE html>

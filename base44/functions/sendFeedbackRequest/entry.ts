@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     if (hoursSince >= 24 && hoursSince < 48) {
       const lang = booking.language || 'pt';
       const langText = langTexts[lang] || langTexts['pt'];
-      const reviewLink = `https://transfers-algarvestar.com/review?booking_id=${booking.id}&ref=${booking.booking_ref}`;
+      const reviewLink = `https://g.page/r/CeOr3i7UjtNxEBM/review`;
 
       const body = `
 <!DOCTYPE html>

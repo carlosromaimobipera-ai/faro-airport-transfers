@@ -516,6 +516,7 @@ export default function BookingForm() {
                   >
                     <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-6 object-contain" />
                     <span className="text-xs font-medium text-foreground">{t(lang, 'pay_paypal')}</span>
+                    <span className="text-xs text-muted-foreground">PayPal · Cartão de crédito/débito</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('cash')}

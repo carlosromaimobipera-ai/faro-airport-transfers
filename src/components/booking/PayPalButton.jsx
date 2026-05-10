@@ -47,8 +47,8 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
   }
 
   return (
-    <PayPalScriptProvider options={{ clientId, currency: 'EUR' }}>
-      <div className="w-full">
+    <PayPalScriptProvider options={{ clientId, currency: 'EUR', components: 'buttons', enableFunding: 'card' }}>
+      <div className="w-full space-y-2">
         {loading && (
           <div className="flex justify-center mb-3">
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -56,10 +56,17 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
         )}
         <PayPalButtons
           fundingSource={FUNDING.PAYPAL}
-          style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', tagline: false }}
+          style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', tagline: false, height: 45 }}
           createOrder={createOrder}
           onApprove={onApprove}
           onError={(err) => onError(err?.message || 'Erro no pagamento PayPal.')}
+        />
+        <PayPalButtons
+          fundingSource={FUNDING.CARD}
+          style={{ layout: 'vertical', shape: 'rect', height: 45 }}
+          createOrder={createOrder}
+          onApprove={onApprove}
+          onError={(err) => onError(err?.message || 'Erro no pagamento com cartão.')}
         />
       </div>
     </PayPalScriptProvider>

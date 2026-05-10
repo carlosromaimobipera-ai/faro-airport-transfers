@@ -77,7 +77,7 @@ export default function ReviewsSection() {
             <span className="text-sm font-semibold text-muted-foreground">4.9/5 · 200+ avaliações</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            {t(lang, 'reviews_title') || 'O que dizem os nossos clientes'}
+            Reviews
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             {t(lang, 'reviews_sub') || 'Centenas de viajantes satisfeitos em toda a Europa'}

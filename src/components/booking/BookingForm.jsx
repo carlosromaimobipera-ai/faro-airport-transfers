@@ -346,11 +346,11 @@ export default function BookingForm() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t(lang, 'passengers')}</Label>
-                      <Input type="number" min={1} max={8} value={form.passengers} onChange={(e) => updateForm('passengers', parseInt(e.target.value) || 1)} className="h-12" />
+                      <Input type="number" min={1} max={8} value={form.passengers} onChange={(e) => updateForm('passengers', e.target.value === '' ? '' : parseInt(e.target.value))} onBlur={(e) => { if (!e.target.value || parseInt(e.target.value) < 1) updateForm('passengers', 1); }} className="h-12" />
                     </div>
                     <div className="space-y-2">
                       <Label>{t(lang, 'luggage')}</Label>
-                      <Input type="number" min={0} max={15} value={form.luggage} onChange={(e) => updateForm('luggage', parseInt(e.target.value) || 0)} className="h-12" />
+                      <Input type="number" min={0} max={15} value={form.luggage} onChange={(e) => updateForm('luggage', e.target.value === '' ? '' : parseInt(e.target.value))} onBlur={(e) => { if (e.target.value === '') updateForm('luggage', 0); }} className="h-12" />
                     </div>
                   </div>
                 </div>

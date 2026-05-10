@@ -10,6 +10,7 @@ const langTexts = {
 };
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   const payload = await req.json();
@@ -181,12 +182,32 @@ Deno.serve(async (req) => {
 </html>
   `.trim();
 
+  // Email ao cliente
   await base44.integrations.Core.SendEmail({
     to: booking.customer_email,
-    from_name: 'Transfers Algarvestar <info@transfers-algarvestar.com>',
+    from_name: 'Transfers Algarvestar',
     subject: langText.subject.replace('{ref}', booking.booking_ref).replace('{date}', booking.transfer_date).replace('{time}', booking.transfer_time),
     body,
   });
 
+  // Cópia ao admin (usa asServiceRole para permitir envio para email externo)
+  const adminBody = `<p>Nova reserva recebida: <strong>${booking.booking_ref}</strong></p>
+<p>Cliente: ${booking.customer_name} (${booking.customer_email})<br/>
+Rota: ${booking.origin} → ${booking.destination}<br/>
+Data: ${booking.transfer_date} ${booking.transfer_time}<br/>
+Veículo: ${booking.vehicle_type} | €${Number(booking.price||0).toFixed(2)} | ${booking.payment_status === 'paid' ? 'Pago (PayPal)' : 'A pagar (Cash)'}</p>
+<p><a href="https://transfers-algarvestar.com/admin">Ver no painel de administração →</a></p>`;
+
+  await base44.asServiceRole.integrations.Core.SendEmail({
+    to: 'info@transfers-algarvestar.com',
+    from_name: 'Transfers Algarvestar - Sistema',
+    subject: `🚗 Nova Reserva: ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
+    body: adminBody,
+  });
+
   return Response.json({ ok: true });
+  } catch (err) {
+    console.error('notifyBookingCreated error:', err?.message || err);
+    return Response.json({ error: err?.message }, { status: 500 });
+  }
 });

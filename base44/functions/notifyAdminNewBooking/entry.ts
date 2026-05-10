@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   const payload = await req.json();
@@ -112,7 +113,7 @@ Deno.serve(async (req) => {
 </html>
   `.trim();
 
-  await base44.integrations.Core.SendEmail({
+  await base44.asServiceRole.integrations.Core.SendEmail({
     to: 'info@transfers-algarvestar.com',
     from_name: 'Transfers Algarvestar <noreply@transfers-algarvestar.com>',
     subject: `🚗 Nova Reserva: ${booking.booking_ref} | ${booking.transfer_date} ${booking.transfer_time}`,
@@ -120,4 +121,8 @@ Deno.serve(async (req) => {
   });
 
   return Response.json({ ok: true });
+  } catch (error) {
+    console.error('notifyAdminNewBooking error:', error?.message || error);
+    return Response.json({ error: error?.message }, { status: 500 });
+  }
 });

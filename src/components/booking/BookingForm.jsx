@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
@@ -39,7 +39,9 @@ export default function BookingForm() {
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
     origin_place: null, destination_place: null,
+    trip_type: 'one_way',
     transfer_date: '', transfer_time: '', flight_number: '',
+    return_date: '', return_time: '', return_flight_number: '',
     passengers: 1, luggage: 1,
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
     extras: [],
@@ -93,7 +95,8 @@ export default function BookingForm() {
   const duration = distanceData?.duration_minutes || 0;
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration), [distance, form.vehicle_type, priceConfigs, duration]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
-  const price = useMemo(() => Math.round((basePrice + extrasTotal) * 100) / 100, [basePrice, extrasTotal]);
+  const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
+  const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -111,7 +114,9 @@ export default function BookingForm() {
         if (!form.transfer_date || !form.transfer_time) return false;
         const bookingDateTime = new Date(`${form.transfer_date}T${form.transfer_time}`);
         const minAllowed = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        return bookingDateTime >= minAllowed;
+        if (bookingDateTime < minAllowed) return false;
+        if (form.trip_type === 'round_trip' && (!form.return_date || !form.return_time)) return false;
+        return true;
       }
       case 5: return form.customer_name && form.customer_email && form.customer_phone;
       default: return false;
@@ -142,6 +147,9 @@ export default function BookingForm() {
       extras_price: extrasTotal,
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
+      trip_type: form.trip_type,
+      return_date: form.trip_type === 'round_trip' ? form.return_date : '',
+      return_time: form.trip_type === 'round_trip' ? form.return_time : '',
       flight_number: form.flight_number,
       return_flight_number: form.return_flight_number || '',
       passengers: form.passengers,
@@ -178,6 +186,9 @@ export default function BookingForm() {
       extras_price: extrasTotal,
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
+      trip_type: form.trip_type,
+      return_date: form.trip_type === 'round_trip' ? form.return_date : '',
+      return_time: form.trip_type === 'round_trip' ? form.return_time : '',
       flight_number: form.flight_number,
       return_flight_number: form.return_flight_number || '',
       passengers: form.passengers,
@@ -249,6 +260,26 @@ export default function BookingForm() {
                     placeholder={t(lang, 'select_place')}
                   />
                 </div>
+                {/* Trip type selector */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => updateForm('trip_type', 'one_way')}
+                    className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all text-sm font-medium ${form.trip_type === 'one_way' ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/40 text-muted-foreground'}`}
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    {t(lang, 'trip_one_way')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateForm('trip_type', 'round_trip')}
+                    className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all text-sm font-medium ${form.trip_type === 'round_trip' ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/40 text-muted-foreground'}`}
+                  >
+                    <ArrowLeftRight className="w-4 h-4" />
+                    {t(lang, 'trip_round_trip')}
+                  </button>
+                </div>
+
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -363,6 +394,27 @@ export default function BookingForm() {
                     <Label>{t(lang, 'return_flight_no')}</Label>
                     <Input placeholder={t(lang, 'return_flight_ph')} value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
                   </div>
+
+                  {/* Return date/time — only for round trip */}
+                  {form.trip_type === 'round_trip' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4 text-primary" /> {t(lang, 'return_date')}</Label>
+                        <Input
+                          type="date"
+                          value={form.return_date}
+                          min={form.transfer_date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                          onChange={(e) => updateForm('return_date', e.target.value)}
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4 text-primary" /> {t(lang, 'return_time')}</Label>
+                        <Input type="time" value={form.return_time} onChange={(e) => updateForm('return_time', e.target.value)} className="h-12" />
+                      </div>
+                    </>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>{t(lang, 'passengers')}</Label>
@@ -415,8 +467,16 @@ export default function BookingForm() {
                     <span className="font-medium">{distance ? `${distance} km` : '—'}</span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>
                     <span className="font-medium">{form.vehicle_type && t(lang, vehicleTypes.find(v => v.id === form.vehicle_type)?.nameKey || '')}</span>
+                    <span className="text-muted-foreground">{t(lang, 'trip_type_label')}:</span>
+                    <span className="font-medium">{form.trip_type === 'round_trip' ? t(lang, 'trip_round_trip') : t(lang, 'trip_one_way')}</span>
                     <span className="text-muted-foreground">{t(lang, 'date')}:</span>
                     <span className="font-medium">{form.transfer_date} {form.transfer_time}</span>
+                    {form.trip_type === 'round_trip' && form.return_date && (
+                      <>
+                        <span className="text-muted-foreground">{t(lang, 'return_date')}:</span>
+                        <span className="font-medium">{form.return_date} {form.return_time}</span>
+                      </>
+                    )}
                     <span className="text-muted-foreground">{t(lang, 'passengers')}:</span>
                     <span className="font-medium">{form.passengers}</span>
                     {form.extras.length > 0 && (

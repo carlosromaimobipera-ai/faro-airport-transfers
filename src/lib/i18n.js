@@ -190,6 +190,11 @@ export const translations = {
     return_flight_no: 'Número do voo de retorno (opcional)',
     return_flight_ph: 'Ex: TP1235',
     return_flight_label: 'Voo de retorno',
+    trip_one_way: 'Só Ida',
+    trip_round_trip: 'Ida e Volta',
+    trip_type_label: 'Tipo de viagem',
+    return_date: 'Data de regresso',
+    return_time: 'Hora de regresso',
   },
 
   en: {
@@ -347,6 +352,11 @@ export const translations = {
     return_flight_no: 'Return flight number (optional)',
     return_flight_ph: 'E.g. TP1235',
     return_flight_label: 'Return flight',
+    trip_one_way: 'One Way',
+    trip_round_trip: 'Round Trip',
+    trip_type_label: 'Trip type',
+    return_date: 'Return date',
+    return_time: 'Return time',
   },
 
   es: {
@@ -504,6 +514,11 @@ export const translations = {
     return_flight_no: 'Número de vuelo de vuelta (opcional)',
     return_flight_ph: 'Ej: TP1235',
     return_flight_label: 'Vuelo de vuelta',
+    trip_one_way: 'Solo Ida',
+    trip_round_trip: 'Ida y Vuelta',
+    trip_type_label: 'Tipo de viaje',
+    return_date: 'Fecha de regreso',
+    return_time: 'Hora de regreso',
   },
 
   fr: {
@@ -661,6 +676,11 @@ export const translations = {
     return_flight_no: 'Numéro de vol retour (optionnel)',
     return_flight_ph: 'Ex : TP1235',
     return_flight_label: 'Vol retour',
+    trip_one_way: 'Aller Simple',
+    trip_round_trip: 'Aller-Retour',
+    trip_type_label: 'Type de trajet',
+    return_date: 'Date de retour',
+    return_time: 'Heure de retour',
   },
 
   de: {
@@ -818,6 +838,11 @@ export const translations = {
     return_flight_no: 'Rückflugnummer (optional)',
     return_flight_ph: 'z.B. TP1235',
     return_flight_label: 'Rückflug',
+    trip_one_way: 'Nur Hinfahrt',
+    trip_round_trip: 'Hin- und Rückfahrt',
+    trip_type_label: 'Reisetyp',
+    return_date: 'Rückfahrtdatum',
+    return_time: 'Rückfahrtzeit',
   },
 
   nl: {
@@ -975,6 +1000,11 @@ export const translations = {
     return_flight_no: 'Retourvlucht nummer (optioneel)',
     return_flight_ph: 'Bijv. TP1235',
     return_flight_label: 'Retourvlucht',
+    trip_one_way: 'Enkele Reis',
+    trip_round_trip: 'Heen en Terug',
+    trip_type_label: 'Reistype',
+    return_date: 'Retourdatum',
+    return_time: 'Retourtijd',
   },
 };
 

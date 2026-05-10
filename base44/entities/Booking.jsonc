@@ -50,6 +50,24 @@
         }
       }
     },
+    "trip_type": {
+      "type": "string",
+      "enum": [
+        "one_way",
+        "round_trip"
+      ],
+      "default": "one_way",
+      "description": "One-way or round trip"
+    },
+    "return_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Return date (for round trips)"
+    },
+    "return_time": {
+      "type": "string",
+      "description": "Return time (for round trips)"
+    },
     "vehicle_type": {
       "type": "string",
       "enum": [

@@ -186,6 +186,10 @@ export const translations = {
     customer_no_bookings: 'Ainda não tem reservas',
     customer_no_results: 'Nenhuma reserva encontrada',
     customer_make_booking: 'Fazer uma reserva',
+    invalid_route_algarve: 'Rota não disponível. O Algarve deve ser a origem ou o destino da viagem.',
+    return_flight_no: 'Número do voo de retorno (opcional)',
+    return_flight_ph: 'Ex: TP1235',
+    return_flight_label: 'Voo de retorno',
   },
 
   en: {
@@ -339,6 +343,10 @@ export const translations = {
     customer_no_bookings: 'No bookings yet',
     customer_no_results: 'No bookings found',
     customer_make_booking: 'Make a booking',
+    invalid_route_algarve: 'Route not available. The Algarve must be the origin or destination of the journey.',
+    return_flight_no: 'Return flight number (optional)',
+    return_flight_ph: 'E.g. TP1235',
+    return_flight_label: 'Return flight',
   },
 
   es: {
@@ -492,6 +500,10 @@ export const translations = {
     customer_no_bookings: 'Aún no tiene reservas',
     customer_no_results: 'No se encontraron reservas',
     customer_make_booking: 'Hacer una reserva',
+    invalid_route_algarve: 'Ruta no disponible. El Algarve debe ser el origen o el destino del viaje.',
+    return_flight_no: 'Número de vuelo de vuelta (opcional)',
+    return_flight_ph: 'Ej: TP1235',
+    return_flight_label: 'Vuelo de vuelta',
   },
 
   fr: {
@@ -645,6 +657,10 @@ export const translations = {
     customer_no_bookings: 'Pas encore de réservations',
     customer_no_results: 'Aucune réservation trouvée',
     customer_make_booking: 'Faire une réservation',
+    invalid_route_algarve: 'Itinéraire non disponible. L\'Algarve doit être l\'origine ou la destination du voyage.',
+    return_flight_no: 'Numéro de vol retour (optionnel)',
+    return_flight_ph: 'Ex : TP1235',
+    return_flight_label: 'Vol retour',
   },
 
   de: {
@@ -798,6 +814,10 @@ export const translations = {
     customer_no_bookings: 'Noch keine Buchungen',
     customer_no_results: 'Keine Buchungen gefunden',
     customer_make_booking: 'Buchung vornehmen',
+    invalid_route_algarve: 'Route nicht verfügbar. Die Algarve muss Ausgangs- oder Zielort der Fahrt sein.',
+    return_flight_no: 'Rückflugnummer (optional)',
+    return_flight_ph: 'z.B. TP1235',
+    return_flight_label: 'Rückflug',
   },
 
   nl: {
@@ -951,6 +971,10 @@ export const translations = {
     customer_no_bookings: 'Nog geen boekingen',
     customer_no_results: 'Geen boekingen gevonden',
     customer_make_booking: 'Een boeking maken',
+    invalid_route_algarve: 'Route niet beschikbaar. De Algarve moet het vertrek- of aankomstpunt van de reis zijn.',
+    return_flight_no: 'Retourvlucht nummer (optioneel)',
+    return_flight_ph: 'Bijv. TP1235',
+    return_flight_label: 'Retourvlucht',
   },
 };
 

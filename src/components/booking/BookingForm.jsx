@@ -252,7 +252,7 @@ export default function BookingForm() {
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>Rota não disponível. O Algarve deve ser a origem ou o destino da viagem.</span>
+                    <span>{t(lang, 'invalid_route_algarve')}</span>
                   </div>
                 )}
                 {/* Estimated price preview */}
@@ -360,8 +360,8 @@ export default function BookingForm() {
                     <Input placeholder={t(lang, 'flight_ph')} value={form.flight_number} onChange={(e) => updateForm('flight_number', e.target.value)} className="h-12" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Número do voo de retorno (opcional)</Label>
-                    <Input placeholder="Ex: TP1235" value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
+                    <Label>{t(lang, 'return_flight_no')}</Label>
+                    <Input placeholder={t(lang, 'return_flight_ph')} value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -429,7 +429,7 @@ export default function BookingForm() {
                     )}
                     {form.return_flight_number && (
                       <>
-                        <span className="text-muted-foreground">Voo de retorno:</span>
+                        <span className="text-muted-foreground">{t(lang, 'return_flight_label')}:</span>
                         <span className="font-medium">{form.return_flight_number}</span>
                       </>
                     )}

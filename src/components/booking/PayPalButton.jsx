@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { PayPalScriptProvider, PayPalButtons, FUNDING } from '@paypal/react-paypal-js';
 import { base44 } from '@/api/base44Client';
 
 export default function PayPalButton({ amount, onSuccess, onError }) {
@@ -55,7 +55,8 @@ export default function PayPalButton({ amount, onSuccess, onError }) {
           </div>
         )}
         <PayPalButtons
-          style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+          fundingSource={FUNDING.PAYPAL}
+          style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', tagline: false }}
           createOrder={createOrder}
           onApprove={onApprove}
           onError={(err) => onError(err?.message || 'Erro no pagamento PayPal.')}

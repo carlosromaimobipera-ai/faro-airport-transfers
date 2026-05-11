@@ -37,9 +37,16 @@
       }
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.driver_id": "{{user.id}}"
+        }
+      ]
     },
     "update": {
       "user_condition": {

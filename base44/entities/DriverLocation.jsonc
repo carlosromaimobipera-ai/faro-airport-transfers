@@ -50,14 +50,28 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "driver"
-      }
+      "$and": [
+        {
+          "user_condition": {
+            "role": "driver"
+          }
+        },
+        {
+          "data.driver_id": "{{user.id}}"
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.driver_id": "{{user.id}}"
+        }
+      ]
     },
     "update": false,
     "delete": {

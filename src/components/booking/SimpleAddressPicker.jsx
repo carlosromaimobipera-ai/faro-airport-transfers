@@ -7,18 +7,18 @@ import { t } from '@/lib/i18n';
 
 const COMMON_LOCATIONS_BASE = [
   { nameKey: 'common_location_airport', icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
-  { nameFixed: '✈️ Aeroporto de Lisboa (Humberto Delgado)', coords: { lat: 38.6747, lng: -9.1283 } },
-  { nameFixed: '✈️ Aeroporto de Sevilha (SVQ)', coords: { lat: 37.4174, lng: -5.8892 } },
-  { nameFixed: '📍 Albufeira', coords: { lat: 37.0901, lng: -8.2506 } },
-  { nameFixed: '📍 Vilamoura', coords: { lat: 37.0662, lng: -8.1212 } },
-  { nameFixed: '📍 Lagos', coords: { lat: 37.1063, lng: -8.6705 } },
-  { nameFixed: '📍 Portimão', coords: { lat: 37.1412, lng: -8.5292 } },
-  { nameFixed: '📍 Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 } },
-  { nameFixed: '📍 Tavira', coords: { lat: 36.9625, lng: -7.6533 } },
+  { nameKey: 'common_location_lisbon_airport', icon: '✈️', coords: { lat: 38.6747, lng: -9.1283 } },
+  { nameKey: 'common_location_seville_airport', icon: '✈️', coords: { lat: 37.4174, lng: -5.8892 } },
+  { nameKey: 'common_location_albufeira', icon: '📍', coords: { lat: 37.0901, lng: -8.2506 } },
+  { nameKey: 'common_location_vilamoura', icon: '📍', coords: { lat: 37.0662, lng: -8.1212 } },
+  { nameKey: 'common_location_lagos', icon: '📍', coords: { lat: 37.1063, lng: -8.6705 } },
+  { nameKey: 'common_location_portimao', icon: '📍', coords: { lat: 37.1412, lng: -8.5292 } },
+  { nameKey: 'common_location_armacao', icon: '📍', coords: { lat: 37.0845, lng: -8.3642 } },
+  { nameKey: 'common_location_tavira', icon: '📍', coords: { lat: 36.9625, lng: -7.6533 } },
   { nameKey: 'common_location_center', icon: '📍', coords: { lat: 37.0194, lng: -7.9322 } },
-  { nameFixed: '📍 Silves', coords: { lat: 37.2425, lng: -8.4384 } },
-  { nameFixed: '📍 Lisboa', coords: { lat: 38.7223, lng: -9.1393 } },
-  { nameFixed: '📍 Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
+  { nameKey: 'common_location_silves', icon: '📍', coords: { lat: 37.2425, lng: -8.4384 } },
+  { nameKey: 'common_location_lisbon', icon: '📍', coords: { lat: 38.7223, lng: -9.1393 } },
+  { nameKey: 'common_location_seville', icon: '📍', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
 export default function SimpleAddressPicker({ label, value, onChange, placeholder }) {
@@ -28,7 +28,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
-    name: loc.nameKey ? `${loc.icon} ${t(lang, loc.nameKey)}` : loc.nameFixed,
+    name: `${loc.icon} ${t(lang, loc.nameKey)}`,
   }));
 
   const resolvedPlaceholder = placeholder || t(lang, 'select_place');

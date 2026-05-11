@@ -16,18 +16,11 @@ function loadGoogleMaps(apiKey) {
   return window._googleMapsLoading;
 }
 
-const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-
 export default function PlacesAutocomplete({ label, value, onChange, icon: Icon = MapPin, placeholder = "Escreva a morada..." }) {
   const inputRef = useRef(null);
   const autocompleteRef = useRef(null);
   const [inputValue, setInputValue] = useState(value?.address || '');
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (!API_KEY) return;
-    loadGoogleMaps(API_KEY).then(() => setReady(true));
-  }, []);
+  const [ready] = useState(false); // Google Maps disabled — use SimpleAddressPicker instead
 
   useEffect(() => {
     if (!ready || !inputRef.current) return;
@@ -57,19 +50,7 @@ export default function PlacesAutocomplete({ label, value, onChange, icon: Icon 
     }
   }, [value]);
 
-  if (!API_KEY) {
-    return (
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
-          <Icon className="w-4 h-4 text-primary" />
-          {label}
-        </Label>
-        <div className="h-12 px-4 flex items-center border border-amber-300 bg-amber-50 rounded-md text-xs text-amber-700">
-          Configure VITE_GOOGLE_PLACES_API_KEY para ativar autocomplete
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="space-y-2">

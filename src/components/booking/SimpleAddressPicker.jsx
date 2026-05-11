@@ -21,31 +21,10 @@ const COMMON_LOCATIONS_BASE = [
   { nameFixed: '📍 Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
-// Load Google Maps script once
-let googleMapsPromise = null;
-function loadGoogleMaps(apiKey) {
-  if (googleMapsPromise) return googleMapsPromise;
-  if (window.google?.maps?.places) {
-    googleMapsPromise = Promise.resolve();
-    return googleMapsPromise;
-  }
-  googleMapsPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=pt`;
-    script.async = true;
-    script.defer = true;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-  return googleMapsPromise;
-}
-
 export default function SimpleAddressPicker({ label, value, onChange, placeholder }) {
   const { lang } = useLang();
   const inputRef = useRef(null);
   const containerRef = useRef(null);
-  const autocompleteRef = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
@@ -55,76 +34,26 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const resolvedPlaceholder = placeholder || t(lang, 'select_place');
 
   const [inputValue, setInputValue] = useState(value?.address || '');
-  const [showCommon, setShowCommon] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const debounceTimer = useRef(null);
 
   // Sync inputValue when parent passes a value (e.g. user navigates back)
   useEffect(() => {
     setInputValue(value?.address || '');
   }, [value?.address]);
-  const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
-  const [fallbackMode, setFallbackMode] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const debounceTimer = useRef(null);
 
-  // Load API key and init Google Autocomplete
+  // Fetch predictions from backend when user types
   useEffect(() => {
-    base44.functions.invoke('getGoogleApiKey', {}).then(async (res) => {
-      const apiKey = res.data?.apiKey;
-      if (!apiKey) { setFallbackMode(true); return; }
-      try {
-        await loadGoogleMaps(apiKey);
-        // Verify Google Maps actually loaded without errors
-        if (window.google?.maps?.places?.Autocomplete) {
-          setApiKeyLoaded(true);
-        } else {
-          setFallbackMode(true);
-        }
-      } catch {
-        setFallbackMode(true);
-      }
-    }).catch(() => setFallbackMode(true));
-
-    // Listen for Google Maps auth errors (RefererNotAllowedMapError, etc.)
-    const handleGMapsError = () => {
-      googleMapsPromise = null; // reset so it can retry
-      setFallbackMode(true);
-      setApiKeyLoaded(false);
-    };
-    window.gm_authFailure = handleGMapsError;
-  }, []);
-
-  // Init Google Places Autocomplete after script loads
-  useEffect(() => {
-    if (!apiKeyLoaded || !inputRef.current || autocompleteRef.current) return;
-
-    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-      fields: ['formatted_address', 'geometry', 'name'],
-      componentRestrictions: { country: ['pt', 'es'] },
-    });
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (!place.geometry?.location) return;
-      const address = place.formatted_address || place.name;
-      const coords = {
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
-      };
-      setInputValue(address);
-      onChange({ address, coords });
-      setShowCommon(false);
-    });
-
-    autocompleteRef.current = autocomplete;
-  }, [apiKeyLoaded]);
-
-  // Fallback: backend predictions
-  useEffect(() => {
-    if (!fallbackMode) return;
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     const trimmed = inputValue.trim();
-    if (!trimmed || value?.coords) { setSuggestions([]); return; }
+
+    // If a location is already selected or input is empty, clear suggestions
+    if (!trimmed || value?.coords) {
+      setSuggestions([]);
+      return;
+    }
 
     setLoading(true);
     debounceTimer.current = setTimeout(async () => {
@@ -139,13 +68,13 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     }, 400);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [inputValue, fallbackMode]);
+  }, [inputValue, value?.coords]);
 
-  // Close common locations on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setShowCommon(false);
+        setShowDropdown(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -153,10 +82,10 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   }, []);
 
   const handleSelect = (location) => {
-    const address = location.address || location.name?.replace(/^[^\w\u00C0-\u024F✈️📍]+/, '').trim();
+    const address = location.address || location.name?.replace(/^[\s✈️📍]+/, '').trim();
     setInputValue(address);
     onChange({ address, coords: location.coords });
-    setShowCommon(false);
+    setShowDropdown(false);
     setSuggestions([]);
   };
 
@@ -164,6 +93,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setInputValue('');
     onChange(null);
     setSuggestions([]);
+    setShowDropdown(true);
     if (inputRef.current) inputRef.current.focus();
   };
 
@@ -171,8 +101,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     !inputValue.trim() || loc.name.toLowerCase().includes(inputValue.toLowerCase())
   );
 
-  const showDropdown = showCommon && filteredCommon.length > 0;
-  const showFallbackDropdown = fallbackMode && (loading || suggestions.length > 0 || filteredCommon.length > 0);
+  const isDropdownVisible = showDropdown && !value?.coords;
+  const hasContent = loading || suggestions.length > 0 || filteredCommon.length > 0;
 
   return (
     <div className="space-y-2" ref={containerRef}>
@@ -189,9 +119,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           onChange={(e) => {
             setInputValue(e.target.value);
             onChange(null);
-            if (!apiKeyLoaded) setShowCommon(true);
+            setShowDropdown(true);
           }}
-          onFocus={() => setShowCommon(true)}
+          onFocus={() => setShowDropdown(true)}
           placeholder={resolvedPlaceholder}
           autoComplete="off"
           className="w-full h-12 px-4 pr-10 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
@@ -206,26 +136,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           ) : null}
         </div>
 
-        {/* Common locations dropdown (shown when Google Maps is active - user can pick quickly) */}
-        {showDropdown && !fallbackMode && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-            <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
-              {t(lang, 'popular_locations')}
-            </div>
-            {filteredCommon.map((location) => (
-              <button
-                key={location.name}
-                onMouseDown={() => handleSelect(location)}
-                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
-              >
-                <span className="truncate">{location.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Fallback dropdown */}
-        {showFallbackDropdown && (
+        {isDropdownVisible && hasContent && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
             {suggestions.length > 0 && (
               <>

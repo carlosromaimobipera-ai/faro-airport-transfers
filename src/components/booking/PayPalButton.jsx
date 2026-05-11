@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from '@paypal/react-paypal-js';
 import { base44 } from '@/api/base44Client';
+import { useLang } from '@/lib/LanguageContext';
+
+const PAYPAL_LOCALES = {
+  pt: 'pt_PT',
+  en: 'en_GB',
+  es: 'es_ES',
+  fr: 'fr_FR',
+  de: 'de_DE',
+  nl: 'nl_NL',
+};
 
 export default function PayPalButton({ amount, onSuccess, onError, fundingSource = null }) {
+  const { lang } = useLang();
   const [loading, setLoading] = useState(false);
   const [clientId, setClientId] = useState(null);
 
@@ -47,7 +58,7 @@ export default function PayPalButton({ amount, onSuccess, onError, fundingSource
   }
 
   return (
-    <PayPalScriptProvider options={{ clientId, currency: 'EUR', components: 'buttons', enableFunding: 'card' }}>
+    <PayPalScriptProvider options={{ clientId, currency: 'EUR', components: 'buttons', enableFunding: 'card', locale: PAYPAL_LOCALES[lang] || 'en_GB' }}>
       <div className="w-full space-y-2">
         {loading && (
           <div className="flex justify-center mb-3">

@@ -199,9 +199,16 @@
           }
         },
         {
-          "user_condition": {
-            "role": "driver"
-          }
+          "$and": [
+            {
+              "user_condition": {
+                "role": "driver"
+              }
+            },
+            {
+              "data.driver_id": "{{user.id}}"
+            }
+          ]
         }
       ]
     },
@@ -213,9 +220,16 @@
           }
         },
         {
-          "user_condition": {
-            "role": "driver"
-          }
+          "$and": [
+            {
+              "user_condition": {
+                "role": "driver"
+              }
+            },
+            {
+              "data.driver_id": "{{user.id}}"
+            }
+          ]
         }
       ]
     },

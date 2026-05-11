@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
+import TimePicker from './TimePicker.jsx';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
@@ -385,7 +386,7 @@ export default function BookingForm() {
                   </div>
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> {t(lang, 'time')}</Label>
-                    <Input type="time" value={form.transfer_time} onChange={(e) => updateForm('transfer_time', e.target.value)} className="h-12" />
+                    <TimePicker value={form.transfer_time} onChange={(v) => updateForm('transfer_time', v)} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t(lang, 'flight_no')}</Label>
@@ -411,7 +412,7 @@ export default function BookingForm() {
                       </div>
                       <div className="space-y-2">
                         <Label className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4 text-primary" /> {t(lang, 'return_time')}</Label>
-                        <Input type="time" value={form.return_time} onChange={(e) => updateForm('return_time', e.target.value)} className="h-12" />
+                        <TimePicker value={form.return_time} onChange={(v) => updateForm('return_time', v)} />
                       </div>
                     </>
                   )}

@@ -523,7 +523,7 @@ export default function BookingForm() {
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
                     <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-5 object-contain" />
-                    <span className="text-xs font-medium text-foreground">PayPal</span>
+                    <span className="text-xs font-medium text-foreground">{t(lang, 'pay_paypal')}</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('cash')}
@@ -572,7 +572,7 @@ export default function BookingForm() {
               </>
             )}
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 1} className="gap-2">
+              <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 1} className="gap-2 min-w-[100px]">
                 <ArrowLeft className="w-4 h-4" /> {t(lang, 'btn_back')}
               </Button>
               {step < 5 && (

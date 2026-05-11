@@ -74,11 +74,24 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       if (!apiKey) { setFallbackMode(true); return; }
       try {
         await loadGoogleMaps(apiKey);
-        setApiKeyLoaded(true);
+        // Verify Google Maps actually loaded without errors
+        if (window.google?.maps?.places?.Autocomplete) {
+          setApiKeyLoaded(true);
+        } else {
+          setFallbackMode(true);
+        }
       } catch {
         setFallbackMode(true);
       }
     }).catch(() => setFallbackMode(true));
+
+    // Listen for Google Maps auth errors (RefererNotAllowedMapError, etc.)
+    const handleGMapsError = () => {
+      googleMapsPromise = null; // reset so it can retry
+      setFallbackMode(true);
+      setApiKeyLoaded(false);
+    };
+    window.gm_authFailure = handleGMapsError;
   }, []);
 
   // Init Google Places Autocomplete after script loads

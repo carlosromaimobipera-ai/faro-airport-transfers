@@ -2,21 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Label } from "@/components/ui/label";
 import { MapPin, CheckCircle2, Loader2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
-const COMMON_LOCATIONS = [
-  { name: '✈️ Aeroporto de Faro (FAO)', coords: { lat: 37.0144, lng: -7.9699 } },
-  { name: '✈️ Aeroporto de Lisboa (Humberto Delgado)', coords: { lat: 38.6747, lng: -9.1283 } },
-  { name: '✈️ Aeroporto de Sevilha (SVQ)', coords: { lat: 37.4174, lng: -5.8892 } },
-  { name: '📍 Albufeira', coords: { lat: 37.0901, lng: -8.2506 } },
-  { name: '📍 Vilamoura', coords: { lat: 37.0662, lng: -8.1212 } },
-  { name: '📍 Lagos', coords: { lat: 37.1063, lng: -8.6705 } },
-  { name: '📍 Portimão', coords: { lat: 37.1412, lng: -8.5292 } },
-  { name: '📍 Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 } },
-  { name: '📍 Tavira', coords: { lat: 36.9625, lng: -7.6533 } },
-  { name: '📍 Centro de Faro', coords: { lat: 37.0194, lng: -7.9322 } },
-  { name: '📍 Silves', coords: { lat: 37.2425, lng: -8.4384 } },
-  { name: '📍 Centro de Lisboa', coords: { lat: 38.7223, lng: -9.1393 } },
-  { name: '📍 Centro de Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
+const COMMON_LOCATIONS_BASE = [
+  { nameKey: 'common_location_airport', icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
+  { nameFixed: '✈️ Aeroporto de Lisboa (Humberto Delgado)', coords: { lat: 38.6747, lng: -9.1283 } },
+  { nameFixed: '✈️ Aeroporto de Sevilha (SVQ)', coords: { lat: 37.4174, lng: -5.8892 } },
+  { nameFixed: '📍 Albufeira', coords: { lat: 37.0901, lng: -8.2506 } },
+  { nameFixed: '📍 Vilamoura', coords: { lat: 37.0662, lng: -8.1212 } },
+  { nameFixed: '📍 Lagos', coords: { lat: 37.1063, lng: -8.6705 } },
+  { nameFixed: '📍 Portimão', coords: { lat: 37.1412, lng: -8.5292 } },
+  { nameFixed: '📍 Armação de Pêra', coords: { lat: 37.0845, lng: -8.3642 } },
+  { nameFixed: '📍 Tavira', coords: { lat: 36.9625, lng: -7.6533 } },
+  { nameKey: 'common_location_center', icon: '📍', coords: { lat: 37.0194, lng: -7.9322 } },
+  { nameFixed: '📍 Silves', coords: { lat: 37.2425, lng: -8.4384 } },
+  { nameFixed: '📍 Lisboa', coords: { lat: 38.7223, lng: -9.1393 } },
+  { nameFixed: '📍 Sevilha', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
 // Load Google Maps script once
@@ -39,10 +41,18 @@ function loadGoogleMaps(apiKey) {
   return googleMapsPromise;
 }
 
-export default function SimpleAddressPicker({ label, value, onChange, placeholder = "Procurar morada ou selecionar..." }) {
+export default function SimpleAddressPicker({ label, value, onChange, placeholder }) {
+  const { lang } = useLang();
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const autocompleteRef = useRef(null);
+
+  const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
+    ...loc,
+    name: loc.nameKey ? `${loc.icon} ${t(lang, loc.nameKey)}` : loc.nameFixed,
+  }));
+
+  const resolvedPlaceholder = placeholder || t(lang, 'select_place');
 
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [showCommon, setShowCommon] = useState(false);
@@ -164,7 +174,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             if (!apiKeyLoaded) setShowCommon(true);
           }}
           onFocus={() => setShowCommon(true)}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           autoComplete="off"
           className="w-full h-12 px-4 pr-10 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
         />
@@ -182,7 +192,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         {showDropdown && !fallbackMode && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
             <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
-              Locais populares
+              {t(lang, 'popular_locations')}
             </div>
             {filteredCommon.map((location) => (
               <button
@@ -202,7 +212,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             {suggestions.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
-                  Resultados
+                  {t(lang, 'search_results')}
                 </div>
                 {suggestions.map((loc, idx) => (
                   <button
@@ -219,7 +229,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             {filteredCommon.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
-                  Locais populares
+                  {t(lang, 'popular_locations')}
                 </div>
                 {filteredCommon.map((location) => (
                   <button
@@ -234,7 +244,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             )}
             {!loading && suggestions.length === 0 && filteredCommon.length === 0 && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
-                Nenhuma localização encontrada
+                {t(lang, 'no_location_found')}
               </div>
             )}
           </div>

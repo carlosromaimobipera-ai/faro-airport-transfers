@@ -202,6 +202,9 @@ export const translations = {
     extra_baby_seat_desc: 'Cadeira homologada para crianças até 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Motorista à chegada com placa com o seu nome',
+    popular_locations: 'Locais populares',
+    search_results: 'Resultados',
+    no_location_found: 'Nenhuma localização encontrada',
   },
 
   en: {
@@ -371,6 +374,9 @@ export const translations = {
     extra_baby_seat_desc: 'Approved seat for children up to 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Driver waiting with a name sign on arrival',
+    popular_locations: 'Popular locations',
+    search_results: 'Results',
+    no_location_found: 'No location found',
   },
 
   es: {
@@ -540,6 +546,9 @@ export const translations = {
     extra_baby_seat_desc: 'Silla homologada para niños hasta 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Conductor esperando con cartel con su nombre',
+    popular_locations: 'Ubicaciones populares',
+    search_results: 'Resultados',
+    no_location_found: 'No se encontró ninguna ubicación',
   },
 
   fr: {
@@ -709,6 +718,9 @@ export const translations = {
     extra_baby_seat_desc: 'Siège homologué pour enfants jusqu\'à 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Chauffeur à l\'arrivée avec panneau à votre nom',
+    popular_locations: 'Lieux populaires',
+    search_results: 'Résultats',
+    no_location_found: 'Aucun lieu trouvé',
   },
 
   de: {
@@ -878,6 +890,9 @@ export const translations = {
     extra_baby_seat_desc: 'Zugelassener Sitz für Kinder bis 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Fahrer wartet mit Namensschild bei Ankunft',
+    popular_locations: 'Beliebte Orte',
+    search_results: 'Ergebnisse',
+    no_location_found: 'Kein Ort gefunden',
   },
 
   nl: {
@@ -1047,6 +1062,9 @@ export const translations = {
     extra_baby_seat_desc: 'Goedgekeurd zitje voor kinderen tot 18 kg',
     extra_meet_greet: 'Meet & Greet',
     extra_meet_greet_desc: 'Chauffeur wacht met naambordje bij aankomst',
+    popular_locations: 'Populaire locaties',
+    search_results: 'Resultaten',
+    no_location_found: 'Geen locatie gevonden',
   },
 };
 

@@ -56,6 +56,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [showCommon, setShowCommon] = useState(false);
+
+  // Sync inputValue when parent passes a value (e.g. user navigates back)
+  useEffect(() => {
+    setInputValue(value?.address || '');
+  }, [value?.address]);
   const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
   const [fallbackMode, setFallbackMode] = useState(false);
   const [suggestions, setSuggestions] = useState([]);

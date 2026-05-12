@@ -17,6 +17,7 @@ async function sendEmail({ to, subject, body }) {
 }
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   const now = new Date();
@@ -120,4 +121,8 @@ Deno.serve(async (req) => {
   }
 
   return Response.json({ ok: true, checked: bookings.length, eligible: eligible.length, reminders: remindersSent });
+  } catch (err) {
+    console.error('sendClientReminder error:', err?.message || err);
+    return Response.json({ error: err?.message }, { status: 500 });
+  }
 });

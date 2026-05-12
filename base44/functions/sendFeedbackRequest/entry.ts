@@ -31,6 +31,7 @@ const helpLabels = { pt: 'Sua opinião nos ajuda a melhorar.', en: 'Your feedbac
 const thanksLabels = { pt: 'Obrigado por sua avaliação!', en: 'Thank you for your review!', es: '¡Gracias por tu reseña!', fr: 'Merci pour votre avis !', de: 'Danke für Ihre Bewertung!', nl: 'Bedankt voor uw review!' };
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   const bookings = await base44.asServiceRole.entities.Booking.list('-transfer_date', 1000);
@@ -89,4 +90,8 @@ Deno.serve(async (req) => {
   }
 
   return Response.json({ ok: true, sent: feedbackSent.length, details: feedbackSent });
+  } catch (err) {
+    console.error('sendFeedbackRequest error:', err?.message || err);
+    return Response.json({ error: err?.message }, { status: 500 });
+  }
 });

@@ -18,6 +18,7 @@ async function sendEmail({ to, subject, body }) {
 }
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   const now = new Date();
@@ -130,4 +131,8 @@ Deno.serve(async (req) => {
   });
 
   return Response.json({ ok: true, bookings: stats.total, revenue: stats.total_revenue });
+  } catch (err) {
+    console.error('weeklyReport error:', err?.message || err);
+    return Response.json({ error: err?.message }, { status: 500 });
+  }
 });

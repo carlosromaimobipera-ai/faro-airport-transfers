@@ -103,12 +103,12 @@ export default function ReviewsSection() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <StarRating rating={5} />
             <span className="text-sm font-semibold text-muted-foreground">
-              {avgRating}/5 · {reviews.length}+ avaliações
+              {avgRating}/5 · {reviews.length}+ {t(lang, 'reviews_count_label') || 'reviews'}
             </span>
           </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">Reviews</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">{t(lang, 'reviews_title') || 'Reviews'}</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            {t(lang, 'reviews_sub') || 'Centenas de viajantes satisfeitos em toda a Europa'}
+            {t(lang, 'reviews_sub') || 'Hundreds of satisfied travellers across Europe'}
           </p>
         </div>
 
@@ -156,7 +156,7 @@ export default function ReviewsSection() {
           className="mt-12 text-center"
         >
           <p className="text-sm text-muted-foreground mb-4">
-            Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!
+            {t(lang, 'reviews_cta_text') || 'Happy with our service? Share your experience!'}
           </p>
           <a
             href="https://g.page/r/CeOr3i7UjtNxEBM/review"
@@ -170,7 +170,7 @@ export default function ReviewsSection() {
               <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.3 35.3 26.8 36 24 36c-5.2 0-9.6-3.2-11.3-7.8l-6.6 5.1C9.6 39.5 16.3 44 24 44z"/>
               <path fill="#1565C0" d="M43.6 20H24v8h11.3c-.9 2.5-2.6 4.6-4.8 6l6.2 5.3C40.8 35.6 44 30.2 44 24c0-1.3-.1-2.7-.4-4z"/>
             </svg>
-            Avaliar no Google
+            {t(lang, 'reviews_google_btn') || 'Review on Google'}
             <ExternalLink className="w-4 h-4 text-muted-foreground" />
           </a>
         </motion.div>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useBookingNotifications } from '@/hooks/useBookingNotifications';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,9 +43,16 @@ const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan', minibus: 'Minibus' };
 export default function Admin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const location = useLocation();
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('bookings');
+
+  // Reset to bookings tab whenever navigating to /admin
+  useEffect(() => {
+    setActiveTab('bookings');
+  }, [location.key]);
 
   useBookingNotifications(!!user);
 
@@ -201,7 +208,7 @@ export default function Admin() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="bookings">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="financial" className="gap-1.5">
               <BarChart2 className="w-4 h-4" /> Financeiro

@@ -214,6 +214,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisboa',
     common_location_seville: 'Sevilha',
+    reviews_title: 'Avaliações',
+    reviews_count_label: 'avaliações',
+    reviews_sub: 'Centenas de viajantes satisfeitos em toda a Europa',
+    reviews_cta_text: 'Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!',
+    reviews_google_btn: 'Avaliar no Google',
   },
 
   en: {
@@ -395,6 +400,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisbon',
     common_location_seville: 'Seville',
+    reviews_title: 'Reviews',
+    reviews_count_label: 'reviews',
+    reviews_sub: 'Hundreds of satisfied travellers across Europe',
+    reviews_cta_text: 'Happy with our service? Share your experience!',
+    reviews_google_btn: 'Review on Google',
   },
 
   es: {
@@ -576,6 +586,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisboa',
     common_location_seville: 'Sevilla',
+    reviews_title: 'Reseñas',
+    reviews_count_label: 'reseñas',
+    reviews_sub: 'Cientos de viajeros satisfechos en toda Europa',
+    reviews_cta_text: '¿Satisfecho con nuestro servicio? ¡Comparta su experiencia!',
+    reviews_google_btn: 'Valorar en Google',
   },
 
   fr: {
@@ -757,6 +772,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisbonne',
     common_location_seville: 'Séville',
+    reviews_title: 'Avis',
+    reviews_count_label: 'avis',
+    reviews_sub: 'Des centaines de voyageurs satisfaits à travers l\'Europe',
+    reviews_cta_text: 'Satisfait de notre service ? Partagez votre expérience !',
+    reviews_google_btn: 'Évaluer sur Google',
   },
 
   de: {
@@ -938,6 +958,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lissabon',
     common_location_seville: 'Sevilla',
+    reviews_title: 'Bewertungen',
+    reviews_count_label: 'Bewertungen',
+    reviews_sub: 'Hunderte zufriedene Reisende in ganz Europa',
+    reviews_cta_text: 'Zufrieden mit unserem Service? Teilen Sie Ihre Erfahrung!',
+    reviews_google_btn: 'Auf Google bewerten',
   },
 
   nl: {
@@ -1119,6 +1144,11 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lissabon',
     common_location_seville: 'Sevilla',
+    reviews_title: 'Beoordelingen',
+    reviews_count_label: 'beoordelingen',
+    reviews_sub: 'Honderden tevreden reizigers door heel Europa',
+    reviews_cta_text: 'Tevreden met onze service? Deel uw ervaring!',
+    reviews_google_btn: 'Beoordeel op Google',
   },
 };
 

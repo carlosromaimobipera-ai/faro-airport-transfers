@@ -1,8 +1,22 @@
 import React from 'react';
 import { MapPin, ArrowRight, Zap, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
+
+const routeLabels = {
+  pt: { origin: 'Partida', destination: 'Destino', distance: 'Distância', duration: 'Duração', basePrice: 'Preço base' },
+  en: { origin: 'Pickup', destination: 'Drop-off', distance: 'Distance', duration: 'Duration', basePrice: 'Base price' },
+  es: { origin: 'Recogida', destination: 'Destino', distance: 'Distancia', duration: 'Duración', basePrice: 'Precio base' },
+  fr: { origin: 'Départ', destination: 'Destination', distance: 'Distance', duration: 'Durée', basePrice: 'Prix de base' },
+  de: { origin: 'Abfahrt', destination: 'Ziel', distance: 'Entfernung', duration: 'Dauer', basePrice: 'Grundpreis' },
+  nl: { origin: 'Vertrek', destination: 'Bestemming', distance: 'Afstand', duration: 'Duur', basePrice: 'Basisprijs' },
+};
 
 export default function RouteInfoBadge({ origin, destination, distance, price, duration_minutes, isLoading }) {
+  const { lang } = useLang();
+  const labels = routeLabels[lang] || routeLabels['en'];
+
   if (!origin || !distance) return null;
 
   return (
@@ -17,12 +31,12 @@ export default function RouteInfoBadge({ origin, destination, distance, price, d
           <MapPin className="w-4 h-4 text-primary" />
         </div>
         <div className="text-xs min-w-0">
-          <p className="text-muted-foreground">Partida</p>
+          <p className="text-muted-foreground">{labels.origin}</p>
           <p className="font-semibold text-foreground break-words">{origin}</p>
         </div>
         <ArrowRight className="w-4 h-4 text-secondary shrink-0 mx-1" />
         <div className="text-xs min-w-0">
-          <p className="text-muted-foreground">Destino</p>
+          <p className="text-muted-foreground">{labels.destination}</p>
           <p className="font-semibold text-foreground break-words">{destination || '—'}</p>
         </div>
       </div>
@@ -35,32 +49,32 @@ export default function RouteInfoBadge({ origin, destination, distance, price, d
             {isLoading ? <Loader2 className="w-4 h-4 text-blue-600 animate-spin" /> : <span className="text-blue-600 text-xs font-bold">⇔</span>}
           </div>
           <div className="text-xs">
-            <p className="text-muted-foreground">Distância</p>
+            <p className="text-muted-foreground">{labels.distance}</p>
             <p className="font-semibold text-foreground">{distance} km</p>
           </div>
         </div>
 
         {/* Duration */}
-        {duration_minutes && (
+        {duration_minutes > 0 && (
           <div className="flex items-start gap-2">
             <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
               <Clock className="w-4 h-4 text-orange-600" />
             </div>
             <div className="text-xs">
-              <p className="text-muted-foreground">Duração</p>
+              <p className="text-muted-foreground">{labels.duration}</p>
               <p className="font-semibold text-foreground">{duration_minutes} min</p>
             </div>
           </div>
         )}
 
-        {/* Price */}
-        {price && (
+        {/* Price — only show if > 0 */}
+        {price > 0 && (
           <div className="flex items-start gap-2">
             <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4 text-green-600" />
             </div>
             <div className="text-xs">
-              <p className="text-muted-foreground">Preço base</p>
+              <p className="text-muted-foreground">{labels.basePrice}</p>
               <p className="font-semibold text-green-600">€{price.toFixed(2)}</p>
             </div>
           </div>

@@ -203,11 +203,11 @@ export default function BookingForm() {
   };
 
   const steps = [
-    { id: 1, label: 'Rota',      icon: MapPin },
-    { id: 2, label: 'Veículo',   icon: CircleDot },
-    { id: 3, label: 'Extras',    icon: Gift },
-    { id: 4, label: 'Detalhes',  icon: Calendar },
-    { id: 5, label: 'Dados',     icon: User },
+    { id: 1, labelKey: 'step_route',   icon: MapPin },
+    { id: 2, labelKey: 'step_vehicle', icon: CircleDot },
+    { id: 3, labelKey: 'extras_title', icon: Gift },
+    { id: 4, labelKey: 'step_details', icon: Calendar },
+    { id: 5, labelKey: 'step_data',    icon: User },
   ];
 
   return (
@@ -227,7 +227,7 @@ export default function BookingForm() {
               }`}
             >
               <s.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{s.label}</span>
+              <span className="hidden sm:inline">{t(lang, s.labelKey)}</span>
             </button>
             {i < steps.length - 1 && (
               <div className={`w-8 h-0.5 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />

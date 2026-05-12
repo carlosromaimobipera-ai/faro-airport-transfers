@@ -214,6 +214,17 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisboa',
     common_location_seville: 'Sevilha',
+    // Route info badge
+    route_departure: 'Partida',
+    route_destination: 'Destino',
+    route_distance: 'Distância',
+    route_duration: 'Duração',
+    route_base_price: 'Preço base',
+    // Reviews
+    reviews_title: 'Avaliações',
+    reviews_sub: 'Centenas de viajantes satisfeitos em toda a Europa',
+    reviews_google_cta: 'Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!',
+    reviews_google_btn: 'Avaliar no Google',
   },
 
   en: {
@@ -395,6 +406,15 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisbon',
     common_location_seville: 'Seville',
+    route_departure: 'Departure',
+    route_destination: 'Destination',
+    route_distance: 'Distance',
+    route_duration: 'Duration',
+    route_base_price: 'Base price',
+    reviews_title: 'Reviews',
+    reviews_sub: 'Hundreds of satisfied travellers across Europe',
+    reviews_google_cta: 'Happy with our service? Share your experience!',
+    reviews_google_btn: 'Review on Google',
   },
 
   es: {
@@ -576,6 +596,15 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisboa',
     common_location_seville: 'Sevilla',
+    route_departure: 'Salida',
+    route_destination: 'Destino',
+    route_distance: 'Distancia',
+    route_duration: 'Duración',
+    route_base_price: 'Precio base',
+    reviews_title: 'Valoraciones',
+    reviews_sub: 'Cientos de viajeros satisfechos en toda Europa',
+    reviews_google_cta: '¿Satisfecho con nuestro servicio? ¡Comparta su experiencia!',
+    reviews_google_btn: 'Valorar en Google',
   },
 
   fr: {
@@ -757,6 +786,15 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lisbonne',
     common_location_seville: 'Séville',
+    route_departure: 'Départ',
+    route_destination: 'Destination',
+    route_distance: 'Distance',
+    route_duration: 'Durée',
+    route_base_price: 'Prix de base',
+    reviews_title: 'Avis',
+    reviews_sub: 'Des centaines de voyageurs satisfaits à travers l\'Europe',
+    reviews_google_cta: 'Satisfait de notre service ? Partagez votre expérience !',
+    reviews_google_btn: 'Donner un avis sur Google',
   },
 
   de: {
@@ -938,6 +976,15 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lissabon',
     common_location_seville: 'Sevilla',
+    route_departure: 'Abfahrt',
+    route_destination: 'Ziel',
+    route_distance: 'Entfernung',
+    route_duration: 'Fahrtdauer',
+    route_base_price: 'Grundpreis',
+    reviews_title: 'Bewertungen',
+    reviews_sub: 'Hunderte zufriedene Reisende aus ganz Europa',
+    reviews_google_cta: 'Zufrieden mit unserem Service? Teilen Sie Ihre Erfahrung!',
+    reviews_google_btn: 'Bei Google bewerten',
   },
 
   nl: {
@@ -1119,6 +1166,15 @@ export const translations = {
     common_location_silves: 'Silves',
     common_location_lisbon: 'Lissabon',
     common_location_seville: 'Sevilla',
+    route_departure: 'Vertrek',
+    route_destination: 'Bestemming',
+    route_distance: 'Afstand',
+    route_duration: 'Reisduur',
+    route_base_price: 'Basisprijs',
+    reviews_title: 'Beoordelingen',
+    reviews_sub: 'Honderden tevreden reizigers door heel Europa',
+    reviews_google_cta: 'Tevreden met onze service? Deel uw ervaring!',
+    reviews_google_btn: 'Beoordeel op Google',
   },
 };
 

@@ -4,6 +4,8 @@ import { Home, BookOpen, Car, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const SCROLL_POSITIONS = {};
 
@@ -13,10 +15,20 @@ export default function BottomTabBar() {
   const { lang } = useLang();
   const [mounted, setMounted] = useState(false);
 
+  const { data: driverRecord } = useQuery({
+    queryKey: ['driver-self', user?.email],
+    queryFn: () => base44.entities.Driver.filter({ email: user.email }),
+    enabled: !!user?.email && user?.role !== 'admin',
+    select: (data) => data?.[0] || null,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isDriver = user?.role === 'driver' || !!driverRecord;
+
   const tabs = [
     { path: '/', icon: Home, labelKey: 'tab_home' },
     { path: '/area-cliente', icon: BookOpen, labelKey: 'tab_reservations' },
-    ...(user?.role === 'driver' ? [{ path: '/driver', icon: Car, labelKey: 'tab_driver' }] : []),
+    ...(isDriver ? [{ path: '/driver', icon: Car, labelKey: 'tab_driver' }] : []),
     ...(user?.role === 'admin' ? [{ path: '/admin', icon: Settings, labelKey: 'tab_management' }] : []),
   ];
 

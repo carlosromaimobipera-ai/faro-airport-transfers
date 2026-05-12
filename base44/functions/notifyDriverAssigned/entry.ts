@@ -41,8 +41,7 @@ Deno.serve(async (req) => {
     if (!booking?.driver_id) return Response.json({ skipped: 'no driver assigned' });
     if (old_data?.driver_id === booking.driver_id) return Response.json({ skipped: 'same driver, no change' });
 
-    const drivers = await base44.asServiceRole.entities.Driver.filter({ id: booking.driver_id });
-    const driver = drivers[0];
+    const driver = await base44.asServiceRole.entities.Driver.get(booking.driver_id).catch(() => null);
     if (!driver || !driver.email) return Response.json({ skipped: 'driver has no email' });
 
     const lang = booking.language || 'pt';

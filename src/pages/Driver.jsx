@@ -27,9 +27,8 @@ export default function Driver() {
     base44.auth.me().then(async (u) => {
       if (!u) { navigate('/'); return; }
       setUser(u);
-      const drivers = await base44.entities.Driver.list('name', 100);
-      const matched = drivers.find(d => d.email?.toLowerCase() === u.email?.toLowerCase());
-      setDriver(matched || null);
+      const drivers = await base44.entities.Driver.filter({ email: u.email }, 'name', 1);
+      setDriver(drivers[0] || null);
       setAuthLoading(false);
     }).catch(() => { navigate('/'); });
   }, []);

@@ -25,13 +25,13 @@ const langTexts = {
   nl: { subject: '🚗 Nieuwe Rit — {ref} | {date} {time}', newAssignment: '🚗 Nieuwe Rit Toegewezen', message: 'U bent een nieuwe boeking toegewezen. Bevestig alstublieft uw beschikbaarheid en wees op tijd klaar.' }
 };
 
-const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
 
 Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('x-internal-secret');
     const base44 = createClientFromRequest(req);
-    if (authHeader !== INTERNAL_SECRET) {
+    if (!INTERNAL_SECRET || authHeader !== INTERNAL_SECRET) {
       const user = await base44.auth.me().catch(() => null);
       if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     }

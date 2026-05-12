@@ -6,7 +6,8 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
-  const WEBHOOK_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+  const WEBHOOK_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
+  if (!WEBHOOK_SECRET) return Response.json({ error: 'Server misconfigured' }, { status: 500 });
   const providedSecret = req.headers.get('x-webhook-secret') || new URL(req.url).searchParams.get('secret');
   if (providedSecret !== WEBHOOK_SECRET) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

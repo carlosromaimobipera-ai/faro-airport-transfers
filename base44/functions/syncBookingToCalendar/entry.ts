@@ -6,13 +6,13 @@ const VEHICLE_LABEL = {
   minibus: 'Minibus Grupo',
 };
 
-const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
 
 Deno.serve(async (req) => {
   try {
     const internalSecret = req.headers.get('x-internal-secret');
     const base44 = createClientFromRequest(req);
-    if (internalSecret !== INTERNAL_SECRET) {
+    if (!INTERNAL_SECRET || internalSecret !== INTERNAL_SECRET) {
       const user = await base44.auth.me().catch(() => null);
       if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     }

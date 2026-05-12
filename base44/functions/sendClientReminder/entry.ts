@@ -16,14 +16,14 @@ async function sendEmail({ to, subject, body }) {
   return res.json();
 }
 
-const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
 
 Deno.serve(async (req) => {
   try {
   const authHeader = req.headers.get('x-internal-secret');
   const base44 = createClientFromRequest(req);
   // Allow: internal secret OR admin user
-  if (authHeader !== INTERNAL_SECRET) {
+  if (!INTERNAL_SECRET || authHeader !== INTERNAL_SECRET) {
     const user = await base44.auth.me().catch(() => null);
     if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
   }

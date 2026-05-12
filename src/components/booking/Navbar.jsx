@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plane, Menu, X } from 'lucide-react';
+import { Plane, Menu, X, Car } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from './LanguageSwitcher';
@@ -44,6 +44,9 @@ export default function Navbar() {
           <Link to="/area-cliente" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_myreservations')}
           </Link>
+          <Link to="/driver" className={cn("flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+            <Car className="w-4 h-4" /> Motoristas
+          </Link>
           <LanguageSwitcher dark={!scrolled} />
           <a href="#booking">
             <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold ml-2">
@@ -68,6 +71,9 @@ export default function Navbar() {
           <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
           <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>
+          <Link to="/driver" className="flex items-center gap-2 text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>
+            <Car className="w-4 h-4" /> Área do Motorista
+          </Link>
         </div>
       )}
     </nav>

@@ -68,10 +68,11 @@ export default function Admin() {
 
   useEffect(() => {
     base44.auth.me().then(u => {
-      if (!u || u.role !== 'admin') navigate('/');
-      else setUser(u);
+      if (!u) { base44.auth.redirectToLogin(window.location.href); return; }
+      if (u.role !== 'admin') { navigate('/'); return; }
+      setUser(u);
       setAuthLoading(false);
-    }).catch(() => { navigate('/'); setAuthLoading(false); });
+    }).catch(() => { base44.auth.redirectToLogin(window.location.href); });
   }, []);
 
   const { data: bookings = [], isLoading } = useQuery({

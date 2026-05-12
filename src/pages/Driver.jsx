@@ -25,12 +25,12 @@ export default function Driver() {
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
-      if (!u) { navigate('/'); return; }
+      if (!u) { base44.auth.redirectToLogin(window.location.href); return; }
       setUser(u);
       const drivers = await base44.entities.Driver.filter({ email: u.email }, 'name', 1);
       setDriver(drivers[0] || null);
       setAuthLoading(false);
-    }).catch(() => { navigate('/'); });
+    }).catch(() => { base44.auth.redirectToLogin(window.location.href); });
   }, []);
 
   const today = format(new Date(), 'yyyy-MM-dd');

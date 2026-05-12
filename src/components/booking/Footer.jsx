@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plane, Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
@@ -53,8 +54,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-background/10 mt-10 pt-6 text-center text-xs text-background/40">
-          © {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}
+        <div className="border-t border-background/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-background/40">
+          <span>© {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}</span>
+          <div className="flex gap-4">
+            <Link to="/sobre" className="hover:text-background/70 transition-colors">Sobre nós</Link>
+            <Link to="/contacto" className="hover:text-background/70 transition-colors">Contacto</Link>
+          </div>
         </div>
       </div>
     </footer>

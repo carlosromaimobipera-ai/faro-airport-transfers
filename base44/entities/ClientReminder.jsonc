@@ -17,6 +17,11 @@
     "sent_at": {
       "type": "string",
       "description": "Timestamp ISO do envio"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Notas adicionais sobre este lembrete"
     }
   },
   "required": [

@@ -7,6 +7,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
 import Confirmation from '@/pages/Confirmation';
 import Admin from '@/pages/Admin';
 import Review from '@/pages/Review';
@@ -73,6 +75,8 @@ const AuthenticatedApp = () => {
           <Route path="/review" element={<Review />} />
           <Route path="/driver" element={<Driver />} />
           <Route path="/area-cliente" element={<CustomerArea />} />
+          <Route path="/sobre" element={<About />} />
+          <Route path="/contacto" element={<Contact />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>

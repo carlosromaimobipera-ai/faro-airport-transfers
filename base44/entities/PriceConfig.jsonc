@@ -21,6 +21,11 @@
         "route"
       ],
       "description": "Type of config"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Descri\u00e7\u00e3o adicional sobre a configura\u00e7\u00e3o de pre\u00e7o"
     }
   },
   "required": [

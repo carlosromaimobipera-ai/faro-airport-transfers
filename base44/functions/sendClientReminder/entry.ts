@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
   if (eligible.length === 0) return Response.json({ ok: true, checked: bookings.length, reminders: 0 });
 
-  const sentinels = await base44.asServiceRole.entities.DriverLocation.filter({ heading: 998 });
+  const sentinels = await base44.asServiceRole.entities.ClientReminder.filter({ reminder_date: tomorrowStr });
   const alreadySent = new Set(sentinels.map(s => s.booking_id));
 
   const vehicleLabels = { sedan: 'Sedan Conforto', minivan: 'Minivan', minibus: 'Minibus Grupo' };
@@ -107,14 +107,11 @@ Deno.serve(async (req) => {
 
     await sendEmail({ to: booking.customer_email, subject: subjects[lang] || subjects['pt'], body });
 
-    await base44.asServiceRole.entities.DriverLocation.create({
-      driver_id: 'client_reminder',
-      driver_name: booking.customer_name,
+    await base44.asServiceRole.entities.ClientReminder.create({
       booking_id: booking.id,
       booking_ref: booking.booking_ref,
-      lat: 0, lng: 0,
-      heading: 998,
-      recorded_at: now.toISOString(),
+      reminder_date: tomorrowStr,
+      sent_at: now.toISOString(),
     });
 
     remindersSent++;

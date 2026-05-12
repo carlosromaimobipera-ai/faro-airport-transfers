@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useBookingNotifications } from '@/hooks/useBookingNotifications';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,11 +44,9 @@ const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan', minibus: 'Minibus' };
 export default function Admin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user, isLoadingAuth } = useAuth();
 
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useBookingNotifications(!!user);
+  useBookingNotifications(!!user && user.role === 'admin');
 
   const [filterStatus,   setFilterStatus]   = useState('all');
   const [filterPayment,  setFilterPayment]   = useState('all');
@@ -56,12 +55,10 @@ export default function Admin() {
   const [search,         setSearch]          = useState('');
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      if (!u || u.role !== 'admin') navigate('/');
-      else setUser(u);
-      setAuthLoading(false);
-    }).catch(() => { navigate('/'); setAuthLoading(false); });
-  }, []);
+    if (!isLoadingAuth && (!user || user.role !== 'admin')) {
+      navigate('/');
+    }
+  }, [user, isLoadingAuth]);
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings-admin'],
@@ -159,11 +156,13 @@ export default function Admin() {
     window.URL.revokeObjectURL(url);
   };
 
-  if (authLoading) return (
+  if (isLoadingAuth) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />
     </div>
   );
+
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">

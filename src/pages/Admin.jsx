@@ -49,10 +49,14 @@ export default function Admin() {
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('bookings');
 
-  // Reset to bookings tab whenever navigating to /admin
+  // Reset to bookings tab only when navigating TO /admin from another page
+  const prevPathRef = React.useRef(location.pathname);
   useEffect(() => {
-    setActiveTab('bookings');
-  }, [location.key]);
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
+      setActiveTab('bookings');
+    }
+  }, [location.pathname]);
 
   useBookingNotifications(!!user);
 

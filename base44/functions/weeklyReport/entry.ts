@@ -20,6 +20,8 @@ async function sendEmail({ to, subject, body }) {
 Deno.serve(async (req) => {
   try {
   const base44 = createClientFromRequest(req);
+  const user = await base44.auth.me();
+  if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);

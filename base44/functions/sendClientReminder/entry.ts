@@ -16,9 +16,17 @@ async function sendEmail({ to, subject, body }) {
   return res.json();
 }
 
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+
 Deno.serve(async (req) => {
   try {
+  const authHeader = req.headers.get('x-internal-secret');
   const base44 = createClientFromRequest(req);
+  // Allow: internal secret OR admin user
+  if (authHeader !== INTERNAL_SECRET) {
+    const user = await base44.auth.me().catch(() => null);
+    if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);

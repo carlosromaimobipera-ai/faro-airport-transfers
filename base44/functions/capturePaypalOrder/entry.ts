@@ -22,6 +22,10 @@ async function getAccessToken() {
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { orderId } = await req.json();
 
     if (!orderId) {

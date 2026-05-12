@@ -30,9 +30,16 @@ const tripLabels = { pt: 'Detalhes da viagem', en: 'Trip details', es: 'Detalles
 const helpLabels = { pt: 'Sua opinião nos ajuda a melhorar.', en: 'Your feedback helps us improve.', es: 'Su opinión nos ayuda a mejorar.', fr: 'Vos commentaires nous aident à nous améliorer.', de: 'Ihr Feedback hilft uns, besser zu werden.', nl: 'Uw feedback helpt ons beter te worden.' };
 const thanksLabels = { pt: 'Obrigado por sua avaliação!', en: 'Thank you for your review!', es: '¡Gracias por tu reseña!', fr: 'Merci pour votre avis !', de: 'Danke für Ihre Bewertung!', nl: 'Bedankt voor uw review!' };
 
+const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET') || 'algarvestar-internal-2025';
+
 Deno.serve(async (req) => {
   try {
+  const authHeader = req.headers.get('x-internal-secret');
   const base44 = createClientFromRequest(req);
+  if (authHeader !== INTERNAL_SECRET) {
+    const user = await base44.auth.me().catch(() => null);
+    if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const bookings = await base44.asServiceRole.entities.Booking.list('-transfer_date', 1000);
   const now = Date.now();

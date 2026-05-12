@@ -1,5 +1,11 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { address } = await req.json();
     
     if (!address || address.trim().length === 0) {

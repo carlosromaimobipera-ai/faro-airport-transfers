@@ -1,43 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Car, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 
 const SCROLL_POSITIONS = {};
 
 export default function BottomTabBar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, isLoadingAuth } = useAuth();
+  const { user } = useAuth();
   const { lang } = useLang();
   const [mounted, setMounted] = useState(false);
-
-  const { data: driverRecord } = useQuery({
-    queryKey: ['driver-self', user?.email],
-    queryFn: () => base44.entities.Driver.filter({ email: user.email }),
-    enabled: !!user?.email && user?.role !== 'admin',
-    select: (data) => data?.[0] || null,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const isDriver = user?.role === 'driver' || !!driverRecord;
 
   const tabs = [
     { path: '/', icon: Home, labelKey: 'tab_home' },
     { path: '/area-cliente', icon: BookOpen, labelKey: 'tab_reservations' },
-    ...(isDriver ? [{ path: '/driver', icon: Car, labelKey: 'tab_driver' }] : []),
+    ...(user?.role === 'driver' ? [{ path: '/driver', icon: Car, labelKey: 'tab_driver' }] : []),
     ...(user?.role === 'admin' ? [{ path: '/admin', icon: Settings, labelKey: 'tab_management' }] : []),
   ];
-
-  const handleTabClick = (e, path) => {
-    e.preventDefault();
-    navigate(path);
-  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -66,9 +47,9 @@ export default function BottomTabBar() {
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-area-bottom z-40">
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => (
-          <button
+          <Link
             key={tab.path}
-            onClick={(e) => handleTabClick(e, tab.path)}
+            to={tab.path}
             className={`flex flex-col items-center justify-center flex-1 h-16 transition-colors min-h-[44px] ${
               isActive(tab.path)
                 ? 'text-primary'
@@ -77,7 +58,7 @@ export default function BottomTabBar() {
           >
             <tab.icon className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">{t(lang, tab.labelKey)}</span>
-          </button>
+          </Link>
         ))}
       </div>
     </div>

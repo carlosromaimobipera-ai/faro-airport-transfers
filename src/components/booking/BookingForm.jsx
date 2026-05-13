@@ -80,7 +80,7 @@ export default function BookingForm() {
     });
   }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
 
-  const distance = distanceData?.distance_km || (HAS_PLACES_KEY && form.origin_place && form.destination_place 
+  const distance = distanceData?.distance_km || (form.origin_place && form.destination_place 
     ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
     : null);
   const duration = distanceData?.duration_minutes || 0;
@@ -95,9 +95,11 @@ export default function BookingForm() {
   const canProceed = () => {
     switch (step) {
       case 1: {
-        if (!form.origin_place || !form.destination_place || !distance) return false;
+        if (!form.origin_place || !form.destination_place) return false;
+        if (isLoadingDistance) return false;
         const allowed = isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
-        return allowed;
+        if (!allowed) return false;
+        return !!distance;
       }
       case 2: return form.vehicle_type;
       case 3: return true; // extras are optional

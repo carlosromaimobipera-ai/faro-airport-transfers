@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const FROM = 'Transfers Algarvestar <carlosroma.imobipera@gmail.com>';
+const FROM = 'Transfers AlgarveStar <info@transfers-algarvestar.com>';
 const ADMIN_EMAIL = 'info@transfers-algarvestar.com';
 
 async function sendEmail({ to, subject, body }) {

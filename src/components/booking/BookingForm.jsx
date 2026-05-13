@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import TimePicker from './TimePicker.jsx';
+import DatePicker from './DatePicker.jsx';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
@@ -292,7 +293,21 @@ export default function BookingForm() {
                 {isLoadingDistance && form.origin_place && form.destination_place && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin shrink-0" />
-                    {t(lang, 'calculating_distance') || 'A calcular distância via Google Maps...'}
+                    {t(lang, 'calculating_distance')}
+                  </div>
+                )}
+
+                {/* Show warning if user typed manually without selecting coords */}
+                {form.origin_place && !form.origin_place.coords && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {t(lang, 'select_from_list')} ({t(lang, 'origin').toLowerCase()})
+                  </div>
+                )}
+                {form.destination_place && !form.destination_place.coords && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {t(lang, 'select_from_list')} ({t(lang, 'destination').toLowerCase()})
                   </div>
                 )}
 
@@ -391,12 +406,11 @@ export default function BookingForm() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> {t(lang, 'date')}</Label>
-                    <Input
-                      type="date"
+                    <DatePicker
                       value={form.transfer_date}
                       min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                      onChange={(e) => updateForm('transfer_date', e.target.value)}
-                      className="h-12"
+                      onChange={(v) => updateForm('transfer_date', v)}
+                      lang={lang}
                     />
                   </div>
                   <div className="space-y-2">
@@ -417,12 +431,11 @@ export default function BookingForm() {
                     <>
                       <div className="space-y-2">
                         <Label className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4 text-primary" /> {t(lang, 'return_date')}</Label>
-                        <Input
-                          type="date"
+                        <DatePicker
                           value={form.return_date}
                           min={form.transfer_date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                          onChange={(e) => updateForm('return_date', e.target.value)}
-                          className="h-12"
+                          onChange={(v) => updateForm('return_date', v)}
+                          lang={lang}
                         />
                       </div>
                       <div className="space-y-2">

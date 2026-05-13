@@ -227,6 +227,8 @@ export const translations = {
     price_default: 'Padrão',
     price_save: 'Guardar',
     price_reset: 'Repor',
+    calculating_distance: 'A calcular distância por rota...',
+    select_from_list: 'Selecione uma sugestão da lista',
   },
 
   en: {
@@ -421,6 +423,8 @@ export const translations = {
     price_default: 'Default',
     price_save: 'Save',
     price_reset: 'Reset',
+    calculating_distance: 'Calculating route distance...',
+    select_from_list: 'Please select a suggestion from the list',
   },
 
   es: {
@@ -615,6 +619,8 @@ export const translations = {
     price_default: 'Predeterminado',
     price_save: 'Guardar',
     price_reset: 'Restablecer',
+    calculating_distance: 'Calculando distancia por ruta...',
+    select_from_list: 'Seleccione una sugerencia de la lista',
   },
 
   fr: {
@@ -809,6 +815,8 @@ export const translations = {
     price_default: 'Par défaut',
     price_save: 'Enregistrer',
     price_reset: 'Réinitialiser',
+    calculating_distance: 'Calcul de la distance par itinéraire...',
+    select_from_list: 'Veuillez sélectionner une suggestion dans la liste',
   },
 
   de: {
@@ -1003,6 +1011,8 @@ export const translations = {
     price_default: 'Standard',
     price_save: 'Speichern',
     price_reset: 'Zurücksetzen',
+    calculating_distance: 'Routenentfernung wird berechnet...',
+    select_from_list: 'Bitte wählen Sie einen Vorschlag aus der Liste',
   },
 
   nl: {
@@ -1197,6 +1207,8 @@ export const translations = {
     price_default: 'Standaard',
     price_save: 'Opslaan',
     price_reset: 'Herstellen',
+    calculating_distance: 'Routeafstand berekenen...',
+    select_from_list: 'Selecteer een suggestie uit de lijst',
   },
 };
 

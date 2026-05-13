@@ -13,6 +13,7 @@ export const translations = {
     nav_book: 'Reservar',
     nav_manage: 'Gestão',
     nav_myreservations: 'As Minhas Reservas',
+    nav_drivers: 'Motoristas',
     nav_cta: 'Reservar Agora',
     tab_home: 'Início',
     tab_reservations: 'Minhas Reservas',

@@ -45,7 +45,7 @@ export default function Navbar() {
             {t(lang, 'nav_myreservations')}
           </Link>
           <Link to="/driver" className={cn("flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
-            <Car className="w-4 h-4" /> Motoristas
+            <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
           <LanguageSwitcher dark={!scrolled} />
           <a href="#booking">
@@ -72,7 +72,7 @@ export default function Navbar() {
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
           <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>
           <Link to="/driver" className="flex items-center gap-2 text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>
-            <Car className="w-4 h-4" /> Área do Motorista
+            <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
         </div>
       )}

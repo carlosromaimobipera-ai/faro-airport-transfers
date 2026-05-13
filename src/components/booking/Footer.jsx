@@ -60,7 +60,7 @@ export default function Footer() {
           <div className="flex flex-wrap justify-center gap-3">
             {/* Instagram */}
             <a
-              href="https://www.instagram.com/transfersalgarvestar"
+              href="https://www.instagram.com/algarvestar/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-80"
@@ -87,7 +87,7 @@ export default function Footer() {
 
             {/* TripAdvisor */}
             <a
-              href="https://www.tripadvisor.com/Profile/transfersalgarvestar"
+              href="https://www.tripadvisor.pt/Attraction_Review-g189113-d12539956-Reviews-Transfers_Algarvestar-Armacao_de_Pera_Faro_District_Algarve.html"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white bg-[#34E0A1] transition-opacity hover:opacity-80"

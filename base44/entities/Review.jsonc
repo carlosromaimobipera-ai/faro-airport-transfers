@@ -51,7 +51,8 @@
     "rating"
   ],
   "rls": {
-    "create": {
+    "create": true,
+    "read": {
       "$or": [
         {
           "user_condition": {
@@ -63,7 +64,6 @@
         }
       ]
     },
-    "read": true,
     "update": {
       "user_condition": {
         "role": "admin"

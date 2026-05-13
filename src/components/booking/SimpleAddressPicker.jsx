@@ -1,30 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Label } from "@/components/ui/label";
-import { MapPin, CheckCircle2, Loader2, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { MapPin, CheckCircle2, Loader2, X, Search } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+
+// Load Google Maps script once globally
+function loadGoogleMaps() {
+  if (window.google?.maps?.places) return Promise.resolve();
+  if (window._googleMapsPromise) return window._googleMapsPromise;
+  window._googleMapsPromise = new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&language=pt`;
+    script.async = true;
+    script.onload = resolve;
+    document.head.appendChild(script);
+  });
+  return window._googleMapsPromise;
+}
+
 const COMMON_LOCATIONS_BASE = [
-  { nameKey: 'common_location_airport', icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
+  { nameKey: 'common_location_airport',       icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
   { nameKey: 'common_location_lisbon_airport', icon: '✈️', coords: { lat: 38.6747, lng: -9.1283 } },
-  { nameKey: 'common_location_seville_airport', icon: '✈️', coords: { lat: 37.4174, lng: -5.8892 } },
-  { nameKey: 'common_location_albufeira', icon: '📍', coords: { lat: 37.0901, lng: -8.2506 } },
-  { nameKey: 'common_location_vilamoura', icon: '📍', coords: { lat: 37.0662, lng: -8.1212 } },
-  { nameKey: 'common_location_lagos', icon: '📍', coords: { lat: 37.1063, lng: -8.6705 } },
-  { nameKey: 'common_location_portimao', icon: '📍', coords: { lat: 37.1412, lng: -8.5292 } },
-  { nameKey: 'common_location_armacao', icon: '📍', coords: { lat: 37.0845, lng: -8.3642 } },
-  { nameKey: 'common_location_tavira', icon: '📍', coords: { lat: 36.9625, lng: -7.6533 } },
-  { nameKey: 'common_location_center', icon: '📍', coords: { lat: 37.0194, lng: -7.9322 } },
-  { nameKey: 'common_location_silves', icon: '📍', coords: { lat: 37.2425, lng: -8.4384 } },
-  { nameKey: 'common_location_lisbon', icon: '📍', coords: { lat: 38.7223, lng: -9.1393 } },
-  { nameKey: 'common_location_seville', icon: '📍', coords: { lat: 37.3860, lng: -5.9844 } },
+  { nameKey: 'common_location_seville_airport',icon: '✈️', coords: { lat: 37.4174, lng: -5.8892 } },
+  { nameKey: 'common_location_albufeira',      icon: '📍', coords: { lat: 37.0901, lng: -8.2506 } },
+  { nameKey: 'common_location_vilamoura',      icon: '📍', coords: { lat: 37.0662, lng: -8.1212 } },
+  { nameKey: 'common_location_lagos',          icon: '📍', coords: { lat: 37.1063, lng: -8.6705 } },
+  { nameKey: 'common_location_portimao',       icon: '📍', coords: { lat: 37.1412, lng: -8.5292 } },
+  { nameKey: 'common_location_armacao',        icon: '📍', coords: { lat: 37.0845, lng: -8.3642 } },
+  { nameKey: 'common_location_tavira',         icon: '📍', coords: { lat: 36.9625, lng: -7.6533 } },
+  { nameKey: 'common_location_center',         icon: '📍', coords: { lat: 37.0194, lng: -7.9322 } },
+  { nameKey: 'common_location_silves',         icon: '📍', coords: { lat: 37.2425, lng: -8.4384 } },
+  { nameKey: 'common_location_lisbon',         icon: '📍', coords: { lat: 38.7223, lng: -9.1393 } },
+  { nameKey: 'common_location_seville',        icon: '📍', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
 export default function SimpleAddressPicker({ label, value, onChange, placeholder }) {
   const { lang } = useLang();
   const inputRef = useRef(null);
   const containerRef = useRef(null);
+  const autocompleteService = useRef(null);
+  const placesService = useRef(null);
+  const sessionToken = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
@@ -35,40 +53,70 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
   const debounceTimer = useRef(null);
 
-  // Sync inputValue when parent passes a value (e.g. user navigates back)
+  // Load Google Maps and init services
+  useEffect(() => {
+    if (!GOOGLE_API_KEY) return;
+    loadGoogleMaps().then(() => {
+      autocompleteService.current = new window.google.maps.places.AutocompleteService();
+      placesService.current = new window.google.maps.places.PlacesService(document.createElement('div'));
+      sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+      setGoogleReady(true);
+    });
+  }, []);
+
+  // Sync inputValue when parent passes a value
   useEffect(() => {
     setInputValue(value?.address || '');
   }, [value?.address]);
 
-  // Fetch predictions from backend when user types
+  // Fetch predictions from Google Places API directly in frontend
+  const fetchPredictions = useCallback((input) => {
+    if (!googleReady || !autocompleteService.current || input.length < 2) {
+      setPredictions([]);
+      return;
+    }
+    setLoading(true);
+    autocompleteService.current.getPlacePredictions(
+      {
+        input,
+        sessionToken: sessionToken.current,
+        componentRestrictions: { country: ['pt', 'es'] },
+        types: ['geocode', 'establishment'],
+      },
+      (results, status) => {
+        setLoading(false);
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+          setPredictions(results.slice(0, 5));
+        } else {
+          setPredictions([]);
+        }
+      }
+    );
+  }, [googleReady]);
+
+  // Debounce input
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     const trimmed = inputValue.trim();
 
-    // If a location is already selected or input is empty, clear suggestions
     if (!trimmed || value?.coords) {
-      setSuggestions([]);
+      setPredictions([]);
+      setLoading(false);
       return;
     }
 
     setLoading(true);
-    debounceTimer.current = setTimeout(async () => {
-      try {
-        const res = await base44.functions.invoke('getPlacePredictions', { input: trimmed });
-        setSuggestions(res.data?.suggestions || []);
-      } catch {
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 400);
+    debounceTimer.current = setTimeout(() => {
+      fetchPredictions(trimmed);
+    }, 200);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [inputValue, value?.coords]);
+  }, [inputValue, value?.coords, fetchPredictions]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -81,18 +129,41 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleSelect = (location) => {
-    const address = location.address || location.name?.replace(/^[\s✈️📍]+/, '').trim();
+  const handleSelectPrediction = (prediction) => {
+    setLoading(true);
+    // New session token after selection
+    sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+    placesService.current.getDetails(
+      {
+        placeId: prediction.place_id,
+        fields: ['geometry', 'formatted_address', 'name'],
+        sessionToken: sessionToken.current,
+      },
+      (place, status) => {
+        setLoading(false);
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry) {
+          const address = place.formatted_address || place.name;
+          setInputValue(address);
+          onChange({ address, coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } });
+        }
+        setPredictions([]);
+        setShowDropdown(false);
+      }
+    );
+  };
+
+  const handleSelectCommon = (location) => {
+    const address = location.name.replace(/^[\s✈️📍]+/, '').trim();
     setInputValue(address);
     onChange({ address, coords: location.coords });
+    setPredictions([]);
     setShowDropdown(false);
-    setSuggestions([]);
   };
 
   const handleClear = () => {
     setInputValue('');
     onChange(null);
-    setSuggestions([]);
+    setPredictions([]);
     setShowDropdown(true);
     if (inputRef.current) inputRef.current.focus();
   };
@@ -102,7 +173,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   );
 
   const isDropdownVisible = showDropdown && !value?.coords;
-  const hasContent = loading || suggestions.length > 0 || filteredCommon.length > 0;
+  const hasContent = loading || predictions.length > 0 || filteredCommon.length > 0;
 
   return (
     <div className="space-y-2" ref={containerRef}>
@@ -112,6 +183,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       </Label>
 
       <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <Search className="w-4 h-4 text-muted-foreground" />
+        </div>
         <input
           ref={inputRef}
           type="text"
@@ -124,7 +198,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           onFocus={() => setShowDropdown(true)}
           placeholder={resolvedPlaceholder}
           autoComplete="off"
-          className="w-full h-12 px-4 pr-10 rounded-lg border border-input bg-card text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground transition-all"
+          className="w-full h-14 pl-9 pr-10 rounded-xl border border-input bg-gray-50 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:bg-gray-100 placeholder:text-muted-foreground transition-all cursor-text"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {loading ? (
@@ -137,24 +211,32 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         </div>
 
         {isDropdownVisible && hasContent && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
-            {suggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto">
+            {/* Google predictions */}
+            {predictions.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
                   {t(lang, 'search_results')}
                 </div>
-                {suggestions.map((loc, idx) => (
+                {predictions.map((pred) => (
                   <button
-                    key={`api-${idx}`}
-                    onMouseDown={() => handleSelect(loc)}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
+                    key={pred.place_id}
+                    onMouseDown={() => handleSelectPrediction(pred)}
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-start gap-2"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="truncate">{loc.address}</span>
+                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-medium text-foreground">{pred.structured_formatting?.main_text}</span>
+                      {pred.structured_formatting?.secondary_text && (
+                        <span className="block text-xs text-muted-foreground">{pred.structured_formatting.secondary_text}</span>
+                      )}
+                    </div>
                   </button>
                 ))}
               </>
             )}
+
+            {/* Popular locations */}
             {filteredCommon.length > 0 && (
               <>
                 <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-border">
@@ -162,8 +244,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 </div>
                 {filteredCommon.map((location) => (
                   <button
-                    key={location.name}
-                    onMouseDown={() => handleSelect(location)}
+                    key={location.nameKey}
+                    onMouseDown={() => handleSelectCommon(location)}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
                   >
                     <span className="truncate">{location.name}</span>
@@ -171,7 +253,8 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 ))}
               </>
             )}
-            {!loading && suggestions.length === 0 && filteredCommon.length === 0 && (
+
+            {!loading && predictions.length === 0 && filteredCommon.length === 0 && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
                 {t(lang, 'no_location_found')}
               </div>

@@ -46,7 +46,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   // Fetch predictions via backend function
   const fetchPredictions = useCallback(async (input) => {
-    if (input.length < 2) { setPredictions([]); return; }
+    if (input.length < 1) { setPredictions([]); return; }
     setLoading(true);
     try {
       const res = await base44.functions.invoke('getPlacePredictions', { input });
@@ -72,7 +72,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(() => {
       fetchPredictions(trimmed);
-    }, 350);
+    }, 180);
 
     return () => clearTimeout(debounceTimer.current);
   }, [inputValue, value?.coords, fetchPredictions]);

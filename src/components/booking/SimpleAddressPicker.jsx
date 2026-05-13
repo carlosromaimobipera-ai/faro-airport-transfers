@@ -10,11 +10,27 @@ const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 function loadGoogleMaps() {
   if (window.google?.maps?.places) return Promise.resolve();
   if (window._googleMapsPromise) return window._googleMapsPromise;
-  window._googleMapsPromise = new Promise((resolve) => {
+
+  if (!GOOGLE_API_KEY) {
+    console.error('[SimpleAddressPicker] VITE_GOOGLE_PLACES_API_KEY não está definida!');
+    return Promise.reject(new Error('Missing VITE_GOOGLE_PLACES_API_KEY'));
+  }
+
+  console.log('[SimpleAddressPicker] A carregar Google Maps com chave:', GOOGLE_API_KEY.slice(0, 8) + '...');
+
+  window._googleMapsPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&language=pt`;
     script.async = true;
-    script.onload = resolve;
+    script.onload = () => {
+      console.log('[SimpleAddressPicker] Google Maps carregado com sucesso!');
+      resolve();
+    };
+    script.onerror = (err) => {
+      console.error('[SimpleAddressPicker] Erro ao carregar Google Maps:', err);
+      window._googleMapsPromise = null; // reset para permitir retry
+      reject(err);
+    };
     document.head.appendChild(script);
   });
   return window._googleMapsPromise;
@@ -60,13 +76,21 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   // Load Google Maps and init services
   useEffect(() => {
-    if (!GOOGLE_API_KEY) return;
-    loadGoogleMaps().then(() => {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      placesService.current = new window.google.maps.places.PlacesService(document.createElement('div'));
-      sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
-      setGoogleReady(true);
-    });
+    if (!GOOGLE_API_KEY) {
+      console.warn('[SimpleAddressPicker] Chave API em falta — só locais populares disponíveis.');
+      return;
+    }
+    loadGoogleMaps()
+      .then(() => {
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        placesService.current = new window.google.maps.places.PlacesService(document.createElement('div'));
+        sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+        setGoogleReady(true);
+        console.log('[SimpleAddressPicker] Serviços Google Places inicializados com sucesso.');
+      })
+      .catch((err) => {
+        console.error('[SimpleAddressPicker] Falha ao inicializar Google Places:', err);
+      });
   }, []);
 
   // Sync inputValue when parent passes a value

@@ -51,7 +51,9 @@
     "rating"
   ],
   "rls": {
-    "create": true,
+    "create": {
+      "data.customer_email": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {

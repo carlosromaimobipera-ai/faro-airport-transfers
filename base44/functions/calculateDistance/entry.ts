@@ -6,7 +6,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing coordinates' }, { status: 400 });
     }
 
-    const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    const serverKey = Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
+    const fallbackKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    const googleApiKey = serverKey || fallbackKey;
+    console.log('Using key source:', serverKey ? 'GOOGLE_MAPS_SERVER_KEY' : 'GOOGLE_PLACES_API_KEY (fallback)');
     if (!googleApiKey) {
       return Response.json({ error: 'API key not configured' }, { status: 500 });
     }

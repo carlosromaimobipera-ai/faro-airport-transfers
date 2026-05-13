@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Euro, Route, Save, RotateCcw } from 'lucide-react';
 import { vehicleTypes, routeDistances, locations } from '@/lib/transferData';
+import { useLang } from '@/lib/LanguageContext';
+import { t } from '@/lib/i18n';
 
 const DEFAULT_VEHICLE_PRICES = {
   sedan: 1.00,
@@ -19,6 +21,7 @@ function getLocationName(id) {
 }
 
 export default function PriceManager() {
+  const { lang } = useLang();
   const queryClient = useQueryClient();
   const [editingVehicle, setEditingVehicle] = useState({});
   const [editingRoute, setEditingRoute] = useState({});
@@ -125,7 +128,7 @@ export default function PriceManager() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Euro className="w-4 h-4 text-primary" /> Preço por Km — Veículos
+            <Euro className="w-4 h-4 text-primary" /> {t(lang, 'price_per_km_title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -156,9 +159,9 @@ export default function PriceManager() {
                     <span className="text-muted-foreground text-xs whitespace-nowrap">/km</span>
                   </div>
                   {isDirty && (
-                    <Button size="sm" className="w-full h-8 gap-1" onClick={() => saveVehicle(v.id)} disabled={saveMutation.isPending}>
-                      <Save className="w-3.5 h-3.5" /> Guardar
-                    </Button>
+                   <Button size="sm" className="w-full h-8 gap-1" onClick={() => saveVehicle(v.id)} disabled={saveMutation.isPending}>
+                     <Save className="w-3.5 h-3.5" /> {t(lang, 'price_save')}
+                   </Button>
                   )}
                 </div>
               );
@@ -172,10 +175,10 @@ export default function PriceManager() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Route className="w-4 h-4 text-primary" /> Distâncias das Rotas (km)
+              <Route className="w-4 h-4 text-primary" /> {t(lang, 'price_route_distances')}
             </CardTitle>
             <Input
-              placeholder="Pesquisar rota..."
+              placeholder={t(lang, 'price_search_route')}
               value={routeSearch}
               onChange={e => setRouteSearch(e.target.value)}
               className="h-8 w-52 text-sm"
@@ -195,7 +198,7 @@ export default function PriceManager() {
                       {route.originName} → {route.destName}
                     </p>
                     {route.isOverridden && (
-                      <p className="text-xs text-muted-foreground">Padrão: {route.defaultDist} km</p>
+                      <p className="text-xs text-muted-foreground">{t(lang, 'price_default')}: {route.defaultDist} km</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -209,7 +212,7 @@ export default function PriceManager() {
                     <span className="text-xs text-muted-foreground">km</span>
                     {isDirty && (
                       <Button size="sm" className="h-8 px-2 gap-1" onClick={() => saveRoute(route.key)} disabled={saveMutation.isPending}>
-                        <Save className="w-3.5 h-3.5" />
+                        <Save className="w-3.5 h-3.5" /> {t(lang, 'price_save')}
                       </Button>
                     )}
                     {route.isOverridden && !isDirty && (

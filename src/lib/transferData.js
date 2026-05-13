@@ -114,35 +114,21 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Calculate price — uses fixed route prices or vehicle price per km + time surcharge
-export function calculatePrice(distanceKm, vehicleTypeId, routes = [], durationMinutes = 0) {
+// Calculate price — uses PriceConfig (vehicle price per km) from DB or fallback to static
+export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle) return 0;
-  
-  // Se houver rota com preço fixo, usa esse + taxa de tempo
-  if (routes && routes.length > 0) {
-    const priceField = `${vehicleTypeId}_price`;
-    const fixedPrice = routes[0]?.[priceField];
-    if (fixedPrice) {
-      const timeSurcharge = durationMinutes * 0.10;
-      return Math.round((fixedPrice + timeSurcharge) * 100) / 100;
-    }
-  }
-  
-  // Fallback: usa preço por km + taxa de tempo
   if (!distanceKm) return 0;
-  
-  const distancePrice = Math.round(distanceKm * vehicle.pricePerKm * 100) / 100;
-  const timeSurcharge = durationMinutes * 0.10;
-  const calculatedPrice = distancePrice + timeSurcharge;
-  
-  // Apply minimum fare for routes under 10km
-  const minimumFares = {
-    sedan: 15,
-    minivan: 20,
-    minibus: 25
-  };
-  
+
+  // Look for vehicle price per km in PriceConfig DB
+  const vehicleConfig = priceConfigs.find(c => c.config_type === 'vehicle' && c.key === `vehicle_${vehicleTypeId}`);
+  const pricePerKm = vehicleConfig ? vehicleConfig.value : vehicle.pricePerKm;
+
+  const distancePrice = distanceKm * pricePerKm;
+  const calculatedPrice = Math.round(distancePrice * 100) / 100;
+
+  // Apply minimum fare
+  const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
   const minimumFare = minimumFares[vehicleTypeId] || 0;
   return Math.max(calculatedPrice, minimumFare);
 }

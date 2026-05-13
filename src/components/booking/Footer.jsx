@@ -56,7 +56,7 @@ export default function Footer() {
 
         {/* Social Media Buttons */}
         <div className="border-t border-background/10 mt-10 pt-8 flex flex-col items-center gap-4">
-          <p className="text-sm text-background/50">Siga-nos nas redes sociais</p>
+          <p className="text-sm text-background/50">{t(lang, 'social_follow')}</p>
           <div className="flex flex-wrap justify-center gap-3">
             {/* Instagram */}
             <a

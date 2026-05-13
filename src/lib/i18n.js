@@ -219,6 +219,13 @@ export const translations = {
     reviews_sub: 'Centenas de viajantes satisfeitos em toda a Europa',
     reviews_cta_text: 'Ficou satisfeito com o nosso serviço? Partilhe a sua experiência!',
     reviews_google_btn: 'Avaliar no Google',
+    social_follow: 'Siga-nos nas redes sociais',
+    price_per_km_title: 'Preço por Km — Veículos',
+    price_route_distances: 'Distâncias das Rotas (km)',
+    price_search_route: 'Pesquisar rota...',
+    price_default: 'Padrão',
+    price_save: 'Guardar',
+    price_reset: 'Repor',
   },
 
   en: {
@@ -405,6 +412,13 @@ export const translations = {
     reviews_sub: 'Hundreds of satisfied travellers across Europe',
     reviews_cta_text: 'Happy with our service? Share your experience!',
     reviews_google_btn: 'Review on Google',
+    social_follow: 'Follow us on social media',
+    price_per_km_title: 'Price per Km — Vehicles',
+    price_route_distances: 'Route Distances (km)',
+    price_search_route: 'Search route...',
+    price_default: 'Default',
+    price_save: 'Save',
+    price_reset: 'Reset',
   },
 
   es: {
@@ -591,6 +605,13 @@ export const translations = {
     reviews_sub: 'Cientos de viajeros satisfechos en toda Europa',
     reviews_cta_text: '¿Satisfecho con nuestro servicio? ¡Comparta su experiencia!',
     reviews_google_btn: 'Valorar en Google',
+    social_follow: 'Síguenos en redes sociales',
+    price_per_km_title: 'Precio por Km — Vehículos',
+    price_route_distances: 'Distancias de Rutas (km)',
+    price_search_route: 'Buscar ruta...',
+    price_default: 'Predeterminado',
+    price_save: 'Guardar',
+    price_reset: 'Restablecer',
   },
 
   fr: {
@@ -777,6 +798,13 @@ export const translations = {
     reviews_sub: 'Des centaines de voyageurs satisfaits à travers l\'Europe',
     reviews_cta_text: 'Satisfait de notre service ? Partagez votre expérience !',
     reviews_google_btn: 'Évaluer sur Google',
+    social_follow: 'Suivez-nous sur les réseaux sociaux',
+    price_per_km_title: 'Prix par Km — Véhicules',
+    price_route_distances: 'Distances des Itinéraires (km)',
+    price_search_route: 'Rechercher un itinéraire...',
+    price_default: 'Par défaut',
+    price_save: 'Enregistrer',
+    price_reset: 'Réinitialiser',
   },
 
   de: {
@@ -963,6 +991,13 @@ export const translations = {
     reviews_sub: 'Hunderte zufriedene Reisende in ganz Europa',
     reviews_cta_text: 'Zufrieden mit unserem Service? Teilen Sie Ihre Erfahrung!',
     reviews_google_btn: 'Auf Google bewerten',
+    social_follow: 'Folgen Sie uns in den sozialen Medien',
+    price_per_km_title: 'Preis pro Km — Fahrzeuge',
+    price_route_distances: 'Routenentfernungen (km)',
+    price_search_route: 'Route suchen...',
+    price_default: 'Standard',
+    price_save: 'Speichern',
+    price_reset: 'Zurücksetzen',
   },
 
   nl: {
@@ -1149,6 +1184,13 @@ export const translations = {
     reviews_sub: 'Honderden tevreden reizigers door heel Europa',
     reviews_cta_text: 'Tevreden met onze service? Deel uw ervaring!',
     reviews_google_btn: 'Beoordeel op Google',
+    social_follow: 'Volg ons op sociale media',
+    price_per_km_title: 'Prijs per Km — Voertuigen',
+    price_route_distances: 'Route Afstanden (km)',
+    price_search_route: 'Route zoeken...',
+    price_default: 'Standaard',
+    price_save: 'Opslaan',
+    price_reset: 'Herstellen',
   },
 };
 

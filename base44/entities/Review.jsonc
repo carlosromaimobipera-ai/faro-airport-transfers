@@ -51,7 +51,18 @@
     "rating"
   ],
   "rls": {
-    "create": true,
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.customer_email": "{{user.email}}"
+        }
+      ]
+    },
     "read": {
       "$or": [
         {

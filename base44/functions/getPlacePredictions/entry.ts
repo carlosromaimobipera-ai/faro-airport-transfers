@@ -1,8 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-
 Deno.serve(async (req) => {
+  console.log('Function called, method:', req.method);
   try {
-    const { input } = await req.json();
+    const body = await req.json();
+    console.log('Body received:', JSON.stringify(body));
+    const { input } = body;
 
     if (!input || typeof input !== 'string' || input.trim().length < 1) {
       return Response.json({ suggestions: [] });
@@ -10,8 +11,8 @@ Deno.serve(async (req) => {
 
     const trimmedInput = input.trim().slice(0, 200);
 
-    // Use server key (no referrer restrictions)
-    const apiKey = Deno.env.get('GOOGLE_MAPS_SERVER_KEY') || Deno.env.get('GOOGLE_PLACES_API_KEY');
+    // Try both keys — GOOGLE_PLACES_API_KEY first (has Places API enabled), then server key
+    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY') || Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
 
     if (!apiKey) {
       console.log('No API key found');
@@ -23,10 +24,10 @@ Deno.serve(async (req) => {
     const acRes = await fetch(acUrl);
     const acData = await acRes.json();
 
-    console.log('Autocomplete status:', acData.status, '| count:', acData.predictions?.length ?? 0);
+    console.log('Autocomplete status:', acData.status, '| count:', acData.predictions?.length ?? 0, '| error:', acData.error_message || 'none');
 
     if (acData.status !== 'OK' || !acData.predictions?.length) {
-      console.log('Autocomplete error:', acData.error_message);
+      console.log('Full response:', JSON.stringify(acData).slice(0, 300));
       return Response.json({ suggestions: [] });
     }
 

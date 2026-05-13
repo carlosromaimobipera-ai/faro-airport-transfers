@@ -58,13 +58,20 @@
       "$or": [
         {
           "user_condition": {
-            "role": "driver"
+            "role": "admin"
           }
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "$and": [
+            {
+              "user_condition": {
+                "role": "driver"
+              }
+            },
+            {
+              "data.driver_id": "{{user.id}}"
+            }
+          ]
         }
       ]
     },

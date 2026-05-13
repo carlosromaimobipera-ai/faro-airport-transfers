@@ -39,6 +39,11 @@
       "type": "boolean",
       "default": false,
       "description": "Se o cliente clicou para Google"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Notas adicionais sobre esta avalia\u00e7\u00e3o"
     }
   },
   "required": [
@@ -47,7 +52,18 @@
   ],
   "rls": {
     "create": true,
-    "read": true,
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.customer_email": "{{user.email}}"
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"

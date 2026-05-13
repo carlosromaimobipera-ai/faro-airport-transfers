@@ -52,7 +52,7 @@ export default function BookingForm() {
   const [distanceData, setDistanceData] = useState(null);
   const [isLoadingDistance, setIsLoadingDistance] = useState(false);
 
-  // Calculate distance using Haversine formula (no API needed)
+  // Calculate distance using Google Maps Distance Matrix API (real road distance)
   useEffect(() => {
     if (!form.origin_place?.coords || !form.destination_place?.coords) {
       setDistanceData(null);
@@ -61,34 +61,24 @@ export default function BookingForm() {
     }
 
     setIsLoadingDistance(true);
-    
-    // Haversine formula to calculate distance
-    const R = 6371; // Earth's radius in km
-    const lat1 = form.origin_place.coords.lat * Math.PI / 180;
-    const lat2 = form.destination_place.coords.lat * Math.PI / 180;
-    const dLat = (form.destination_place.coords.lat - form.origin_place.coords.lat) * Math.PI / 180;
-    const dLng = (form.destination_place.coords.lng - form.origin_place.coords.lng) * Math.PI / 180;
-    
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const straight_distance = R * c;
-    
-    // Add 30% for road network
-    const distance_km = Math.round(straight_distance * 1.3 * 100) / 100;
-    
-    // Estimate duration (average 80 km/h)
-    const duration_minutes = Math.ceil((distance_km / 80) * 60);
-    
-    setDistanceData({
-      distance_km,
-      duration_minutes,
-      distance_text: `${distance_km} km`,
-      duration_text: `${duration_minutes} min`
+
+    base44.functions.invoke('calculateDistance', {
+      origin_lat: form.origin_place.coords.lat,
+      origin_lng: form.origin_place.coords.lng,
+      destination_lat: form.destination_place.coords.lat,
+      destination_lng: form.destination_place.coords.lng,
+    }).then(res => {
+      if (res.data?.distance_km) {
+        setDistanceData(res.data);
+      } else {
+        setDistanceData(null);
+      }
+    }).catch(() => {
+      setDistanceData(null);
+    }).finally(() => {
+      setIsLoadingDistance(false);
     });
-    
-    setIsLoadingDistance(false);
-  }, [form.origin_place?.coords, form.destination_place?.coords]);
+  }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
 
   const distance = distanceData?.distance_km || (HAS_PLACES_KEY && form.origin_place && form.destination_place 
     ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)

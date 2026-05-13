@@ -4,7 +4,6 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     // Allow unauthenticated calls (public booking form)
-    // const isAuth = await base44.auth.isAuthenticated();
 
     const { input } = await req.json();
     
@@ -26,19 +25,26 @@ Deno.serve(async (req) => {
       const data = await response.json();
       
       if (data.predictions && data.predictions.length > 0) {
-        // Step 2: Geocode top 5 predictions IN PARALLEL (not sequentially)
+        // Step 2: Get Place Details for top 5 predictions IN PARALLEL
+        // Place Details returns the exact name (hotel, villa, etc.) + coordinates
         const top5 = data.predictions.slice(0, 5);
-        const geocodeRequests = top5.map(pred => {
-          const geoUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-          geoUrl.searchParams.set('place_id', pred.place_id);
-          geoUrl.searchParams.set('key', apiKey);
-          return fetch(geoUrl.toString())
+        const detailRequests = top5.map(pred => {
+          const detailUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
+          detailUrl.searchParams.set('place_id', pred.place_id);
+          detailUrl.searchParams.set('key', apiKey);
+          detailUrl.searchParams.set('fields', 'name,formatted_address,geometry');
+          detailUrl.searchParams.set('language', 'pt');
+          return fetch(detailUrl.toString())
             .then(r => r.json())
-            .then(geoData => {
-              const result = geoData.results?.[0];
+            .then(detailData => {
+              const result = detailData.result;
               if (!result) return null;
+              // Use name + formatted_address so hotel/villa name is shown
+              const displayName = result.name && result.formatted_address && !result.formatted_address.startsWith(result.name)
+                ? `${result.name}, ${result.formatted_address}`
+                : result.formatted_address || result.name;
               return {
-                address: result.formatted_address,
+                address: displayName,
                 coords: {
                   lat: result.geometry.location.lat,
                   lng: result.geometry.location.lng
@@ -48,7 +54,7 @@ Deno.serve(async (req) => {
             .catch(() => null);
         });
 
-        const results = (await Promise.all(geocodeRequests)).filter(Boolean);
+        const results = (await Promise.all(detailRequests)).filter(Boolean);
         if (results.length > 0) {
           return Response.json({ suggestions: results });
         }

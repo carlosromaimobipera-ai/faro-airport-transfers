@@ -16,17 +16,38 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing coordinates' }, { status: 400 });
     }
 
-    const placesKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
-    const mapsKey = Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
+    // Primary: OSRM (free, no key, real road routing)
+    try {
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origin_lng},${origin_lat};${destination_lng},${destination_lat}?overview=false`;
+      const osrmRes = await fetch(osrmUrl, { signal: AbortSignal.timeout(8000) });
+      const osrmData = await osrmRes.json();
 
-    // Try Routes API (new, server-side, no referer restrictions)
-    for (const apiKey of [placesKey, mapsKey].filter(Boolean)) {
+      if (osrmData.code === 'Ok' && osrmData.routes?.length > 0) {
+        const route = osrmData.routes[0];
+        const distance_km = Math.round((route.distance / 1000) * 100) / 100;
+        const duration_minutes = Math.ceil(route.duration / 60);
+        console.log('OSRM success, distance:', distance_km, 'km');
+        return Response.json({
+          distance_km,
+          duration_minutes,
+          distance_text: `${distance_km} km`,
+          duration_text: `${duration_minutes} min`,
+          source: 'osrm',
+        });
+      }
+    } catch (e) {
+      console.log('OSRM error:', e.message);
+    }
+
+    // Secondary: Google Routes API (needs Routes API enabled)
+    const mapsKey = Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
+    if (mapsKey) {
       try {
         const routesRes = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Goog-Api-Key': apiKey,
+            'X-Goog-Api-Key': mapsKey,
             'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration',
           },
           body: JSON.stringify({
@@ -34,13 +55,13 @@ Deno.serve(async (req) => {
             destination: { location: { latLng: { latitude: destination_lat, longitude: destination_lng } } },
             travelMode: 'DRIVE',
             routingPreference: 'TRAFFIC_UNAWARE',
-          })
+          }),
+          signal: AbortSignal.timeout(8000),
         });
-
         const routesData = await routesRes.json();
         console.log('Routes API status:', routesRes.status, 'error:', routesData.error?.message);
 
-        if (routesData.routes && routesData.routes.length > 0) {
+        if (routesData.routes?.length > 0) {
           const route = routesData.routes[0];
           const distance_km = Math.round((route.distanceMeters / 1000) * 100) / 100;
           const duration_minutes = Math.ceil(parseInt(route.duration) / 60);
@@ -58,33 +79,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fallback: Distance Matrix API
-    for (const apiKey of [placesKey, mapsKey].filter(Boolean)) {
-      try {
-        const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin_lat},${origin_lng}&destinations=${destination_lat},${destination_lng}&key=${apiKey}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log('Distance Matrix status:', data.status);
-
-        if (data.status === 'OK' && data.rows?.[0]?.elements?.[0]?.status === 'OK') {
-          const element = data.rows[0].elements[0];
-          const distance_km = Math.round((element.distance.value / 1000) * 100) / 100;
-          const duration_minutes = Math.ceil(element.duration.value / 60);
-          console.log('Distance Matrix success, distance:', distance_km, 'km');
-          return Response.json({
-            distance_km,
-            duration_minutes,
-            distance_text: element.distance.text,
-            duration_text: element.duration.text,
-            source: 'google',
-          });
-        }
-      } catch (e) {
-        console.log('Distance Matrix error:', e.message);
-      }
-    }
-
-    // Final fallback: Haversine
+    // Final fallback: Haversine (straight line * 1.35)
     console.log('Using Haversine fallback');
     const straight_km = haversineKm(origin_lat, origin_lng, destination_lat, destination_lng);
     const distance_km = Math.round(straight_km * 1.35 * 100) / 100;

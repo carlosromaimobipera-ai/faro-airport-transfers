@@ -3,8 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) return Response.json({ suggestions: [] }, { status: 401 });
+    // Allow unauthenticated calls (public booking form)
+    // const isAuth = await base44.auth.isAuthenticated();
 
     const { input } = await req.json();
     

@@ -51,37 +51,48 @@ export default function BookingForm() {
 
   const [distanceData, setDistanceData] = useState(null);
   const [isLoadingDistance, setIsLoadingDistance] = useState(false);
-  const [distanceError, setDistanceError] = useState(false);
 
-  // Calculate distance using Google Maps Distance Matrix API (real road distance)
+  // Haversine fallback for when Google Maps API fails
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(km * 1.35 * 100) / 100;
+  }
+
+  // Calculate distance — Google Maps first, Haversine fallback
   useEffect(() => {
     if (!form.origin_place?.coords || !form.destination_place?.coords) {
       setDistanceData(null);
       setIsLoadingDistance(false);
-      setDistanceError(false);
       return;
     }
 
     setIsLoadingDistance(true);
-    setDistanceError(false);
     setDistanceData(null);
 
+    const { lat: oLat, lng: oLng } = form.origin_place.coords;
+    const { lat: dLat, lng: dLng } = form.destination_place.coords;
+
     base44.functions.invoke('calculateDistance', {
-      origin_lat: form.origin_place.coords.lat,
-      origin_lng: form.origin_place.coords.lng,
-      destination_lat: form.destination_place.coords.lat,
-      destination_lng: form.destination_place.coords.lng,
+      origin_lat: oLat,
+      origin_lng: oLng,
+      destination_lat: dLat,
+      destination_lng: dLng,
     }).then(res => {
       if (res.data?.distance_km) {
         setDistanceData(res.data);
-        setDistanceError(false);
       } else {
-        setDistanceData(null);
-        setDistanceError(true);
+        // Fallback to Haversine
+        const km = haversineKm(oLat, oLng, dLat, dLng);
+        setDistanceData({ distance_km: km, duration_minutes: Math.ceil((km / 80) * 60), source: 'haversine' });
       }
     }).catch(() => {
-      setDistanceData(null);
-      setDistanceError(true);
+      // Fallback to Haversine
+      const km = haversineKm(oLat, oLng, dLat, dLng);
+      setDistanceData({ distance_km: km, duration_minutes: Math.ceil((km / 80) * 60), source: 'haversine' });
     }).finally(() => {
       setIsLoadingDistance(false);
     });
@@ -102,8 +113,7 @@ export default function BookingForm() {
       case 1: {
         if (!form.origin_place || !form.destination_place) return false;
         if (isLoadingDistance) return false;
-        const allowed = isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
-        if (!allowed) return false;
+        if (!isRouteAllowed(form.origin_place.coords, form.destination_place.coords)) return false;
         if (!distance) return false;
         return true;
       }
@@ -285,12 +295,7 @@ export default function BookingForm() {
                     {t(lang, 'calculating_distance') || 'A calcular distância via Google Maps...'}
                   </div>
                 )}
-                {distanceError && !isLoadingDistance && form.origin_place && form.destination_place && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {t(lang, 'distance_error') || 'Não foi possível calcular a distância. Verifique os locais selecionados.'}
-                  </div>
-                )}
+
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />

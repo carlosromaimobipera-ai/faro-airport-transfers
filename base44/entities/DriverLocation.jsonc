@@ -58,27 +58,27 @@
       "$or": [
         {
           "user_condition": {
-            "role": "admin"
+            "role": "driver"
           }
         },
         {
-          "$and": [
-            {
-              "user_condition": {
-                "role": "driver"
-              }
-            },
-            {
-              "data.driver_id": "{{user.id}}"
-            }
-          ]
+          "user_condition": {
+            "role": "admin"
+          }
         }
       ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
     },
     "update": false,
     "delete": {

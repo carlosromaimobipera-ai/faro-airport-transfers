@@ -51,16 +51,20 @@ export default function BookingForm() {
 
   const [distanceData, setDistanceData] = useState(null);
   const [isLoadingDistance, setIsLoadingDistance] = useState(false);
+  const [distanceError, setDistanceError] = useState(false);
 
   // Calculate distance using Google Maps Distance Matrix API (real road distance)
   useEffect(() => {
     if (!form.origin_place?.coords || !form.destination_place?.coords) {
       setDistanceData(null);
       setIsLoadingDistance(false);
+      setDistanceError(false);
       return;
     }
 
     setIsLoadingDistance(true);
+    setDistanceError(false);
+    setDistanceData(null);
 
     base44.functions.invoke('calculateDistance', {
       origin_lat: form.origin_place.coords.lat,
@@ -70,19 +74,20 @@ export default function BookingForm() {
     }).then(res => {
       if (res.data?.distance_km) {
         setDistanceData(res.data);
+        setDistanceError(false);
       } else {
         setDistanceData(null);
+        setDistanceError(true);
       }
     }).catch(() => {
       setDistanceData(null);
+      setDistanceError(true);
     }).finally(() => {
       setIsLoadingDistance(false);
     });
   }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
 
-  const distance = distanceData?.distance_km || (form.origin_place && form.destination_place 
-    ? getEffectiveDistance(form.origin_place.coords, form.destination_place.coords)
-    : null);
+  const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration), [distance, form.vehicle_type, priceConfigs, duration]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
@@ -99,7 +104,8 @@ export default function BookingForm() {
         if (isLoadingDistance) return false;
         const allowed = isRouteAllowed(form.origin_place.coords, form.destination_place.coords);
         if (!allowed) return false;
-        return !!distance;
+        if (!distance) return false;
+        return true;
       }
       case 2: return form.vehicle_type;
       case 3: return true; // extras are optional
@@ -273,6 +279,18 @@ export default function BookingForm() {
                   </button>
                 </div>
 
+                {isLoadingDistance && form.origin_place && form.destination_place && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin shrink-0" />
+                    {t(lang, 'calculating_distance') || 'A calcular distância via Google Maps...'}
+                  </div>
+                )}
+                {distanceError && !isLoadingDistance && form.origin_place && form.destination_place && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {t(lang, 'distance_error') || 'Não foi possível calcular a distância. Verifique os locais selecionados.'}
+                  </div>
+                )}
                 {form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format, addDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Calendar, Car, Loader2, CalendarDays } from 'lucide-react';
+import { Calendar, Car, Loader2, CalendarDays, LogOut } from 'lucide-react';
 import BookingCard from '@/components/driver/BookingCard';
 import { useGpsTracking } from '@/hooks/useGpsTracking';
 import GpsTrackingBadge from '@/components/driver/GpsTrackingBadge';
@@ -159,8 +159,15 @@ export default function Driver() {
               </p>
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-3 flex items-center justify-between gap-3">
             <GpsTrackingBadge activeBooking={trackedBooking} />
+            <button
+              onClick={() => base44.auth.logout('/')}
+              className="flex items-center gap-1.5 text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sair
+            </button>
           </div>
         </div>
       </div>

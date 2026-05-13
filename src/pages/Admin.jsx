@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
 import DriverUnavailabilityManager from '@/components/admin/DriverUnavailabilityManager';
+import DriverBookingsList from '@/components/admin/DriverBookingsList';
 import ReviewsStats from '@/components/admin/ReviewsStats';
 import PriceManager from '@/components/admin/PriceManager';
 import FinancialDashboard from '@/components/admin/FinancialDashboard';
@@ -438,6 +439,7 @@ export default function Admin() {
           {/* ── Motoristas Tab ── */}
           <TabsContent value="drivers" className="mt-4 space-y-4">
             <DriversManager />
+            <DriverBookingsList />
             <DriverUnavailabilityManager />
           </TabsContent>
 

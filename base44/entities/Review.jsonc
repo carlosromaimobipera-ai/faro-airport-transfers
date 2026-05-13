@@ -63,18 +63,7 @@
         }
       ]
     },
-    "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "data.customer_email": "{{user.email}}"
-        }
-      ]
-    },
+    "read": true,
     "update": {
       "user_condition": {
         "role": "admin"

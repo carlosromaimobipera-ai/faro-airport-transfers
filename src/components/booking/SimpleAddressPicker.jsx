@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { MapPin, CheckCircle2, Loader2, X, Search } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { base44 } from '@/api/base44Client';
 
 const COMMON_LOCATIONS_BASE = [
   { nameKey: 'common_location_airport',        icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
@@ -20,27 +21,12 @@ const COMMON_LOCATIONS_BASE = [
   { nameKey: 'common_location_seville',         icon: '📍', coords: { lat: 37.3860, lng: -5.9844 } },
 ];
 
-// Load Google Maps Places library once
-let googleMapsReady = null;
-async function getGoogleMapsPlaces() {
-  if (googleMapsReady) return googleMapsReady;
-  if (!window.google?.maps?.importLibrary) return null;
-  try {
-    googleMapsReady = await window.google.maps.importLibrary('places');
-    return googleMapsReady;
-  } catch {
-    return null;
-  }
-}
-
 export default function SimpleAddressPicker({ label, value, onChange, placeholder }) {
   const { lang } = useLang();
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const debounceTimer = useRef(null);
-  const autocompleteService = useRef(null);
-  const placesService = useRef(null);
-  const placesDiv = useRef(null);
+  const abortRef = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
@@ -52,88 +38,27 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Sync inputValue when parent passes a value
+  // Sync inputValue when parent clears value
   useEffect(() => {
-    setInputValue(value?.address || '');
-  }, [value?.address]);
+    if (!value) setInputValue('');
+  }, [value]);
 
-  // Init Google Places services
-  useEffect(() => {
-    getGoogleMapsPlaces().then(lib => {
-      if (!lib) return;
-      if (lib.AutocompleteService) {
-        autocompleteService.current = new lib.AutocompleteService();
-      }
-      if (lib.PlacesService) {
-        if (!placesDiv.current) {
-          placesDiv.current = document.createElement('div');
-        }
-        placesService.current = new lib.PlacesService(placesDiv.current);
-      }
-    });
-  }, []);
-
-  // Get coordinates from a placeId
-  const getPlaceDetails = useCallback((placeId) => {
-    return new Promise((resolve) => {
-      if (!placesService.current) { resolve(null); return; }
-      placesService.current.getDetails(
-        { placeId, fields: ['name', 'formatted_address', 'geometry'] },
-        (result, status) => {
-          if (status !== 'OK' || !result?.geometry) { resolve(null); return; }
-          const name = result.name;
-          const addr = result.formatted_address;
-          const displayName = name && addr && !addr.startsWith(name)
-            ? `${name}, ${addr}`
-            : addr || name;
-          resolve({
-            address: displayName,
-            coords: {
-              lat: result.geometry.location.lat(),
-              lng: result.geometry.location.lng(),
-            }
-          });
-        }
-      );
-    });
-  }, []);
-
-  // Fetch predictions via Google Places Autocomplete (browser-side)
+  // Fetch predictions from backend
   const fetchPredictions = useCallback(async (input) => {
     if (!input || input.length < 1) { setPredictions([]); setLoading(false); return; }
 
-    if (!autocompleteService.current) {
-      // Google not ready yet — skip
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('getPlacePredictions', { input });
+      setPredictions(res.data?.suggestions || []);
+    } catch {
       setPredictions([]);
+    } finally {
       setLoading(false);
-      return;
     }
+  }, []);
 
-    autocompleteService.current.getPlacePredictions(
-      {
-        input,
-        language: 'pt',
-        componentRestrictions: { country: ['pt', 'es'] },
-        types: ['establishment', 'geocode'],
-      },
-      async (results, status) => {
-        if (status !== 'OK' || !results?.length) {
-          setPredictions([]);
-          setLoading(false);
-          return;
-        }
-
-        const top5 = results.slice(0, 5);
-        const detailed = await Promise.all(
-          top5.map(r => getPlaceDetails(r.place_id).catch(() => null))
-        );
-        setPredictions(detailed.filter(Boolean));
-        setLoading(false);
-      }
-    );
-  }, [getPlaceDetails]);
-
-  // Debounce input
+  // Debounce input → fetch
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -148,7 +73,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     setLoading(true);
     debounceTimer.current = setTimeout(() => {
       fetchPredictions(trimmed);
-    }, 200);
+    }, 300);
 
     return () => clearTimeout(debounceTimer.current);
   }, [inputValue, value?.coords, fetchPredictions]);
@@ -184,7 +109,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     onChange(null);
     setPredictions([]);
     setShowDropdown(true);
-    if (inputRef.current) inputRef.current.focus();
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const filteredCommon = COMMON_LOCATIONS.filter(loc =>
@@ -224,7 +149,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           ) : value?.coords ? (
-            <button onClick={handleClear} className="text-muted-foreground hover:text-foreground">
+            <button onClick={handleClear} className="text-muted-foreground hover:text-foreground min-h-0 min-w-0">
               <X className="w-4 h-4" />
             </button>
           ) : null}
@@ -232,6 +157,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
         {isDropdownVisible && hasContent && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto">
+
             {/* Google Places predictions */}
             {predictions.length > 0 && (
               <>
@@ -242,7 +168,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                   <button
                     key={i}
                     onMouseDown={() => handleSelectPrediction(pred)}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-start gap-2"
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-start gap-2 min-h-0"
                   >
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                     <span className="text-foreground">{pred.address}</span>
@@ -261,7 +187,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                   <button
                     key={location.nameKey}
                     onMouseDown={() => handleSelectCommon(location)}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2 min-h-0"
                   >
                     <span className="truncate">{location.name}</span>
                   </button>

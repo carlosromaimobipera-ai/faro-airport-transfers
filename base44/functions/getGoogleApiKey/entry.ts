@@ -6,6 +6,6 @@ Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
   if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
-  const apiKey = Deno.env.get('VITE_GOOGLE_PLACES_API_KEY');
+  const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
   return Response.json({ apiKey: apiKey || null });
 });

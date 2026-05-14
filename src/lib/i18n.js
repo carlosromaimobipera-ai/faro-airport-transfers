@@ -316,6 +316,22 @@ export const translations = {
     // Footer legal links
     footer_privacy: 'Política de Privacidade',
     footer_terms: 'Termos de Serviço',
+
+    // Delete Account
+    delete_account_title: 'Eliminar Conta',
+    delete_account_subtitle: 'Remoção permanente de dados pessoais',
+    delete_account_login_required: 'Precisa de iniciar sessão para eliminar a sua conta.',
+    delete_account_warning_title: 'Ação Irreversível',
+    delete_account_warning_desc: 'Ao eliminar a sua conta, os seguintes dados serão removidos permanentemente:',
+    delete_account_item1: 'Todos os seus dados pessoais',
+    delete_account_item2: 'Histórico de reservas associado ao seu email',
+    delete_account_item3: 'Acesso à Área de Cliente',
+    delete_account_btn: 'Eliminar Conta Permanentemente',
+    delete_account_cancel: 'Cancelar',
+    delete_account_confirm_title: 'Tem a certeza?',
+    delete_account_confirm_desc: 'Esta ação não pode ser desfeita. Toda a sua informação será apagada permanentemente.',
+    delete_account_confirm_btn: 'Sim, eliminar conta',
+    delete_account_deleting: 'A eliminar...',
   },
 
   en: {
@@ -594,6 +610,22 @@ export const translations = {
 
     footer_privacy: 'Privacy Policy',
     footer_terms: 'Terms of Service',
+
+    // Delete Account
+    delete_account_title: 'Delete Account',
+    delete_account_subtitle: 'Permanent removal of personal data',
+    delete_account_login_required: 'You need to log in to delete your account.',
+    delete_account_warning_title: 'Irreversible Action',
+    delete_account_warning_desc: 'By deleting your account, the following data will be permanently removed:',
+    delete_account_item1: 'All your personal data',
+    delete_account_item2: 'Booking history associated with your email',
+    delete_account_item3: 'Access to the Customer Area',
+    delete_account_btn: 'Delete Account Permanently',
+    delete_account_cancel: 'Cancel',
+    delete_account_confirm_title: 'Are you sure?',
+    delete_account_confirm_desc: 'This action cannot be undone. All your information will be permanently deleted.',
+    delete_account_confirm_btn: 'Yes, delete account',
+    delete_account_deleting: 'Deleting...',
   },
 
   es: {
@@ -872,6 +904,22 @@ export const translations = {
 
     footer_privacy: 'Política de Privacidad',
     footer_terms: 'Términos de Servicio',
+
+    // Delete Account
+    delete_account_title: 'Eliminar Cuenta',
+    delete_account_subtitle: 'Eliminación permanente de datos personales',
+    delete_account_login_required: 'Debe iniciar sesión para eliminar su cuenta.',
+    delete_account_warning_title: 'Acción Irreversible',
+    delete_account_warning_desc: 'Al eliminar su cuenta, los siguientes datos se eliminarán permanentemente:',
+    delete_account_item1: 'Todos sus datos personales',
+    delete_account_item2: 'Historial de reservas asociado a su email',
+    delete_account_item3: 'Acceso al Área del Cliente',
+    delete_account_btn: 'Eliminar Cuenta Permanentemente',
+    delete_account_cancel: 'Cancelar',
+    delete_account_confirm_title: '¿Está seguro?',
+    delete_account_confirm_desc: 'Esta acción no se puede deshacer. Toda su información será eliminada permanentemente.',
+    delete_account_confirm_btn: 'Sí, eliminar cuenta',
+    delete_account_deleting: 'Eliminando...',
   },
 
   fr: {
@@ -1150,6 +1198,22 @@ export const translations = {
 
     footer_privacy: 'Politique de Confidentialité',
     footer_terms: 'Conditions de Service',
+
+    // Delete Account
+    delete_account_title: 'Supprimer le Compte',
+    delete_account_subtitle: 'Suppression permanente des données personnelles',
+    delete_account_login_required: 'Vous devez vous connecter pour supprimer votre compte.',
+    delete_account_warning_title: 'Action Irréversible',
+    delete_account_warning_desc: 'En supprimant votre compte, les données suivantes seront supprimées définitivement :',
+    delete_account_item1: 'Toutes vos données personnelles',
+    delete_account_item2: 'Historique de réservations associé à votre email',
+    delete_account_item3: 'Accès à l\'Espace Client',
+    delete_account_btn: 'Supprimer le Compte Définitivement',
+    delete_account_cancel: 'Annuler',
+    delete_account_confirm_title: 'Êtes-vous sûr ?',
+    delete_account_confirm_desc: 'Cette action est irréversible. Toutes vos informations seront supprimées définitivement.',
+    delete_account_confirm_btn: 'Oui, supprimer le compte',
+    delete_account_deleting: 'Suppression...',
   },
 
   de: {
@@ -1428,6 +1492,22 @@ export const translations = {
 
     footer_privacy: 'Datenschutzerklärung',
     footer_terms: 'Nutzungsbedingungen',
+
+    // Delete Account
+    delete_account_title: 'Konto Löschen',
+    delete_account_subtitle: 'Dauerhafte Löschung persönlicher Daten',
+    delete_account_login_required: 'Sie müssen sich anmelden, um Ihr Konto zu löschen.',
+    delete_account_warning_title: 'Unwiderrufliche Aktion',
+    delete_account_warning_desc: 'Durch das Löschen Ihres Kontos werden folgende Daten dauerhaft entfernt:',
+    delete_account_item1: 'Alle Ihre persönlichen Daten',
+    delete_account_item2: 'Buchungsverlauf verknüpft mit Ihrer E-Mail',
+    delete_account_item3: 'Zugang zum Kundenbereich',
+    delete_account_btn: 'Konto Dauerhaft Löschen',
+    delete_account_cancel: 'Abbrechen',
+    delete_account_confirm_title: 'Sind Sie sicher?',
+    delete_account_confirm_desc: 'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+    delete_account_confirm_btn: 'Ja, Konto löschen',
+    delete_account_deleting: 'Wird gelöscht...',
   },
 
   nl: {
@@ -1706,6 +1786,22 @@ export const translations = {
 
     footer_privacy: 'Privacybeleid',
     footer_terms: 'Servicevoorwaarden',
+
+    // Delete Account
+    delete_account_title: 'Account Verwijderen',
+    delete_account_subtitle: 'Permanente verwijdering van persoonlijke gegevens',
+    delete_account_login_required: 'U moet inloggen om uw account te verwijderen.',
+    delete_account_warning_title: 'Onomkeerbare Actie',
+    delete_account_warning_desc: 'Door uw account te verwijderen worden de volgende gegevens permanent verwijderd:',
+    delete_account_item1: 'Al uw persoonlijke gegevens',
+    delete_account_item2: 'Boekingsgeschiedenis gekoppeld aan uw e-mail',
+    delete_account_item3: 'Toegang tot het Klantengebied',
+    delete_account_btn: 'Account Permanent Verwijderen',
+    delete_account_cancel: 'Annuleren',
+    delete_account_confirm_title: 'Weet u het zeker?',
+    delete_account_confirm_desc: 'Deze actie kan niet ongedaan worden gemaakt. Al uw informatie wordt permanent verwijderd.',
+    delete_account_confirm_btn: 'Ja, account verwijderen',
+    delete_account_deleting: 'Verwijderen...',
   },
 };
 

@@ -15,6 +15,7 @@ import Review from '@/pages/Review';
 import Driver from '@/pages/Driver';
 import CustomerArea from '@/pages/CustomerArea';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import DeleteAccount from '@/pages/DeleteAccount';
 import TermsOfService from '@/pages/TermsOfService';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
           <Route path="/sobre" element={<About />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+          <Route path="/eliminar-conta" element={<DeleteAccount />} />
           <Route path="/termos-de-servico" element={<TermsOfService />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>

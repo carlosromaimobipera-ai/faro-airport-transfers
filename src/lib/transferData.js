@@ -114,7 +114,14 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
+// Reduced price per km for 50–150 km range
+const MID_RANGE_PRICE_PER_KM = { sedan: 0.75, minivan: 0.80, minibus: 0.85 };
+
 // Calculate price — uses PriceConfig (vehicle price per km) from DB or fallback to static
+// Pricing tiers:
+//   ≤ 50 km  → standard price per km
+//   51–150 km → reduced mid-range price per km (0.75 / 0.80 / 0.85)
+//   > 150 km → back to standard price per km
 export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle) return 0;
@@ -122,7 +129,16 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
 
   // Look for vehicle price per km in PriceConfig DB
   const vehicleConfig = priceConfigs.find(c => c.config_type === 'vehicle' && c.key === `vehicle_${vehicleTypeId}`);
-  const pricePerKm = vehicleConfig ? vehicleConfig.value : vehicle.pricePerKm;
+  const standardPricePerKm = vehicleConfig ? vehicleConfig.value : vehicle.pricePerKm;
+
+  // Select price per km based on distance tier
+  let pricePerKm;
+  if (distanceKm <= 50 || distanceKm > 150) {
+    pricePerKm = standardPricePerKm;
+  } else {
+    // 50 < distanceKm <= 150 → mid-range reduced rate
+    pricePerKm = MID_RANGE_PRICE_PER_KM[vehicleTypeId] ?? standardPricePerKm;
+  }
 
   const distancePrice = distanceKm * pricePerKm;
   const calculatedPrice = Math.round(distancePrice * 100) / 100;

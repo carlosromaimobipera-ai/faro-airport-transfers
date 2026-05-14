@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, User, Calendar, CheckCircle2,
-  Clock, TrendingUp, Search, LogOut
+  Clock, TrendingUp, Search, LogOut, Trash2
 } from 'lucide-react';
 import BookingHistoryCard from '@/components/customer/BookingHistoryCard';
 import { format } from 'date-fns';
@@ -243,6 +243,17 @@ export default function CustomerArea() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Delete account link */}
+        <div className="pt-2 pb-2 text-center">
+          <Link
+            to="/eliminar-conta"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            {t(lang, 'delete_account_title')}
+          </Link>
+        </div>
 
         {/* Bookings list */}
         {bookingsLoading ? (

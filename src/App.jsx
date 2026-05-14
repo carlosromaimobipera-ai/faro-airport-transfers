@@ -14,6 +14,8 @@ import Admin from '@/pages/Admin';
 import Review from '@/pages/Review';
 import Driver from '@/pages/Driver';
 import CustomerArea from '@/pages/CustomerArea';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfService from '@/pages/TermsOfService';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
@@ -77,6 +79,8 @@ const AuthenticatedApp = () => {
           <Route path="/area-cliente" element={<CustomerArea />} />
           <Route path="/sobre" element={<About />} />
           <Route path="/contacto" element={<Contact />} />
+          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termos-de-servico" element={<TermsOfService />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>

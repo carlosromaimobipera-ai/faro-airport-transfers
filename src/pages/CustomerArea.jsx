@@ -13,7 +13,6 @@ import {
   Clock, TrendingUp, Search, LogOut
 } from 'lucide-react';
 import BookingHistoryCard from '@/components/customer/BookingHistoryCard';
-import DeleteAccountSection from '@/components/customer/DeleteAccountSection';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useLang } from '@/lib/LanguageContext';
@@ -270,10 +269,7 @@ export default function CustomerArea() {
           </div>
         )}
 
-        {/* Delete Account Section */}
-        <div className="mt-12 pt-8 border-t">
-          <DeleteAccountSection />
-        </div>
+
       </div>
     </div>
   );

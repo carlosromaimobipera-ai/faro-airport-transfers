@@ -101,7 +101,20 @@ export default function BookingForm() {
 
   const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;
-  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration), [distance, form.vehicle_type, priceConfigs, duration]);
+
+  // Detect Spain route: origin or destination is in Spain
+  const isSpainRoute = useMemo(() => {
+    const oCoords = form.origin_place?.coords;
+    const dCoords = form.destination_place?.coords;
+    if (!oCoords || !dCoords) return false;
+    const SPAIN = { lat: [35.9, 43.8], lng: [-9.4, 4.4] };
+    const ALGARVE = { lat: [36.8, 37.3], lng: [-8.7, -7.8] };
+    const inSpain = (c) => c.lat >= SPAIN.lat[0] && c.lat <= SPAIN.lat[1] && c.lng >= SPAIN.lng[0] && c.lng <= SPAIN.lng[1];
+    const inAlgarve = (c) => c.lat >= ALGARVE.lat[0] && c.lat <= ALGARVE.lat[1] && c.lng >= ALGARVE.lng[0] && c.lng <= ALGARVE.lng[1];
+    return (inAlgarve(oCoords) && inSpain(dCoords)) || (inSpain(oCoords) && inAlgarve(dCoords));
+  }, [form.origin_place?.coords, form.destination_place?.coords]);
+
+  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration, isSpainRoute), [distance, form.vehicle_type, priceConfigs, duration, isSpainRoute]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
   const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
@@ -325,7 +338,7 @@ export default function BookingForm() {
                       <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
                       {vehicleTypes.map(v => (
                         <span key={v.id} className="text-sm font-bold text-primary">
-                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, priceConfigs, distanceData?.duration_minutes || 0).toFixed(0)}</span>
+                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, priceConfigs, distanceData?.duration_minutes || 0, isSpainRoute).toFixed(0)}</span>
                         </span>
                       ))}
                     </div>

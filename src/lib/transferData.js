@@ -114,39 +114,33 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Reduced price per km for 50–150 km range
-const MID_RANGE_PRICE_PER_KM = { sedan: 0.75, minivan: 0.80, minibus: 0.85 };
+// Pricing tiers per km
+const PRICE_PER_KM_STANDARD = { sedan: 1.00, minivan: 1.20, minibus: 1.40 };
+const PRICE_PER_KM_MID      = { sedan: 0.75, minivan: 0.80, minibus: 0.85 };
+const PRICE_PER_KM_SPAIN    = { sedan: 0.95, minivan: 1.10, minibus: 1.20 };
 
-// Calculate price — uses PriceConfig (vehicle price per km) from DB or fallback to static
-// Pricing tiers:
-//   ≤ 50 km  → standard price per km
-//   51–150 km → reduced mid-range price per km (0.75 / 0.80 / 0.85)
-//   > 150 km → back to standard price per km
-export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0) {
+// Calculate price
+// Tiers: < 30 km → standard | 30–150 km → mid-range | > 150 km → standard | Spain → Spain rate
+export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0, isSpainRoute = false) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle) return 0;
   if (!distanceKm) return 0;
 
-  // Look for vehicle price per km in PriceConfig DB
   const vehicleConfig = priceConfigs.find(c => c.config_type === 'vehicle' && c.key === `vehicle_${vehicleTypeId}`);
-  const standardPricePerKm = vehicleConfig ? vehicleConfig.value : vehicle.pricePerKm;
+  const standardPricePerKm = vehicleConfig ? vehicleConfig.value : PRICE_PER_KM_STANDARD[vehicleTypeId] ?? vehicle.pricePerKm;
 
-  // Select price per km based on distance tier
   let pricePerKm;
-  if (distanceKm <= 50 || distanceKm > 150) {
+  if (isSpainRoute) {
+    pricePerKm = PRICE_PER_KM_SPAIN[vehicleTypeId] ?? standardPricePerKm;
+  } else if (distanceKm < 30 || distanceKm > 150) {
     pricePerKm = standardPricePerKm;
   } else {
-    // 50 < distanceKm <= 150 → mid-range reduced rate
-    pricePerKm = MID_RANGE_PRICE_PER_KM[vehicleTypeId] ?? standardPricePerKm;
+    pricePerKm = PRICE_PER_KM_MID[vehicleTypeId] ?? standardPricePerKm;
   }
 
-  const distancePrice = distanceKm * pricePerKm;
-  const calculatedPrice = Math.round(distancePrice * 100) / 100;
-
-  // Apply minimum fare
+  const calculatedPrice = Math.round(distanceKm * pricePerKm * 100) / 100;
   const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
-  const minimumFare = minimumFares[vehicleTypeId] || 0;
-  return Math.max(calculatedPrice, minimumFare);
+  return Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
 }
 
 // Distance is calculated from coordinates using Haversine formula

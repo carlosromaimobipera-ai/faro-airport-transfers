@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plane, Menu, X, Car } from 'lucide-react';
+import { Plane, Menu, X, Car, LogIn, LogOut, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { base44 } from '@/api/base44Client';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const { lang } = useLang();
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(async (authed) => {
+      if (authed) {
+        const me = await base44.auth.me();
+        setUser(me);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -48,8 +59,27 @@ export default function Navbar() {
             <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
           <LanguageSwitcher dark={!scrolled} />
+          {user ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => base44.auth.logout('/')}
+              className={cn("gap-1.5 ml-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
+            >
+              <LogOut className="w-4 h-4" /> {t(lang, 'customer_logout')}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+              className={cn("gap-1.5 ml-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
+            >
+              <LogIn className="w-4 h-4" /> Login
+            </Button>
+          )}
           <a href="#booking">
-            <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold ml-2">
+            <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold ml-1">
               {t(lang, 'nav_cta')}
             </Button>
           </a>
@@ -74,6 +104,21 @@ export default function Navbar() {
           <Link to="/driver" className="flex items-center gap-2 text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>
             <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
+          {user ? (
+            <button
+              onClick={() => base44.auth.logout('/')}
+              className="flex items-center gap-2 text-sm font-medium py-2 text-destructive"
+            >
+              <LogOut className="w-4 h-4" /> {t(lang, 'customer_logout')}
+            </button>
+          ) : (
+            <button
+              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+              className="flex items-center gap-2 text-sm font-medium py-2 text-primary"
+            >
+              <LogIn className="w-4 h-4" /> Login
+            </button>
+          )}
         </div>
       )}
     </nav>

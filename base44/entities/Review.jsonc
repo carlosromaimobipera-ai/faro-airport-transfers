@@ -51,7 +51,18 @@
     "rating"
   ],
   "rls": {
-    "create": true,
+    "create": {
+      "$and": [
+        {
+          "data.booking_id": {
+            "$exists": true
+          }
+        },
+        {
+          "data.customer_email": "{{user.email}}"
+        }
+      ]
+    },
     "read": true,
     "update": {
       "user_condition": {

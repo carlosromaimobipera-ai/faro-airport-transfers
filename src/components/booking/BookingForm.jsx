@@ -33,15 +33,7 @@ export default function BookingForm() {
   const [paymentError, setPaymentError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(''); // 'paypal' | 'cash'
 
-  const { data: priceConfigs = [] } = useQuery({
-    queryKey: ['price-configs'],
-    queryFn: () => base44.entities.PriceConfig.list('key', 500),
-  });
 
-  const { data: priceRules = [] } = useQuery({
-    queryKey: ['price-rules'],
-    queryFn: () => base44.entities.PriceRule.list('priority', 200),
-  });
 
   const [form, setForm] = useState({
     origin: '', destination: '', vehicle_type: '',
@@ -119,7 +111,7 @@ export default function BookingForm() {
     return (inAlgarve(oCoords) && inSpain(dCoords)) || (inSpain(oCoords) && inAlgarve(dCoords));
   }, [form.origin_place?.coords, form.destination_place?.coords]);
 
-  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, priceConfigs, duration, isSpainRoute, priceRules, form.transfer_date || null), [distance, form.vehicle_type, priceConfigs, duration, isSpainRoute, priceRules, form.transfer_date]);
+  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
   const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
@@ -343,7 +335,7 @@ export default function BookingForm() {
                       <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
                       {vehicleTypes.map(v => (
                         <span key={v.id} className="text-sm font-bold text-primary">
-                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, priceConfigs, distanceData?.duration_minutes || 0, isSpainRoute, priceRules, form.transfer_date || null).toFixed(0)}</span>
+                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute).toFixed(0)}</span>
                         </span>
                       ))}
                     </div>
@@ -382,7 +374,7 @@ export default function BookingForm() {
                       vehicle={vehicle}
                       selected={form.vehicle_type === vehicle.id}
                       onSelect={(id) => updateForm('vehicle_type', id)}
-                      price={calculatePrice(distance, vehicle.id, priceConfigs, duration, isSpainRoute, priceRules, form.transfer_date || null)}
+                      price={calculatePrice(distance, vehicle.id, [], duration, isSpainRoute)}
                     />
                   ))}
                 </div>

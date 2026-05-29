@@ -189,11 +189,6 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
   const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
   const basePrice = Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
 
-  // Apply dynamic rules if provided
-  if (priceRules.length && transferDate) {
-    return applyPriceRules(basePrice, priceRules, { transferDate, vehicleTypeId, isSpainRoute, distanceKm });
-  }
-
   return basePrice;
 }
 

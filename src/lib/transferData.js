@@ -114,16 +114,18 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Pricing tiers per km — calibrated to match official price table
-// short  <30 km  : local/airport nearby transfers
-// mid   30–150 km: main Algarve transfers (Albufeira ~49km → Sedan €40, VW Caddy €50)
-// long  >150 km  : Lisboa and other long-distance
-// spain           : cross-border routes
+// Preço por km por tipo de veículo (taxa única)
 const PRICE_PER_KM = {
-  short:  { sedan: 1.20, minivan: 1.50, minibus: 1.70 },
-  mid:    { sedan: 0.82, minivan: 1.02, minibus: 1.20 },
-  long:   { sedan: 1.00, minivan: 1.20, minibus: 1.40 },
-  spain:  { sedan: 0.95, minivan: 1.10, minibus: 1.25 },
+  sedan:   0.82,
+  minivan: 1.02,
+  minibus: 1.20,
+};
+
+// Tarifas mínimas por veículo
+const MINIMUM_FARES = {
+  sedan:   20,
+  minivan: 25,
+  minibus: 30,
 };
 
 // Apply dynamic price rules to a base price
@@ -173,25 +175,14 @@ export function applyPriceRules(basePrice, rules = [], { transferDate, vehicleTy
   return Math.max(finalPrice, basePrice * 0.5); // never go below 50% of base
 }
 
-// Calculate price
-// Tiers: < 30 km → standard | 30–150 km → mid-range | > 150 km → standard | Spain → Spain rate
+// Calcula preço: distância × tarifa/km, com mínimo garantido
 export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0, isSpainRoute = false, priceRules = [], transferDate = null) {
   if (!vehicleTypes.find(v => v.id === vehicleTypeId)) return 0;
   if (!distanceKm) return 0;
 
-  let tier;
-  if (isSpainRoute)                          tier = 'spain';
-  else if (distanceKm < 30)                  tier = 'short';
-  else if (distanceKm <= 150)                tier = 'mid';
-  else                                       tier = 'long';
-
-  const pricePerKm = PRICE_PER_KM[tier][vehicleTypeId];
-
-  const calculatedPrice = Math.round(distanceKm * pricePerKm * 100) / 100;
-  const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
-  const basePrice = Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
-
-  return basePrice;
+  const ratePerKm = PRICE_PER_KM[vehicleTypeId] || 0.82;
+  const calculated = Math.round(distanceKm * ratePerKm * 100) / 100;
+  return Math.max(calculated, MINIMUM_FARES[vehicleTypeId] || 20);
 }
 
 // Distance is calculated from coordinates using Haversine formula

@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Euro, Route, Save, RotateCcw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Euro, Route, Save, RotateCcw, Zap } from 'lucide-react';
 import { vehicleTypes, routeDistances, locations } from '@/lib/transferData';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import PriceRulesManager from '@/components/admin/PriceRulesManager';
 
 const DEFAULT_VEHICLE_PRICES = {
   sedan: 1.00,
@@ -123,6 +125,17 @@ export default function PriceManager() {
   };
 
   return (
+    <Tabs defaultValue="base">
+      <TabsList className="mb-4">
+        <TabsTrigger value="base" className="gap-1.5"><Euro className="w-4 h-4" /> Tarifas Base</TabsTrigger>
+        <TabsTrigger value="rules" className="gap-1.5"><Zap className="w-4 h-4" /> Regras Dinâmicas</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="rules">
+        <PriceRulesManager />
+      </TabsContent>
+
+      <TabsContent value="base">
     <div className="space-y-6">
       {/* Vehicle Prices */}
       <Card>
@@ -228,5 +241,7 @@ export default function PriceManager() {
         </CardContent>
       </Card>
     </div>
+      </TabsContent>
+    </Tabs>
   );
 }

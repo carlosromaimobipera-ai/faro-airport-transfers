@@ -1,0 +1,101 @@
+{
+  "name": "PriceRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome da regra (ex: Alta Temporada, Fim de Semana)"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "season",
+        "weekday",
+        "vehicle",
+        "route_region"
+      ],
+      "description": "Tipo de regra"
+    },
+    "multiplier": {
+      "type": "number",
+      "description": "Multiplicador do pre\u00e7o (ex: 1.2 = +20%, 0.9 = -10%)"
+    },
+    "date_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Data in\u00edcio (para regras de \u00e9poca)"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Data fim (para regras de \u00e9poca)"
+    },
+    "weekdays": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Dias da semana [0=Dom, 1=Seg ... 6=S\u00e1b] (para regras de dia)"
+    },
+    "vehicle_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ve\u00edculos afetados (sedan, minivan, minibus). Vazio = todos."
+    },
+    "route_region": {
+      "type": "string",
+      "enum": [
+        "all",
+        "algarve_local",
+        "lisbon",
+        "spain"
+      ],
+      "default": "all",
+      "description": "Regi\u00e3o da rota afetada"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Regra ativa"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Prioridade (maior = aplica depois, pode sobrepor)"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Notas internas sobre esta regra"
+    }
+  },
+  "required": [
+    "name",
+    "rule_type",
+    "multiplier"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

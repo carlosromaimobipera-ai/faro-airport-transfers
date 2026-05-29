@@ -119,9 +119,56 @@ const PRICE_PER_KM_STANDARD = { sedan: 1.00, minivan: 1.20, minibus: 1.40 };
 const PRICE_PER_KM_MID      = { sedan: 0.75, minivan: 0.80, minibus: 0.85 };
 const PRICE_PER_KM_SPAIN    = { sedan: 0.95, minivan: 1.10, minibus: 1.20 };
 
+// Apply dynamic price rules to a base price
+// Rules are additive: each matching rule adds (multiplier - 1) to the combined factor
+// e.g. season +20% AND weekend +10% = base * 1.30
+export function applyPriceRules(basePrice, rules = [], { transferDate, vehicleTypeId, isSpainRoute = false, distanceKm = 0 } = {}) {
+  if (!rules.length) return basePrice;
+
+  const activeRules = rules.filter(r => r.active);
+  if (!activeRules.length) return basePrice;
+
+  const sorted = [...activeRules].sort((a, b) => (a.priority || 0) - (b.priority || 0));
+
+  let combined = 1.0; // base multiplier
+
+  for (const rule of sorted) {
+    // Check vehicle filter
+    if (rule.vehicle_types?.length && !rule.vehicle_types.includes(vehicleTypeId)) continue;
+
+    // Check route region filter
+    if (rule.route_region && rule.route_region !== 'all') {
+      if (rule.route_region === 'spain' && !isSpainRoute) continue;
+      if (rule.route_region === 'lisbon' && !(distanceKm > 200 && !isSpainRoute)) continue;
+      if (rule.route_region === 'algarve_local' && distanceKm > 80) continue;
+    }
+
+    let matches = false;
+
+    if (rule.rule_type === 'season' && transferDate && rule.date_from && rule.date_to) {
+      matches = transferDate >= rule.date_from && transferDate <= rule.date_to;
+    } else if (rule.rule_type === 'weekday' && transferDate && rule.weekdays?.length) {
+      const dow = new Date(transferDate + 'T12:00:00').getDay();
+      matches = rule.weekdays.includes(dow);
+    } else if (rule.rule_type === 'vehicle') {
+      // vehicle filter already applied above; if we got here, it matches
+      matches = true;
+    } else if (rule.rule_type === 'route_region') {
+      matches = true; // region filter already applied above
+    }
+
+    if (matches) {
+      combined += (parseFloat(rule.multiplier) || 1) - 1;
+    }
+  }
+
+  const finalPrice = Math.round(basePrice * combined * 100) / 100;
+  return Math.max(finalPrice, basePrice * 0.5); // never go below 50% of base
+}
+
 // Calculate price
 // Tiers: < 30 km → standard | 30–150 km → mid-range | > 150 km → standard | Spain → Spain rate
-export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0, isSpainRoute = false) {
+export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0, isSpainRoute = false, priceRules = [], transferDate = null) {
   const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
   if (!vehicle) return 0;
   if (!distanceKm) return 0;
@@ -140,7 +187,14 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
 
   const calculatedPrice = Math.round(distanceKm * pricePerKm * 100) / 100;
   const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
-  return Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
+  const basePrice = Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
+
+  // Apply dynamic rules if provided
+  if (priceRules.length && transferDate) {
+    return applyPriceRules(basePrice, priceRules, { transferDate, vehicleTypeId, isSpainRoute, distanceKm });
+  }
+
+  return basePrice;
 }
 
 // Distance is calculated from coordinates using Haversine formula

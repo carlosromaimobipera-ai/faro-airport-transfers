@@ -50,13 +50,15 @@ export default function BottomTabBar() {
           <Link
             key={tab.path}
             to={tab.path}
+            aria-label={t(lang, tab.labelKey)}
+            aria-current={isActive(tab.path) ? 'page' : undefined}
             className={`flex flex-col items-center justify-center flex-1 h-16 transition-colors min-h-[44px] ${
               isActive(tab.path)
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <tab.icon className="w-6 h-6 mb-1" />
+            <tab.icon className="w-6 h-6 mb-1" aria-hidden="true" />
             <span className="text-xs font-medium">{t(lang, tab.labelKey)}</span>
           </Link>
         ))}

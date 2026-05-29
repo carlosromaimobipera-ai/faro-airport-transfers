@@ -3,24 +3,34 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import React, { Suspense, lazy } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home';
-import About from '@/pages/About';
-import Contact from '@/pages/Contact';
-import Confirmation from '@/pages/Confirmation';
-import Admin from '@/pages/Admin';
-import Review from '@/pages/Review';
-import Driver from '@/pages/Driver';
-import CustomerArea from '@/pages/CustomerArea';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import DeleteAccount from '@/pages/DeleteAccount';
-import TermsOfService from '@/pages/TermsOfService';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
+import MobileTopBar from '@/components/mobile/MobileTopBar';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
+
+// Code-split major pages for faster WebView loading
+const About = lazy(() => import('@/pages/About'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Confirmation = lazy(() => import('@/pages/Confirmation'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const Review = lazy(() => import('@/pages/Review'));
+const Driver = lazy(() => import('@/pages/Driver'));
+const CustomerArea = lazy(() => import('@/pages/CustomerArea'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'));
+const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+
+const PageLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+  </div>
+);
 
 const RouteWrapper = ({ children }) => {
   const location = useLocation();
@@ -62,31 +72,36 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -100, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="route-content min-h-screen overflow-y-auto"
-      >
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/confirmacao" element={<Confirmation />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/review" element={<Review />} />
-          <Route path="/driver" element={<Driver />} />
-          <Route path="/area-cliente" element={<CustomerArea />} />
-          <Route path="/sobre" element={<About />} />
-          <Route path="/contacto" element={<Contact />} />
-          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-          <Route path="/eliminar-conta" element={<DeleteAccount />} />
-          <Route path="/termos-de-servico" element={<TermsOfService />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
+    <>
+      <MobileTopBar />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location.pathname}
+          initial={{ x: 100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -100, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="route-content min-h-screen overflow-y-auto pt-14 md:pt-0"
+        >
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/confirmacao" element={<Confirmation />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/review" element={<Review />} />
+              <Route path="/driver" element={<Driver />} />
+              <Route path="/area-cliente" element={<CustomerArea />} />
+              <Route path="/sobre" element={<About />} />
+              <Route path="/contacto" element={<Contact />} />
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/eliminar-conta" element={<DeleteAccount />} />
+              <Route path="/termos-de-servico" element={<TermsOfService />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 };
 

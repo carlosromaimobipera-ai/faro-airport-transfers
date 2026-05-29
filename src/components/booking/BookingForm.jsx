@@ -99,16 +99,16 @@ export default function BookingForm() {
   const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;
 
-  // Detect Spain route: origin or destination is in Spain
+  // Detect Spain route: ONLY when one side is in Spain (lng > -5.0) and NOT in Portugal
   const isSpainRoute = useMemo(() => {
     const oCoords = form.origin_place?.coords;
     const dCoords = form.destination_place?.coords;
     if (!oCoords || !dCoords) return false;
-    const SPAIN = { lat: [35.9, 43.8], lng: [-9.4, 4.4] };
-    const ALGARVE = { lat: [36.8, 37.3], lng: [-8.7, -7.8] };
-    const inSpain = (c) => c.lat >= SPAIN.lat[0] && c.lat <= SPAIN.lat[1] && c.lng >= SPAIN.lng[0] && c.lng <= SPAIN.lng[1];
-    const inAlgarve = (c) => c.lat >= ALGARVE.lat[0] && c.lat <= ALGARVE.lat[1] && c.lng >= ALGARVE.lng[0] && c.lng <= ALGARVE.lng[1];
-    return (inAlgarve(oCoords) && inSpain(dCoords)) || (inSpain(oCoords) && inAlgarve(dCoords));
+    // Spain proper: longitude > -9.3 AND outside Portugal bounds (Portugal lng: -9.6 to -6.1)
+    // Use strict Spain detection: lng > -7.0 to avoid confusion with Algarve/Portugal
+    const inSpain = (c) => c.lng > -7.0 && c.lat >= 36.0 && c.lat <= 43.8;
+    const inPortugal = (c) => c.lng <= -7.0 && c.lng >= -9.6 && c.lat >= 36.8;
+    return (inPortugal(oCoords) && inSpain(dCoords)) || (inSpain(oCoords) && inPortugal(dCoords));
   }, [form.origin_place?.coords, form.destination_place?.coords]);
 
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);

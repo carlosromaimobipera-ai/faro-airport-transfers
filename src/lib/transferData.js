@@ -114,22 +114,17 @@ export function getDistance() {
   return null; // Use coordinates-based calculation instead
 }
 
-// Pricing tiers per km
-// Short (<30 km): higher rate
-// Mid (30–150 km): standard Algarve rate
-// Long (>150 km): long distance rate
-// Spain: cross-border rate
+// Pricing tiers per km — calibrated to match official price table
+// short  <30 km  : local/airport nearby transfers
+// mid   30–150 km: main Algarve transfers (Albufeira ~49km → Sedan €40, VW Caddy €50)
+// long  >150 km  : Lisboa and other long-distance
+// spain           : cross-border routes
 const PRICE_PER_KM = {
-  short:    { sedan: 1.00, minivan: 1.20, minibus: 1.40 },
-  mid:      { sedan: 0.75, minivan: 0.80, minibus: 0.85 },
-  long:     { sedan: 1.00, minivan: 1.20, minibus: 1.40 },
-  spain:    { sedan: 0.95, minivan: 1.10, minibus: 1.20 },
+  short:  { sedan: 1.20, minivan: 1.50, minibus: 1.70 },
+  mid:    { sedan: 0.82, minivan: 1.02, minibus: 1.20 },
+  long:   { sedan: 1.00, minivan: 1.20, minibus: 1.40 },
+  spain:  { sedan: 0.95, minivan: 1.10, minibus: 1.25 },
 };
-
-// Legacy aliases (kept for applyPriceRules references)
-const PRICE_PER_KM_STANDARD = PRICE_PER_KM.long;
-const PRICE_PER_KM_MID      = PRICE_PER_KM.mid;
-const PRICE_PER_KM_SPAIN    = PRICE_PER_KM.spain;
 
 // Apply dynamic price rules to a base price
 // Rules are additive: each matching rule adds (multiplier - 1) to the combined factor

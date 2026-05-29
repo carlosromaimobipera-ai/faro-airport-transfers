@@ -115,17 +115,9 @@ export function getDistance() {
 }
 
 // Pricing tiers per km
-// Short (<30km): higher rate (airport to nearby)
-// Mid (30–150km): standard Algarve rate
-// Long (>150km): lower rate per km (long distance)
-// Spain: cross-border rate
-const PRICE_PER_KM_SHORT  = { sedan: 1.10, minivan: 1.30, minibus: 1.50 };
-const PRICE_PER_KM_MID    = { sedan: 0.82, minivan: 0.98, minibus: 1.12 };
-const PRICE_PER_KM_LONG   = { sedan: 1.05, minivan: 1.25, minibus: 1.45 };
-const PRICE_PER_KM_SPAIN  = { sedan: 1.05, minivan: 1.25, minibus: 1.45 };
-
-// Legacy aliases (not used directly)
-const PRICE_PER_KM_STANDARD = PRICE_PER_KM_MID;
+const PRICE_PER_KM_STANDARD = { sedan: 1.00, minivan: 1.20, minibus: 1.40 };
+const PRICE_PER_KM_MID      = { sedan: 0.75, minivan: 0.80, minibus: 0.85 };
+const PRICE_PER_KM_SPAIN    = { sedan: 0.95, minivan: 1.10, minibus: 1.20 };
 
 // Apply dynamic price rules to a base price
 // Rules are additive: each matching rule adds (multiplier - 1) to the combined factor
@@ -183,16 +175,14 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
   let pricePerKm;
   if (isSpainRoute) {
     pricePerKm = PRICE_PER_KM_SPAIN[vehicleTypeId];
-  } else if (distanceKm < 30) {
-    pricePerKm = PRICE_PER_KM_SHORT[vehicleTypeId];
-  } else if (distanceKm <= 150) {
+  } else if (distanceKm >= 30 && distanceKm <= 150) {
     pricePerKm = PRICE_PER_KM_MID[vehicleTypeId];
   } else {
-    pricePerKm = PRICE_PER_KM_LONG[vehicleTypeId];
+    pricePerKm = PRICE_PER_KM_STANDARD[vehicleTypeId];
   }
 
   const calculatedPrice = Math.round(distanceKm * pricePerKm * 100) / 100;
-  const minimumFares = { sedan: 20, minivan: 25, minibus: 30 };
+  const minimumFares = { sedan: 15, minivan: 20, minibus: 25 };
   const basePrice = Math.max(calculatedPrice, minimumFares[vehicleTypeId] || 0);
 
   return basePrice;

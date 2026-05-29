@@ -102,7 +102,11 @@ export default function Footer() {
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-background/40">
-          <span>© {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}</span>
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <span>© {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="text-background/50 font-medium">{t(lang, 'footer_rnavt')}</span>
+          </div>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/sobre" className="hover:text-background/70 transition-colors">{t(lang, 'about_title')}</Link>
             <Link to="/contacto" className="hover:text-background/70 transition-colors">{t(lang, 'contact_title')}</Link>

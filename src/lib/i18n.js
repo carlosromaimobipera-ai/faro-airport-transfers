@@ -316,6 +316,7 @@ export const translations = {
     // Footer legal links
     footer_privacy: 'Política de Privacidade',
     footer_terms: 'Termos de Serviço',
+    footer_rnavt: 'Licença RNAVT n.º 6855',
 
     // Delete Account
     delete_account_title: 'Eliminar Conta',
@@ -610,6 +611,7 @@ export const translations = {
 
     footer_privacy: 'Privacy Policy',
     footer_terms: 'Terms of Service',
+    footer_rnavt: 'RNAVT Licence no. 6855',
 
     // Delete Account
     delete_account_title: 'Delete Account',
@@ -904,6 +906,7 @@ export const translations = {
 
     footer_privacy: 'Política de Privacidad',
     footer_terms: 'Términos de Servicio',
+    footer_rnavt: 'Licencia RNAVT n.º 6855',
 
     // Delete Account
     delete_account_title: 'Eliminar Cuenta',
@@ -1198,6 +1201,7 @@ export const translations = {
 
     footer_privacy: 'Politique de Confidentialité',
     footer_terms: 'Conditions de Service',
+    footer_rnavt: 'Licence RNAVT n° 6855',
 
     // Delete Account
     delete_account_title: 'Supprimer le Compte',
@@ -1492,6 +1496,7 @@ export const translations = {
 
     footer_privacy: 'Datenschutzerklärung',
     footer_terms: 'Nutzungsbedingungen',
+    footer_rnavt: 'RNAVT-Lizenz Nr. 6855',
 
     // Delete Account
     delete_account_title: 'Konto Löschen',
@@ -1786,6 +1791,7 @@ export const translations = {
 
     footer_privacy: 'Privacybeleid',
     footer_terms: 'Servicevoorwaarden',
+    footer_rnavt: 'RNAVT-vergunning nr. 6855',
 
     // Delete Account
     delete_account_title: 'Account Verwijderen',

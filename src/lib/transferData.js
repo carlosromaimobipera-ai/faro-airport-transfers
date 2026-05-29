@@ -169,20 +169,16 @@ export function applyPriceRules(basePrice, rules = [], { transferDate, vehicleTy
 // Calculate price
 // Tiers: < 30 km → standard | 30–150 km → mid-range | > 150 km → standard | Spain → Spain rate
 export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], durationMinutes = 0, isSpainRoute = false, priceRules = [], transferDate = null) {
-  const vehicle = vehicleTypes.find(v => v.id === vehicleTypeId);
-  if (!vehicle) return 0;
+  if (!vehicleTypes.find(v => v.id === vehicleTypeId)) return 0;
   if (!distanceKm) return 0;
-
-  const vehicleConfig = priceConfigs.find(c => c.config_type === 'vehicle' && c.key === `vehicle_${vehicleTypeId}`);
-  const standardPricePerKm = vehicleConfig ? vehicleConfig.value : PRICE_PER_KM_STANDARD[vehicleTypeId] ?? vehicle.pricePerKm;
 
   let pricePerKm;
   if (isSpainRoute) {
-    pricePerKm = PRICE_PER_KM_SPAIN[vehicleTypeId] ?? standardPricePerKm;
-  } else if (distanceKm < 30 || distanceKm > 150) {
-    pricePerKm = standardPricePerKm;
+    pricePerKm = PRICE_PER_KM_SPAIN[vehicleTypeId];
+  } else if (distanceKm >= 30 && distanceKm <= 150) {
+    pricePerKm = PRICE_PER_KM_MID[vehicleTypeId];
   } else {
-    pricePerKm = PRICE_PER_KM_MID[vehicleTypeId] ?? standardPricePerKm;
+    pricePerKm = PRICE_PER_KM_STANDARD[vehicleTypeId];
   }
 
   const calculatedPrice = Math.round(distanceKm * pricePerKm * 100) / 100;

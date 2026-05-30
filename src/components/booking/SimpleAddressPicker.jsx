@@ -143,7 +143,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           onFocus={() => setShowDropdown(true)}
           placeholder={resolvedPlaceholder}
           autoComplete="off"
-          className="w-full h-14 pl-9 pr-10 rounded-xl border border-input bg-gray-50 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:bg-gray-100 placeholder:text-muted-foreground transition-all cursor-text"
+          className="w-full h-14 pl-9 pr-10 rounded-xl border border-input bg-background text-foreground text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:bg-muted/50 placeholder:text-muted-foreground transition-all cursor-text"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {loading ? (

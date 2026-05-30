@@ -118,6 +118,7 @@ export const translations = {
 
     // Vehicle names
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Minibus Grupo',
 
@@ -422,6 +423,7 @@ export const translations = {
     conf_contact: 'The driver will contact you',
     conf_back: 'Back to home',
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Group Minibus',
     feat_ac: 'Air conditioning',
@@ -717,6 +719,7 @@ export const translations = {
     conf_contact: 'El conductor se pondrá en contacto contigo',
     conf_back: 'Volver al inicio',
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Minibús Grupo',
     feat_ac: 'Aire acondicionado',
@@ -1012,6 +1015,7 @@ export const translations = {
     conf_contact: 'Le chauffeur vous contactera',
     conf_back: 'Retour à l\'accueil',
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Minibus Groupe',
     feat_ac: 'Climatisation',
@@ -1307,6 +1311,7 @@ export const translations = {
     conf_contact: 'Der Fahrer wird sich mit Ihnen in Verbindung setzen',
     conf_back: 'Zurück zur Startseite',
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Gruppen-Minibus',
     feat_ac: 'Klimaanlage',
@@ -1602,6 +1607,7 @@ export const translations = {
     conf_contact: 'De chauffeur neemt contact met u op',
     conf_back: 'Terug naar home',
     veh_sedan: 'Sedan',
+    veh_premium: 'Premium (Tesla Model Y)',
     veh_minivan: 'Minivan',
     veh_minibus: 'Groeps Minibus',
     feat_ac: 'Airconditioning',

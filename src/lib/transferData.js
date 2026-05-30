@@ -182,12 +182,15 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
   if (!distanceKm) return 0;
 
   let tier;
+  // premium uses same pricing as minivan
+  const pricingId = vehicleTypeId === 'premium' ? 'minivan' : vehicleTypeId;
+
   if (isSpainRoute)       tier = 'spain';
   else if (distanceKm < 30)  tier = 'short';
   else if (distanceKm <= 150) tier = 'mid';
   else                    tier = 'long';
 
-  const rate = PRICE_PER_KM[tier][vehicleTypeId];
+  const rate = PRICE_PER_KM[tier][pricingId];
   const calculated = Math.round(distanceKm * rate * 100) / 100;
   return Math.max(calculated, MINIMUM_FARES[vehicleTypeId] || 15);
 }
@@ -245,17 +248,32 @@ export const vehicleTypes = [
   {
     id: "sedan",
     nameKey: "veh_sedan",
-    seats: 4,
+    seats: 3,
     luggage: 3,
+    maxPassengers: 3,
+    maxLuggage: 3,
     pricePerKm: 1.00,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/2f3fbb999_Kia_Ceed_SW.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
   {
+    id: "premium",
+    nameKey: "veh_premium",
+    seats: 3,
+    luggage: 3,
+    maxPassengers: 3,
+    maxLuggage: 3,
+    pricePerKm: 1.20,
+    image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/3e7495004_generated_image.png",
+    featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
+  },
+  {
     id: "minivan",
     nameKey: "veh_minivan",
-    seats: 6,
+    seats: 5,
     luggage: 5,
+    maxPassengers: 5,
+    maxLuggage: 5,
     pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/6db18abaf_VK_Caddy_Maxi.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_luggage", "feat_baby"],
@@ -265,6 +283,8 @@ export const vehicleTypes = [
     nameKey: "veh_minibus",
     seats: 8,
     luggage: 8,
+    maxPassengers: 8,
+    maxLuggage: 8,
     pricePerKm: 1.40,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/5e228dd60_Mercedes_vito.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_space", "feat_group", "feat_baby"],

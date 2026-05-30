@@ -111,6 +111,16 @@ export default function BookingForm() {
     return (inPortugal(oCoords) && inSpain(dCoords)) || (inSpain(oCoords) && inPortugal(dCoords));
   }, [form.origin_place?.coords, form.destination_place?.coords]);
 
+  const selectedVehicle = useMemo(() => vehicleTypes.find(v => v.id === form.vehicle_type), [form.vehicle_type]);
+  const maxPassengers = selectedVehicle?.maxPassengers || 8;
+  const maxLuggage = selectedVehicle?.maxLuggage || 8;
+
+  // Clamp pax/luggage when vehicle changes
+  useEffect(() => {
+    if (form.passengers > maxPassengers) updateForm('passengers', maxPassengers);
+    if (form.luggage > maxLuggage) updateForm('luggage', maxLuggage);
+  }, [form.vehicle_type]);
+
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
@@ -367,7 +377,7 @@ export default function BookingForm() {
                   <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'step2_title')}</h2>
                   <p className="text-muted-foreground text-sm">{t(lang, 'step2_sub')}</p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {vehicleTypes.map((vehicle) => (
                     <VehicleCard
                       key={vehicle.id}
@@ -457,12 +467,12 @@ export default function BookingForm() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>{t(lang, 'passengers')}</Label>
-                      <Input type="number" min={1} max={8} value={form.passengers} onChange={(e) => updateForm('passengers', e.target.value === '' ? '' : parseInt(e.target.value))} onBlur={(e) => { if (!e.target.value || parseInt(e.target.value) < 1) updateForm('passengers', 1); }} className="h-12" />
+                      <Label>{t(lang, 'passengers')} <span className="text-muted-foreground text-xs">(máx. {maxPassengers})</span></Label>
+                      <Input type="number" min={1} max={maxPassengers} value={form.passengers} onChange={(e) => { const v = parseInt(e.target.value); updateForm('passengers', isNaN(v) ? '' : Math.min(v, maxPassengers)); }} onBlur={(e) => { if (!e.target.value || parseInt(e.target.value) < 1) updateForm('passengers', 1); }} className="h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label>{t(lang, 'luggage')}</Label>
-                      <Input type="number" min={0} max={15} value={form.luggage} onChange={(e) => updateForm('luggage', e.target.value === '' ? '' : parseInt(e.target.value))} onBlur={(e) => { if (e.target.value === '') updateForm('luggage', 0); }} className="h-12" />
+                      <Label>{t(lang, 'luggage')} <span className="text-muted-foreground text-xs">(máx. {maxLuggage})</span></Label>
+                      <Input type="number" min={0} max={maxLuggage} value={form.luggage} onChange={(e) => { const v = parseInt(e.target.value); updateForm('luggage', isNaN(v) ? '' : Math.min(v, maxLuggage)); }} onBlur={(e) => { if (e.target.value === '') updateForm('luggage', 0); }} className="h-12" />
                     </div>
                   </div>
                 </div>

@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
 Rota: ${booking.origin} → ${booking.destination}<br/>
 Data: ${booking.transfer_date} ${booking.transfer_time}<br/>
 Veículo: ${booking.vehicle_type} | €${Number(booking.price||0).toFixed(2)} | ${booking.payment_status === 'paid' ? 'Pago (PayPal)' : 'A pagar (Cash)'}</p>
-<p><a href="https://transfers-algarvestar.com/admin">Ver no painel de administração →</a></p>`;
+<p><a href="https://lisbonsevillefaroriders.com/admin">Ver no painel de administração →</a></p>`;
 
     await sendEmail({
       to: ADMIN_EMAIL,

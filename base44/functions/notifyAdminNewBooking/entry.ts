@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       </div>
       ${booking.notes ? `<div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px; margin-bottom:20px;"><p style="color:#92400e; font-size:13px; margin:0;"><strong>Notas:</strong> ${booking.notes}</p></div>` : ''}
       <div style="text-align:center; padding-top:16px;">
-        <a href="https://transfers-algarvestar.com/admin" style="display:inline-block; background:#c8a951; color:#fff; text-decoration:none; padding:12px 32px; border-radius:6px; font-weight:bold; font-size:14px;">Ver no Painel</a>
+        <a href="https://lisbonsevillefaroriders.com/admin" style="display:inline-block; background:#c8a951; color:#fff; text-decoration:none; padding:12px 32px; border-radius:6px; font-weight:bold; font-size:14px;">Ver no Painel</a>
       </div>
     </div>
     <div style="background:#f8fafc; padding:16px 32px; text-align:center; border-top:1px solid #e2e8f0;">

@@ -340,14 +340,17 @@ export default function BookingForm() {
                 {/* Estimated price preview */}
                 {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-                    <p className="text-xs text-muted-foreground mb-1">{t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span></p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                  {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span>
+                  {form.trip_type === 'round_trip' && <span className="ml-2 text-primary font-medium">× 2 ({t(lang, 'trip_round_trip')})</span>}
+                </p>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
-                      {vehicleTypes.map(v => (
-                        <span key={v.id} className="text-sm font-bold text-primary">
-                          {t(lang, v.nameKey)} <span className="text-secondary">€{calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute).toFixed(0)}</span>
-                        </span>
-                      ))}
+                       <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
+                       {vehicleTypes.map(v => (
+                         <span key={v.id} className="text-sm font-bold text-primary">
+                           {t(lang, v.nameKey)} <span className="text-secondary">€{(calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute) * tripMultiplier).toFixed(0)}</span>
+                         </span>
+                       ))}
                     </div>
                   </div>
                 )}

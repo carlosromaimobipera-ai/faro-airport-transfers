@@ -36,7 +36,7 @@ export default function Navbar() {
         ? "bg-background/95 backdrop-blur-md shadow-sm border-b border-border/40"
         : "bg-transparent"
     )}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img
             src="https://transfers-algarvestar.com/site/images/transfers.jpg"

@@ -20,11 +20,11 @@ export default function HeroSection() {
         <div className="absolute bottom-10 right-20 w-96 h-96 bg-secondary rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-32 md:pb-24">
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
 
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4">
               {t(lang, 'hero_title_1')}{' '}
               <span className="text-secondary">{t(lang, 'hero_title_2')}</span>
             </h1>
@@ -35,7 +35,7 @@ export default function HeroSection() {
 
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex flex-wrap gap-8 mt-12"
+            className="flex flex-wrap gap-4 sm:gap-8 mt-8"
           >
             {stats.map((stat) => (
               <div key={stat.labelKey} className="flex items-center gap-3">

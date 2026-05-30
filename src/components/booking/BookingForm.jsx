@@ -242,12 +242,12 @@ export default function BookingForm() {
   return (
     <section id="booking" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:-mt-8 relative z-10 pb-20">
       {/* Steps indicator */}
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-center gap-1 mb-6 overflow-x-auto px-2">
         {steps.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2">
+          <div key={s.id} className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => s.id < step && setStep(s.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 step === s.id
                   ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                   : step > s.id
@@ -255,11 +255,11 @@ export default function BookingForm() {
                   : 'bg-muted text-muted-foreground'
               }`}
             >
-              <s.icon className="w-4 h-4" />
+              <s.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span className="hidden sm:inline">{t(lang, s.labelKey)}</span>
             </button>
             {i < steps.length - 1 && (
-              <div className={`w-8 h-0.5 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />
+              <div className={`w-4 sm:w-8 h-0.5 shrink-0 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />
             )}
           </div>
         ))}

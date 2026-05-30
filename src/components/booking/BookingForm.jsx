@@ -240,7 +240,7 @@ export default function BookingForm() {
   ];
 
   return (
-    <section id="booking" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10 pb-20">
+    <section id="booking" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:-mt-8 relative z-10 pb-20">
       {/* Steps indicator */}
       <div className="flex items-center justify-center gap-2 mb-8">
         {steps.map((s, i) => (

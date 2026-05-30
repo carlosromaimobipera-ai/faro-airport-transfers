@@ -20,7 +20,7 @@ export default function HeroSection() {
         <div className="absolute bottom-10 right-20 w-96 h-96 bg-secondary rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-32 md:pb-24">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 md:pt-32 md:pb-28">
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
 
@@ -53,8 +53,8 @@ export default function HeroSection() {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 80" fill="none" className="w-full">
-          <path d="M0 80V30C240 60 480 0 720 30C960 60 1200 0 1440 30V80H0Z" fill="hsl(var(--background))" />
+        <svg viewBox="0 0 1440 60" fill="none" className="w-full">
+          <path d="M0 60V20C240 45 480 0 720 20C960 45 1200 0 1440 20V60H0Z" fill="hsl(var(--background))" />
         </svg>
       </div>
     </section>

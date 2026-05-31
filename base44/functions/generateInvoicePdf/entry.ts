@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
 // Helper: generate PDF bytes from booking object
-export function buildVoucherPdf(booking) {
+function buildVoucherPdf(booking) {
   const vehicleLabels = { sedan: 'Sedan / Kia', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
   const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type || '—';
   const paymentLabel = booking.payment_status === 'paid' ? 'Pago — PayPal' : 'A cobrar em dinheiro';

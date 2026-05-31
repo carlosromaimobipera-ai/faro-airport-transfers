@@ -132,11 +132,10 @@ function InvoiceDownloadButton({ bookingId, bookingRef, customerEmail }) {
     setLoading(true);
     setError('');
     try {
-      const { appId, token, appBaseUrl } = appParams;
-      const baseUrl = appBaseUrl || 'https://api.base44.com';
+      const { appId, token } = appParams;
 
       const res = await fetch(
-        `${baseUrl}/api/apps/${appId}/functions/generateInvoicePdf`,
+        `https://api.base44.com/api/apps/${appId}/functions/generateInvoicePdf`,
         {
           method: 'POST',
           headers: {
@@ -149,7 +148,7 @@ function InvoiceDownloadButton({ bookingId, bookingRef, customerEmail }) {
 
       if (!res.ok) {
         const errText = await res.text();
-        console.error('PDF error:', errText);
+        console.error('PDF error response:', res.status, errText);
         setError('Erro ao gerar PDF. Tente novamente.');
         return;
       }

@@ -1,27 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
-Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-
-  const user = await base44.auth.me();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { booking_id } = await req.json();
-  if (!booking_id) return Response.json({ error: 'booking_id required' }, { status: 400 });
-
-  // Fetch booking
-  const bookings = await base44.asServiceRole.entities.Booking.filter({ id: booking_id });
-  const booking = bookings[0];
-  if (!booking) return Response.json({ error: 'Not found' }, { status: 404 });
-
-  // Security: only the customer or admin can download
-  if (user.role !== 'admin' && booking.customer_email?.toLowerCase() !== user.email?.toLowerCase()) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
+// Helper: generate PDF bytes from booking object
+export function buildVoucherPdf(booking) {
   const vehicleLabels = { sedan: 'Sedan / Kia', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
-  const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type;
+  const vehicleLabel = vehicleLabels[booking.vehicle_type] || booking.vehicle_type || '—';
   const paymentLabel = booking.payment_status === 'paid' ? 'Pago — PayPal' : 'A cobrar em dinheiro';
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -29,7 +12,7 @@ Deno.serve(async (req) => {
   const margin = 16;
   let y = 0;
 
-  // ── Header band
+  // Header band
   doc.setFillColor(15, 23, 42);
   doc.rect(0, 0, W, 36, 'F');
   doc.setFontSize(18);
@@ -40,7 +23,7 @@ Deno.serve(async (req) => {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(180, 200, 220);
   doc.text('NIF: 514346744  |  RNAVT: 6855  |  +351 913 956 971  |  info@transfers-algarvestar.com', margin, 21);
-  doc.text('Urbanização Quinta Da Torre, Lote 22, R/C A, Algarve, Portugal', margin, 27);
+  doc.text('Urbanizacao Quinta Da Torre, Lote 22, R/C A, Algarve, Portugal', margin, 27);
 
   // Gold accent bar
   doc.setFillColor(200, 169, 81);
@@ -48,11 +31,11 @@ Deno.serve(async (req) => {
 
   y = 50;
 
-  // ── Title
+  // Title
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
-  doc.text('FATURA / VOUCHER', margin, y);
+  doc.text('VOUCHER / COMPROVATIVO DE RESERVA', margin, y);
 
   // Ref badge
   doc.setFillColor(224, 242, 254);
@@ -68,7 +51,6 @@ Deno.serve(async (req) => {
   doc.line(margin, y, W - margin, y);
   y += 8;
 
-  // ── Section helper
   const sectionTitle = (title) => {
     doc.setFillColor(241, 245, 249);
     doc.rect(margin, y, W - margin * 2, 7, 'F');
@@ -86,7 +68,8 @@ Deno.serve(async (req) => {
     doc.text(label, margin + 2, y);
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
-    doc.text(String(value || '—'), margin + 55, y);
+    const valStr = String(value || '—');
+    doc.text(valStr, margin + 60, y);
     y += 6;
     if (!isLast) {
       doc.setDrawColor(241, 245, 249);
@@ -95,29 +78,36 @@ Deno.serve(async (req) => {
     }
   };
 
-  // ── Cliente
-  sectionTitle('Dados do Cliente');
+  // Cliente
+  sectionTitle('Dados do Cliente / Customer Details');
   row('Nome / Name', booking.customer_name);
   row('Email', booking.customer_email);
-  row('Telefone', booking.customer_phone);
-  row('Passageiros', `${booking.passengers || 1} pax · ${booking.luggage || 0} mala(s)`, true);
+  row('Telefone / Phone', booking.customer_phone);
+  row('Passageiros / Passengers', `${booking.passengers || 1} pax · ${booking.luggage || 0} mala(s)`, true);
   y += 4;
 
-  // ── Serviço
-  sectionTitle('Detalhes da Viagem');
-  row('Data', booking.transfer_date);
-  row('Hora de recolha', booking.transfer_time);
+  // Viagem
+  sectionTitle('Detalhes da Viagem / Trip Details');
+  row('Data / Date', booking.transfer_date);
+  row('Hora de recolha / Pickup time', booking.transfer_time);
   row('Recolha / Pickup', booking.origin);
   row('Entrega / Dropoff', booking.destination);
-  row('Veículo', vehicleLabel);
-  row('Distância', booking.distance_km ? `${booking.distance_km} km` : '—');
-  if (booking.flight_number) row('Nº de Voo', booking.flight_number);
-  if (booking.notes) row('Observações', booking.notes, true);
+  if (booking.trip_type === 'round_trip') {
+    row('Tipo / Type', 'Ida e volta / Round trip');
+    if (booking.return_date) row('Regresso / Return date', `${booking.return_date} ${booking.return_time || ''}`);
+  } else {
+    row('Tipo / Type', 'Simples / One way');
+  }
+  row('Veiculo / Vehicle', vehicleLabel);
+  if (booking.distance_km) row('Distancia / Distance', `${booking.distance_km} km`);
+  if (booking.flight_number) row('No de Voo / Flight No', booking.flight_number);
+  if (booking.return_flight_number) row('Voo Regresso / Return Flight', booking.return_flight_number);
+  if (booking.notes) row('Observacoes / Notes', booking.notes, true);
   y += 4;
 
-  // ── Pagamento
-  sectionTitle('Pagamento');
-  row('Método', paymentLabel);
+  // Pagamento
+  sectionTitle('Pagamento / Payment');
+  row('Metodo / Method', paymentLabel, true);
   y += 2;
 
   // Price highlight
@@ -130,10 +120,10 @@ Deno.serve(async (req) => {
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(200, 169, 81);
-  doc.text(`€${Number(booking.price || 0).toFixed(2)}`, W - margin - 6, y + 9, { align: 'right' });
+  doc.text(`EUR ${Number(booking.price || 0).toFixed(2)}`, W - margin - 6, y + 9, { align: 'right' });
   y += 22;
 
-  // ── Footer
+  // Footer
   doc.setDrawColor(200, 169, 81);
   doc.setLineWidth(0.5);
   doc.line(margin, y, W - margin, y);
@@ -141,16 +131,47 @@ Deno.serve(async (req) => {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(148, 163, 184);
-  doc.text('Obrigado pela sua preferência. Este documento serve como comprovativo da sua reserva.', W / 2, y, { align: 'center' });
+  doc.text('Obrigado pela sua preferencia. Este documento serve como comprovativo da sua reserva.', W / 2, y, { align: 'center' });
   doc.text('https://transfers-algarvestar.com', W / 2, y + 5, { align: 'center' });
 
-  const pdfBytes = doc.output('arraybuffer');
+  return doc.output('arraybuffer');
+}
 
-  return new Response(pdfBytes, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=fatura-${booking.booking_ref}.pdf`,
-    },
-  });
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const body = await req.json();
+    const { booking_id, customer_email } = body;
+
+    if (!booking_id) return Response.json({ error: 'booking_id required' }, { status: 400 });
+
+    // Try authenticated user first, fallback to email match for public access
+    const user = await base44.auth.me().catch(() => null);
+
+    const bookings = await base44.asServiceRole.entities.Booking.filter({ id: booking_id });
+    const booking = bookings[0];
+    if (!booking) return Response.json({ error: 'Not found' }, { status: 404 });
+
+    // Security: admin OR authenticated customer OR email matches booking
+    const isAdmin = user?.role === 'admin';
+    const isAuthCustomer = user && booking.customer_email?.toLowerCase() === user.email?.toLowerCase();
+    const isEmailMatch = customer_email && booking.customer_email?.toLowerCase() === customer_email.toLowerCase();
+
+    if (!isAdmin && !isAuthCustomer && !isEmailMatch) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const pdfBytes = buildVoucherPdf(booking);
+
+    return new Response(pdfBytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=voucher-${booking.booking_ref}.pdf`,
+      },
+    });
+  } catch (error) {
+    console.error('generateInvoicePdf error:', error?.message || error);
+    return Response.json({ error: error?.message }, { status: 500 });
+  }
 });

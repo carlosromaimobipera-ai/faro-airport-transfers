@@ -115,7 +115,7 @@ export default function BookingHistoryCard({ booking }) {
 
             {/* PDF Download */}
             {booking.status !== 'cancelled' && (
-              <InvoiceDownloadButton bookingId={booking.id} bookingRef={booking.booking_ref} />
+              <InvoiceDownloadButton bookingId={booking.id} bookingRef={booking.booking_ref} customerEmail={booking.customer_email} />
             )}
           </div>
         )}
@@ -124,52 +124,70 @@ export default function BookingHistoryCard({ booking }) {
   );
 }
 
-function InvoiceDownloadButton({ bookingId, bookingRef }) {
+function InvoiceDownloadButton({ bookingId, bookingRef, customerEmail }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleDownload = async () => {
     setLoading(true);
-    const { appId, token, appBaseUrl } = appParams;
-    const baseUrl = appBaseUrl || 'https://api.base44.com';
+    setError('');
+    try {
+      const { appId, token, appBaseUrl } = appParams;
+      const baseUrl = appBaseUrl || 'https://api.base44.com';
 
-    const res = await fetch(
-      `${baseUrl}/api/apps/${appId}/functions/generateInvoicePdf`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'X-User-Token': token } : {}),
-        },
-        body: JSON.stringify({ booking_id: bookingId }),
+      const res = await fetch(
+        `${baseUrl}/api/apps/${appId}/functions/generateInvoicePdf`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ booking_id: bookingId, customer_email: customerEmail }),
+        }
+      );
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('PDF error:', errText);
+        setError('Erro ao gerar PDF. Tente novamente.');
+        return;
       }
-    );
 
-    if (!res.ok) { setLoading(false); return; }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fatura-${bookingRef}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setLoading(false);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `voucher-${bookingRef}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('PDF download error:', e);
+      setError('Erro ao gerar PDF. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
-      onClick={handleDownload}
-      disabled={loading}
-    >
-      {loading ? (
-        <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      ) : (
-        <Download className="w-3.5 h-3.5" />
-      )}
-      {loading ? 'A gerar PDF...' : 'Download Fatura / Voucher (PDF)'}
-    </Button>
+    <div className="space-y-1">
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
+        onClick={handleDownload}
+        disabled={loading}
+      >
+        {loading ? (
+          <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        ) : (
+          <Download className="w-3.5 h-3.5" />
+        )}
+        {loading ? 'A gerar PDF...' : 'Download Voucher (PDF)'}
+      </Button>
+      {error && <p className="text-xs text-destructive text-center">{error}</p>}
+    </div>
   );
 }

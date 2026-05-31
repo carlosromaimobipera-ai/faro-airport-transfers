@@ -133,9 +133,10 @@ function InvoiceDownloadButton({ bookingId, bookingRef, customerEmail }) {
     setError('');
     try {
       const { appId, token } = appParams;
+      const apiBase = window.location.origin;
 
       const res = await fetch(
-        `https://api.base44.com/api/apps/${appId}/functions/generateInvoicePdf`,
+        `${apiBase}/api/apps/${appId}/functions/generateInvoicePdf`,
         {
           method: 'POST',
           headers: {

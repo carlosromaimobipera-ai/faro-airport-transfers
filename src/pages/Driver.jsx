@@ -67,17 +67,17 @@ export default function Driver() {
   );
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Booking.update(id, { status }),
-    onMutate: async ({ id, status }) => {
+    mutationFn: ({ id, data }) => base44.entities.Booking.update(id, data),
+    onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['driver-bookings-day'] });
       await queryClient.cancelQueries({ queryKey: ['driver-bookings-upcoming'] });
       const prevDay = queryClient.getQueryData(['driver-bookings-day', driver?.id, selectedDate]);
       const prevUpcoming = queryClient.getQueryData(['driver-bookings-upcoming', driver?.id]);
       queryClient.setQueryData(['driver-bookings-day', driver?.id, selectedDate], (old) =>
-        old?.map(b => b.id === id ? { ...b, status } : b)
+        old?.map(b => b.id === id ? { ...b, ...data } : b)
       );
       queryClient.setQueryData(['driver-bookings-upcoming', driver?.id], (old) =>
-        old?.map(b => b.id === id ? { ...b, status } : b)
+        old?.map(b => b.id === id ? { ...b, ...data } : b)
       );
       return { prevDay, prevUpcoming };
     },
@@ -287,7 +287,8 @@ export default function Driver() {
                       <BookingCard
                         key={b.id}
                         booking={b}
-                        onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, status })}
+                        onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, data: { status } })}
+                        onUpdateDriverStatus={(id, data) => updateStatusMutation.mutate({ id, data })}
                       />
                     ))}
                   </div>
@@ -301,7 +302,8 @@ export default function Driver() {
                       <BookingCard
                         key={b.id}
                         booking={b}
-                        onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, status })}
+                        onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, data: { status } })}
+                        onUpdateDriverStatus={(id, data) => updateStatusMutation.mutate({ id, data })}
                       />
                     ))}
                   </div>
@@ -344,7 +346,8 @@ export default function Driver() {
                     key={b.id}
                     booking={b}
                     showDate={true}
-                    onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, status })}
+                    onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, data: { status } })}
+                    onUpdateDriverStatus={(id, data) => updateStatusMutation.mutate({ id, data })}
                   />
                 ))}
               </div>

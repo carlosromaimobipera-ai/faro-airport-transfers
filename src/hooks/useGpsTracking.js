@@ -23,9 +23,10 @@ export function useGpsTracking({ driver, activeBookings = [] }) {
     const now = new Date();
     const todayStr = now.toISOString().slice(0, 10);
 
-    // Priority 1: in_progress bookings today
+    // Priority 1: in_progress bookings today OR bookings with driver_status started
     const inProgress = activeBookings.find(b =>
-      b.status === 'in_progress' && b.transfer_date === todayStr
+      b.transfer_date === todayStr &&
+      (b.status === 'in_progress' || ['on_the_way', 'on_site', 'on_board'].includes(b.driver_status))
     );
     if (inProgress) return inProgress;
 

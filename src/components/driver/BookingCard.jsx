@@ -6,9 +6,10 @@ import { Separator } from "@/components/ui/separator";
 import {
   MapPin, User, Phone, Mail, Plane, Package, Users,
   CheckCircle2, ChevronDown, ChevronUp, ArrowRight,
-  Navigation, PlayCircle, Map
+  Navigation, Map
 } from 'lucide-react';
 import RouteMapEmbed from './RouteMapEmbed';
+import TripStepsBar from './TripStepsBar';
 
 const statusConfig = {
   pending:     { label: 'Pendente',    color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
@@ -25,13 +26,28 @@ function mapsUrl(address, coords) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
-export default function BookingCard({ booking, onUpdateStatus, showDate = false }) {
+export default function BookingCard({ booking, onUpdateStatus, onUpdateDriverStatus, showDate = false }) {
   const [expanded, setExpanded] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [stepping, setStepping] = useState(false);
 
   const isCompleted = booking.status === 'completed';
   const isCancelled = booking.status === 'cancelled';
   const isInProgress = booking.status === 'in_progress';
+
+  const handleStep = async (stepKey) => {
+    setStepping(true);
+    // Automatically set booking to in_progress when starting steps
+    const updates = { driver_status: stepKey };
+    if (stepKey !== 'done' && booking.status !== 'in_progress') {
+      updates.status = 'in_progress';
+    }
+    if (stepKey === 'done') {
+      updates.status = 'completed';
+    }
+    await onUpdateDriverStatus(booking.id, updates);
+    setStepping(false);
+  };
 
   const borderColor = isCompleted
     ? 'border-l-green-500'
@@ -208,33 +224,22 @@ export default function BookingCard({ booking, onUpdateStatus, showDate = false 
                 </a>
               )}
 
-              {/* Action buttons */}
-              {!isCompleted && !isCancelled && (
-                <div className="flex gap-2 pt-1">
-                  {!isInProgress && (
-                    <Button
-                      onClick={() => onUpdateStatus(booking.id, 'in_progress')}
-                      variant="outline"
-                      className="flex-1 gap-2 border-orange-300 text-orange-700 hover:bg-orange-50"
-                    >
-                      <PlayCircle className="w-4 h-4" />
-                      Em curso
-                    </Button>
+              {/* Trip steps */}
+              {!isCancelled && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Passos da viagem</p>
+                  {isCompleted ? (
+                    <div className="flex items-center justify-center gap-2 py-2 text-green-600 text-sm font-semibold bg-green-50 rounded-xl border border-green-200">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Viagem concluída
+                    </div>
+                  ) : (
+                    <TripStepsBar
+                      driverStatus={booking.driver_status}
+                      onStep={handleStep}
+                      disabled={stepping}
+                    />
                   )}
-                  <Button
-                    onClick={() => onUpdateStatus(booking.id, 'completed')}
-                    className={`gap-2 bg-green-600 hover:bg-green-700 text-white ${!isInProgress ? 'flex-1' : 'w-full'}`}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Concluída
-                  </Button>
-                </div>
-              )}
-
-              {isCompleted && (
-                <div className="flex items-center justify-center gap-2 py-1.5 text-green-600 text-sm font-semibold">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Viagem concluída
                 </div>
               )}
             </div>

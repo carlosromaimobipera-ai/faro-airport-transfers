@@ -124,7 +124,7 @@
     },
     "notes": {
       "type": "string",
-      "description": "Special requests or notes (visible to customer and driver)"
+      "description": "Special requests or notes"
     },
     "admin_notes": {
       "type": "string",
@@ -141,6 +141,17 @@
       ],
       "default": "pending",
       "description": "Booking status"
+    },
+    "driver_status": {
+      "type": "string",
+      "enum": [
+        "assigned",
+        "on_the_way",
+        "on_site",
+        "on_board",
+        "done"
+      ],
+      "description": "Step-by-step driver execution status"
     },
     "payment_status": {
       "type": "string",

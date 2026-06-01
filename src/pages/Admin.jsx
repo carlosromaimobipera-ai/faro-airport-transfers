@@ -20,7 +20,8 @@ import DriverBookingsList from '@/components/admin/DriverBookingsList';
 import ReviewsStats from '@/components/admin/ReviewsStats';
 import PriceManager from '@/components/admin/PriceManager';
 import FinancialDashboard from '@/components/admin/FinancialDashboard';
-import DriverLocationMap from '@/components/admin/DriverLocationMap';
+import LiveDriverMap from '@/components/admin/LiveDriverMap';
+import DailyScheduleExport from '@/components/admin/DailyScheduleExport';
 import BookingTableMobile from '@/components/admin/BookingTableMobile';
 import UsersManager from '@/components/admin/UsersManager';
 import AdminNotesCell from '@/components/admin/AdminNotesCell';
@@ -432,8 +433,9 @@ export default function Admin() {
           </TabsContent>
 
           {/* ── Localização Tab ── */}
-          <TabsContent value="locations" className="mt-4">
-            <DriverLocationMap />
+          <TabsContent value="locations" className="mt-4 space-y-4">
+            <DailyScheduleExport />
+            <LiveDriverMap />
           </TabsContent>
 
           {/* ── Motoristas Tab ── */}

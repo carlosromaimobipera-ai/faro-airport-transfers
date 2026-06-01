@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { appParams } from '@/lib/app-params';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronDown, ChevronUp, MapPin, Clock } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Calendar, ChevronDown, ChevronUp, MapPin, Clock, FileDown, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -14,6 +17,56 @@ const statusConfig = {
   completed:   { label: "Concluída",  color: "bg-green-100 text-green-800 border-green-200" },
   cancelled:   { label: "Cancelada",  color: "bg-red-100 text-red-800 border-red-200" },
 };
+
+function DriverPdfExport({ driver }) {
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleExport = async () => {
+    setLoading(true);
+    try {
+      const { appId, token } = appParams;
+      const res = await fetch(
+        `${window.location.origin}/api/apps/${appId}/functions/exportDriverPdf`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ driver_id: driver.id, date_from: dateFrom || undefined, date_to: dateTo || undefined }),
+        }
+      );
+      if (!res.ok) throw new Error('Erro ao gerar PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `viagens-${driver.name.replace(/\s+/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Erro ao gerar PDF. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-dashed">
+      <span className="text-xs text-muted-foreground">PDF:</span>
+      <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-7 w-34 text-xs" placeholder="De" />
+      <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-7 w-34 text-xs" placeholder="Até" />
+      <Button size="sm" variant="outline" onClick={handleExport} disabled={loading} className="h-7 gap-1 text-xs px-2">
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
+        {loading ? 'A gerar...' : 'Exportar PDF'}
+      </Button>
+    </div>
+  );
+}
 
 function DriverBookings({ driver }) {
   const [expanded, setExpanded] = useState(false);
@@ -130,6 +183,7 @@ function DriverBookings({ driver }) {
               {bookings.filter(b => b.status !== 'cancelled').length === 0 && (
                 <p className="text-xs text-muted-foreground text-center py-4 italic">Sem viagens atribuídas</p>
               )}
+              <DriverPdfExport driver={driver} />
             </>
           )}
         </div>

@@ -319,6 +319,23 @@ export const translations = {
     footer_terms: 'Termos de Serviço',
     footer_rnavt: 'Licença RNAVT n.º 6855',
 
+    // Feed
+    feed_title: 'O que há no Algarve',
+    feed_events_badge: 'Próximos eventos',
+    feed_news_badge: 'Notícias & Dicas',
+    feed_more_info: 'Mais informações',
+    weather_title: '🌤️ Meteorologia — Faro',
+    weather_clear: 'Céu limpo',
+    weather_mainly_clear: 'Maioritariamente limpo',
+    weather_partly_cloudy: 'Parcialmente nublado',
+    weather_cloudy: 'Nublado',
+    weather_fog: 'Nevoeiro',
+    weather_drizzle: 'Chuvisco',
+    weather_rain: 'Chuva',
+    weather_snow: 'Neve',
+    weather_showers: 'Aguaceiros',
+    weather_thunder: 'Trovoada',
+
     // Delete Account
     delete_account_title: 'Eliminar Conta',
     delete_account_subtitle: 'Remoção permanente de dados pessoais',
@@ -614,6 +631,23 @@ export const translations = {
     footer_privacy: 'Privacy Policy',
     footer_terms: 'Terms of Service',
     footer_rnavt: 'RNAVT Licence no. 6855',
+
+    // Feed
+    feed_title: "What's on in the Algarve",
+    feed_events_badge: 'Upcoming events',
+    feed_news_badge: 'News & Tips',
+    feed_more_info: 'More information',
+    weather_title: '🌤️ Weather — Faro',
+    weather_clear: 'Clear sky',
+    weather_mainly_clear: 'Mainly clear',
+    weather_partly_cloudy: 'Partly cloudy',
+    weather_cloudy: 'Cloudy',
+    weather_fog: 'Fog',
+    weather_drizzle: 'Drizzle',
+    weather_rain: 'Rain',
+    weather_snow: 'Snow',
+    weather_showers: 'Showers',
+    weather_thunder: 'Thunderstorm',
 
     // Delete Account
     delete_account_title: 'Delete Account',
@@ -911,6 +945,23 @@ export const translations = {
     footer_terms: 'Términos de Servicio',
     footer_rnavt: 'Licencia RNAVT n.º 6855',
 
+    // Feed
+    feed_title: 'Qué hay en el Algarve',
+    feed_events_badge: 'Próximos eventos',
+    feed_news_badge: 'Noticias y Consejos',
+    feed_more_info: 'Más información',
+    weather_title: '🌤️ Meteorología — Faro',
+    weather_clear: 'Cielo despejado',
+    weather_mainly_clear: 'Mayormente despejado',
+    weather_partly_cloudy: 'Parcialmente nublado',
+    weather_cloudy: 'Nublado',
+    weather_fog: 'Niebla',
+    weather_drizzle: 'Llovizna',
+    weather_rain: 'Lluvia',
+    weather_snow: 'Nieve',
+    weather_showers: 'Chubascos',
+    weather_thunder: 'Tormenta',
+
     // Delete Account
     delete_account_title: 'Eliminar Cuenta',
     delete_account_subtitle: 'Eliminación permanente de datos personales',
@@ -1206,6 +1257,23 @@ export const translations = {
     footer_privacy: 'Politique de Confidentialité',
     footer_terms: 'Conditions de Service',
     footer_rnavt: 'Licence RNAVT n° 6855',
+
+    // Feed
+    feed_title: "Quoi de neuf en Algarve",
+    feed_events_badge: 'Prochains événements',
+    feed_news_badge: 'Actualités & Conseils',
+    feed_more_info: 'Plus d\'informations',
+    weather_title: '🌤️ Météo — Faro',
+    weather_clear: 'Ciel dégagé',
+    weather_mainly_clear: 'Principalement dégagé',
+    weather_partly_cloudy: 'Partiellement nuageux',
+    weather_cloudy: 'Nuageux',
+    weather_fog: 'Brouillard',
+    weather_drizzle: 'Bruine',
+    weather_rain: 'Pluie',
+    weather_snow: 'Neige',
+    weather_showers: 'Averses',
+    weather_thunder: 'Orage',
 
     // Delete Account
     delete_account_title: 'Supprimer le Compte',
@@ -1503,6 +1571,23 @@ export const translations = {
     footer_terms: 'Nutzungsbedingungen',
     footer_rnavt: 'RNAVT-Lizenz Nr. 6855',
 
+    // Feed
+    feed_title: 'Was gibt es im Algarve',
+    feed_events_badge: 'Kommende Veranstaltungen',
+    feed_news_badge: 'Neuigkeiten & Tipps',
+    feed_more_info: 'Mehr Informationen',
+    weather_title: '🌤️ Wetter — Faro',
+    weather_clear: 'Klarer Himmel',
+    weather_mainly_clear: 'Überwiegend klar',
+    weather_partly_cloudy: 'Teilweise bewölkt',
+    weather_cloudy: 'Bewölkt',
+    weather_fog: 'Nebel',
+    weather_drizzle: 'Nieselregen',
+    weather_rain: 'Regen',
+    weather_snow: 'Schnee',
+    weather_showers: 'Schauer',
+    weather_thunder: 'Gewitter',
+
     // Delete Account
     delete_account_title: 'Konto Löschen',
     delete_account_subtitle: 'Dauerhafte Löschung persönlicher Daten',
@@ -1798,6 +1883,23 @@ export const translations = {
     footer_privacy: 'Privacybeleid',
     footer_terms: 'Servicevoorwaarden',
     footer_rnavt: 'RNAVT-vergunning nr. 6855',
+
+    // Feed
+    feed_title: 'Wat er is in de Algarve',
+    feed_events_badge: 'Aankomende evenementen',
+    feed_news_badge: 'Nieuws & Tips',
+    feed_more_info: 'Meer informatie',
+    weather_title: '🌤️ Weer — Faro',
+    weather_clear: 'Heldere hemel',
+    weather_mainly_clear: 'Overwegend helder',
+    weather_partly_cloudy: 'Gedeeltelijk bewolkt',
+    weather_cloudy: 'Bewolkt',
+    weather_fog: 'Mist',
+    weather_drizzle: 'Motregen',
+    weather_rain: 'Regen',
+    weather_snow: 'Sneeuw',
+    weather_showers: 'Buien',
+    weather_thunder: 'Onweer',
 
     // Delete Account
     delete_account_title: 'Account Verwijderen',

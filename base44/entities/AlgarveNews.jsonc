@@ -78,6 +78,18 @@
     "external_id": {
       "type": "string",
       "description": "ID externo para evitar duplicados (ex: Google Calendar event ID)"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "pt",
+        "en",
+        "es",
+        "fr",
+        "de",
+        "nl"
+      ],
+      "description": "Idioma do conte\u00fado (vazio = todos os idiomas)"
     }
   },
   "required": [

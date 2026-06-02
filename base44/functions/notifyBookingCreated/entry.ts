@@ -137,6 +137,37 @@ function buildVoucherPdfBase64(booking) {
   doc.text(`EUR ${Number(booking.price || 0).toFixed(2)}`, W - margin - 6, y + 9, { align: 'right' });
   y += 22;
 
+  // Recommendations section
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y, W - margin * 2, 7, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(71, 85, 105);
+  doc.text('RECOMENDACOES / RECOMMENDATIONS', margin + 3, y + 5);
+  y += 11;
+
+  const recommendations = [
+    'When you land at Faro airport, please switch on your phone to receive messages or calls from the driver, who will be waiting for you in the arrivals hall, holding a sign or phone with your name on it. He will assist you with your luggage and guide you to the vehicle reserved for you outside the terminal.',
+    'If you are travelling with extra luggage (large suitcases, golf bags, etc.) please inform us when booking so that the vehicle is suitable.',
+    'If you have children under the age of 12 or under 1.35 metres tall, please inform us so that suitable seating can be provided at no extra cost.',
+  ];
+
+  const textWidth = W - margin * 2 - 8;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(55, 65, 81);
+
+  recommendations.forEach((rec, i) => {
+    const lines = doc.splitTextToSize(`${i + 1}. ${rec}`, textWidth);
+    lines.forEach(line => {
+      doc.text(line, margin + 4, y);
+      y += 4.5;
+    });
+    y += 2;
+  });
+
+  y += 4;
+
   doc.setDrawColor(200, 169, 81);
   doc.setLineWidth(0.5);
   doc.line(margin, y, W - margin, y);

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,26 +6,98 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phone, Mail, MessageCircle } from 'lucide-react';
+import { CheckCircle, MapPin, Calendar, Car, User, ArrowRight, Home, Plane, Phone, Mail, MessageCircle, Download } from 'lucide-react';
 import { vehicleTypes } from '@/lib/transferData';
 import { format } from 'date-fns';
 import { pt, enUS, es, fr, de, nl } from 'date-fns/locale';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { appParams } from '@/lib/app-params';
 
 const locales = { pt, en: enUS, es, fr, de, nl };
+
+function VoucherDownloadButton({ booking }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { lang } = useLang();
+
+  const handleDownload = async () => {
+    setLoading(true);
+    setError('');
+    const { appId, token } = appParams;
+    const apiBase = window.location.origin;
+
+    const res = await fetch(
+      `${apiBase}/api/apps/${appId}/functions/generateInvoicePdf`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ booking_id: booking.id, customer_email: booking.customer_email }),
+      }
+    );
+
+    if (!res.ok) {
+      setError('Erro ao gerar PDF. Tente novamente.');
+      setLoading(false);
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `voucher-${booking.booking_ref}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-1">
+      <Button
+        variant="outline"
+        className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/5 h-12"
+        onClick={handleDownload}
+        disabled={loading}
+      >
+        {loading ? (
+          <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        ) : (
+          <Download className="w-4 h-4" />
+        )}
+        {loading ? 'A gerar PDF...' : 'Download Voucher (PDF)'}
+      </Button>
+      {error && <p className="text-xs text-destructive text-center">{error}</p>}
+    </div>
+  );
+}
 
 export default function Confirmation() {
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('id');
   const { lang } = useLang();
 
-  const { data: booking, isLoading } = useQuery({
-    queryKey: ['booking', bookingId],
-    queryFn: () => base44.entities.Booking.filter({ id: bookingId }),
-    enabled: !!bookingId,
-    select: (data) => data[0],
-  });
+  const [booking, setBooking] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!bookingId) {
+      setIsLoading(false);
+      return;
+    }
+    // Use public backend function — works for both guests and logged-in users
+    base44.functions.invoke('getBookingPublic', { booking_id: bookingId })
+      .then(res => {
+        setBooking(res.data?.booking || null);
+      })
+      .catch(() => setBooking(null))
+      .finally(() => setIsLoading(false));
+  }, [bookingId]);
 
   if (isLoading) {
     return (
@@ -37,12 +108,12 @@ export default function Confirmation() {
   }
 
   if (!booking) {
-   return (
-     <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-       <p className="text-muted-foreground">{t(lang, 'conf_not_found')}</p>
-       <Link to="/"><Button>{t(lang, 'conf_back_home')}</Button></Link>
-     </div>
-   );
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <p className="text-muted-foreground">{t(lang, 'conf_not_found')}</p>
+        <Link to="/"><Button>{t(lang, 'conf_back_home')}</Button></Link>
+      </div>
+    );
   }
 
   const vehicle = vehicleTypes.find(v => v.id === booking.vehicle_type);
@@ -84,9 +155,9 @@ export default function Confirmation() {
                   <MapPin className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-sm font-medium flex-wrap">
                     <span>{booking.origin}</span>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>{booking.destination}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">{booking.distance_km} km</p>
@@ -145,20 +216,28 @@ export default function Confirmation() {
               <div className="bg-primary/5 rounded-xl p-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{t(lang, 'conf_total_price')}</p>
-                  <Badge className={`mt-1 ${booking.payment_status === 'paid' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`} variant="outline">
-                  {booking.payment_status === 'paid' ? t(lang, 'conf_paid_paypal') : t(lang, 'conf_paid_cash')}
-                </Badge>
+                  <Badge
+                    className={`mt-1 ${booking.payment_status === 'paid'
+                      ? 'bg-green-100 text-green-700 border-green-200'
+                      : 'bg-orange-50 text-orange-700 border-orange-200'}`}
+                    variant="outline"
+                  >
+                    {booking.payment_status === 'paid' ? t(lang, 'conf_paid_paypal') : t(lang, 'conf_paid_cash')}
+                  </Badge>
                 </div>
                 <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>
               </div>
+
+              {/* Voucher Download */}
+              <VoucherDownloadButton booking={booking} />
 
               {/* WhatsApp Support */}
               <div className="space-y-3">
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center space-y-3">
                   <p className="text-sm font-medium text-green-900">{t(lang, 'conf_support_title')}</p>
-                  <a 
+                  <a
                     href={`https://wa.me/351913956971?text=Olá,%20tenho%20uma%20dúvida%20sobre%20minha%20reserva:%0AReferência:%20${booking.booking_ref}%0AData:%20${booking.transfer_date}%0AHora:%20${booking.transfer_time}%0ARota:%20${booking.origin}%20→%20${booking.destination}`}
-                    target="_blank" 
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all"
                   >

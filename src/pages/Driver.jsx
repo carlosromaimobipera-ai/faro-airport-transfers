@@ -11,6 +11,7 @@ import { Calendar, Car, Loader2, CalendarDays, LogOut, History } from 'lucide-re
 import BookingCard from '@/components/driver/BookingCard';
 import { useGpsTracking } from '@/hooks/useGpsTracking';
 import GpsTrackingBadge from '@/components/driver/GpsTrackingBadge';
+import GpsPermissionGate from '@/components/driver/GpsPermissionGate';
 import HistoryTab from '@/components/driver/HistoryTab';
 
 const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
@@ -98,20 +99,13 @@ export default function Driver() {
   // All today's non-cancelled bookings (for GPS tracking)
   const todayAllBookings = dayBookings.filter(b => b.status !== 'cancelled');
 
-  // GPS tracking — starts automatically when a booking window is reached
-  useGpsTracking({ driver, activeBookings: todayAllBookings });
+  // GPS tracking — obrigatório, começa assim que há viagens hoje
+  const { isTracking } = useGpsTracking({ driver, activeBookings: todayAllBookings });
 
-  // Which booking is currently being tracked (for the badge)
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
-  const trackedBooking = todayAllBookings.find(b => {
-    if (b.status === 'in_progress') return true;
-    if (!b.transfer_time) return false;
-    const [h, m] = b.transfer_time.split(':').map(Number);
-    const bt = new Date(now); bt.setHours(h, m, 0, 0);
-    const diff = bt - now;
-    return diff <= 15 * 60 * 1000 && diff >= -4 * 60 * 60 * 1000;
-  }) || null;
+  // Booking mais relevante para mostrar no badge
+  const trackedBooking = todayAllBookings.find(b =>
+    b.status === 'in_progress' || ['on_the_way', 'on_site', 'on_board'].includes(b.driver_status)
+  ) || todayAllBookings[0] || null;
 
   if (authLoading) {
     return (
@@ -138,6 +132,7 @@ export default function Driver() {
   }
 
   return (
+    <GpsPermissionGate>
     <div ref={containerRef} className="min-h-screen bg-background overflow-y-auto">
       {isPulling && (
         <div className="flex justify-center pt-4">
@@ -161,7 +156,7 @@ export default function Driver() {
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3">
-            <GpsTrackingBadge activeBooking={trackedBooking} />
+            <GpsTrackingBadge isTracking={isTracking} activeBooking={trackedBooking} />
             <button
               onClick={() => base44.auth.logout('/')}
               className="flex items-center gap-1.5 text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
@@ -356,5 +351,6 @@ export default function Driver() {
         )}
       </div>
     </div>
+    </GpsPermissionGate>
   );
 }

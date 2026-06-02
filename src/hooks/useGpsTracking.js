@@ -1,52 +1,54 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
 // Interval in ms between GPS saves
-const TRACKING_INTERVAL_MS = 30_000; // 30 seconds
+const TRACKING_INTERVAL_MS = 15_000; // 15 seconds
 
 /**
- * Automatically starts GPS tracking when `activeBookings` contains
- * bookings whose transfer_time has been reached (within the last 4h).
- *
- * Stops when there are no more active bookings to track.
+ * Tracks GPS continuously whenever the driver has ANY non-cancelled booking today.
+ * Saves position every 15s. Returns { isTracking, gpsPermission }.
  */
 export function useGpsTracking({ driver, activeBookings = [] }) {
   const intervalRef = useRef(null);
   const watchRef = useRef(null);
   const lastPositionRef = useRef(null);
+  const [isTracking, setIsTracking] = useState(false);
 
-  // Determine which booking we are currently tracking
-  // (the first in-progress one, or the first confirmed one whose time has come)
+  // Find the most relevant booking to tag the location with
   const getActiveBookingForTracking = useCallback(() => {
     if (!activeBookings.length) return null;
 
     const now = new Date();
     const todayStr = now.toISOString().slice(0, 10);
 
-    // Priority 1: in_progress bookings today OR bookings with driver_status started
+    // Priority 1: in_progress or driver already started steps
     const inProgress = activeBookings.find(b =>
       b.transfer_date === todayStr &&
       (b.status === 'in_progress' || ['on_the_way', 'on_site', 'on_board'].includes(b.driver_status))
     );
     if (inProgress) return inProgress;
 
-    // Priority 2: confirmed/pending bookings today whose time has come (±15 min before)
-    const upcoming = activeBookings.find(b => {
-      if (b.transfer_date !== todayStr) return false;
-      if (!b.transfer_time) return false;
-      const [h, m] = b.transfer_time.split(':').map(Number);
-      const bookingTime = new Date(now);
-      bookingTime.setHours(h, m, 0, 0);
-      const diffMs = bookingTime - now;
-      // Start tracking 15 min before and up to 4h after
-      return diffMs <= 15 * 60 * 1000 && diffMs >= -4 * 60 * 60 * 1000;
-    });
-
-    return upcoming || null;
+    // Priority 2: any confirmed booking today (track all day)
+    const todayBooking = activeBookings.find(b =>
+      b.transfer_date === todayStr &&
+      b.status !== 'cancelled' &&
+      b.status !== 'completed'
+    );
+    return todayBooking || null;
   }, [activeBookings]);
 
-  const savePosition = useCallback(async (position, booking) => {
+  const hasTodayBookings = useCallback(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return activeBookings.some(b =>
+      b.transfer_date === todayStr &&
+      b.status !== 'cancelled' &&
+      b.status !== 'completed'
+    );
+  }, [activeBookings]);
+
+  const savePosition = useCallback(async (position) => {
     if (!driver?.id) return;
+    const booking = getActiveBookingForTracking();
     lastPositionRef.current = position;
 
     await base44.entities.DriverLocation.create({
@@ -57,45 +59,40 @@ export function useGpsTracking({ driver, activeBookings = [] }) {
       lat: position.coords.latitude,
       lng: position.coords.longitude,
       accuracy: position.coords.accuracy ? Math.round(position.coords.accuracy) : null,
-      speed: position.coords.speed ? Math.round(position.coords.speed * 3.6) : null, // m/s → km/h
+      speed: position.coords.speed ? Math.round(position.coords.speed * 3.6) : null,
       heading: position.coords.heading || null,
       recorded_at: new Date(position.timestamp).toISOString(),
     });
-  }, [driver]);
+  }, [driver, getActiveBookingForTracking]);
 
   const startTracking = useCallback(() => {
     if (!navigator.geolocation) return;
 
-    // Watch position for fresh coords
     if (watchRef.current === null) {
       watchRef.current = navigator.geolocation.watchPosition(
         (pos) => { lastPositionRef.current = pos; },
         () => {},
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
       );
     }
 
-    // Save on interval
     if (intervalRef.current === null) {
+      setIsTracking(true);
       intervalRef.current = setInterval(async () => {
-        const booking = getActiveBookingForTracking();
-        if (!booking && !lastPositionRef.current) return;
-        // If no active booking window, stop saving (but keep watch alive)
-        if (!booking) return;
+        if (!hasTodayBookings()) return;
 
         if (lastPositionRef.current) {
-          await savePosition(lastPositionRef.current, booking);
+          await savePosition(lastPositionRef.current);
         } else {
-          // Request a fresh position
           navigator.geolocation.getCurrentPosition(
-            (pos) => savePosition(pos, booking),
+            (pos) => savePosition(pos),
             () => {},
             { enableHighAccuracy: true, timeout: 10000 }
           );
         }
       }, TRACKING_INTERVAL_MS);
     }
-  }, [getActiveBookingForTracking, savePosition]);
+  }, [hasTodayBookings, savePosition]);
 
   const stopTracking = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -107,23 +104,20 @@ export function useGpsTracking({ driver, activeBookings = [] }) {
       watchRef.current = null;
     }
     lastPositionRef.current = null;
+    setIsTracking(false);
   }, []);
 
   useEffect(() => {
     if (!driver?.id) return;
 
-    const booking = getActiveBookingForTracking();
-
-    if (booking) {
+    if (hasTodayBookings()) {
       startTracking();
     } else {
       stopTracking();
     }
 
-    // Re-evaluate every minute
     const timer = setInterval(() => {
-      const b = getActiveBookingForTracking();
-      if (b) startTracking();
+      if (hasTodayBookings()) startTracking();
       else stopTracking();
     }, 60_000);
 
@@ -131,5 +125,7 @@ export function useGpsTracking({ driver, activeBookings = [] }) {
       clearInterval(timer);
       stopTracking();
     };
-  }, [driver, activeBookings, getActiveBookingForTracking, startTracking, stopTracking]);
+  }, [driver, activeBookings, hasTodayBookings, startTracking, stopTracking]);
+
+  return { isTracking };
 }

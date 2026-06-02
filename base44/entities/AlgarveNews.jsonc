@@ -1,0 +1,105 @@
+{
+  "name": "AlgarveNews",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo do evento/not\u00edcia"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "event",
+        "promo",
+        "weather"
+      ],
+      "default": "event",
+      "description": "Tipo de not\u00edcia"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "festival",
+        "show",
+        "cultural",
+        "sports",
+        "gastronomy",
+        "promo",
+        "other"
+      ],
+      "default": "other",
+      "description": "Categoria"
+    },
+    "location": {
+      "type": "string",
+      "description": "Localiza\u00e7\u00e3o (ex: Albufeira, Carvoeiro)"
+    },
+    "date_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de fim"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL da imagem"
+    },
+    "external_link": {
+      "type": "string",
+      "description": "Link externo para mais informa\u00e7\u00f5es"
+    },
+    "priority": {
+      "type": "number",
+      "default": 2,
+      "description": "Prioridade (1=alta, 2=m\u00e9dia, 3=baixa)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Vis\u00edvel na homepage"
+    },
+    "data_source": {
+      "type": "string",
+      "enum": [
+        "google_calendar",
+        "manual"
+      ],
+      "default": "google_calendar",
+      "description": "Fonte dos dados"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "ID externo para evitar duplicados (ex: Google Calendar event ID)"
+    }
+  },
+  "required": [
+    "title",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

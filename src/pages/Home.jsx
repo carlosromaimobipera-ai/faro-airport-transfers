@@ -21,10 +21,10 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <BookingForm />
+      <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
       <AlgarveNewsFeed />
       <FeaturesSection />
       <ReviewsSection />
-      <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
       <Footer />
     </div>
   );

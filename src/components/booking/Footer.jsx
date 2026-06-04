@@ -16,7 +16,7 @@ export default function Footer() {
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                 <Plane className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-display text-xl font-bold text-background">Transfers Algarvestar</span>
+              <span className="font-display text-lg sm:text-xl font-bold text-background">Transfers Algarvestar</span>
             </div>
             <p className="text-sm text-background/60 leading-relaxed">{t(lang, 'footer_desc')}</p>
           </div>
@@ -101,7 +101,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-background/40">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] sm:text-xs text-background/40">
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <span>© {new Date().getFullYear()} Transfers Algarvestar. {t(lang, 'footer_rights')}</span>
             <span className="hidden sm:inline">·</span>

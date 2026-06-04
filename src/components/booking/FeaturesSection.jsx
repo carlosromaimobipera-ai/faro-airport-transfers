@@ -20,8 +20,8 @@ export default function FeaturesSection() {
     <section className="py-20 bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">{t(lang, 'feat_title')}</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">{t(lang, 'feat_sub')}</p>
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-3 tracking-tight">{t(lang, 'feat_title')}</h2>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">{t(lang, 'feat_sub')}</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, i) => (
@@ -36,7 +36,7 @@ export default function FeaturesSection() {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                 <feature.icon className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">{t(lang, feature.titleKey)}</h3>
+              <h3 className="font-bold text-base sm:text-lg mb-2 text-foreground">{t(lang, feature.titleKey)}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{t(lang, feature.descKey)}</p>
             </motion.div>
           ))}

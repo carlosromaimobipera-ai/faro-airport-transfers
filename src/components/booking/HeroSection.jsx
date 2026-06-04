@@ -24,11 +24,11 @@ export default function HeroSection() {
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
 
-            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4">
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-4">
               {t(lang, 'hero_title_1')}{' '}
               <span className="text-secondary">{t(lang, 'hero_title_2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl leading-relaxed">
               {t(lang, 'hero_subtitle')}
             </p>
           </motion.div>
@@ -43,8 +43,8 @@ export default function HeroSection() {
                   <stat.icon className="w-5 h-5 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-lg font-bold">{stat.value}</p>
-                  <p className="text-xs text-primary-foreground/60">{t(lang, stat.labelKey)}</p>
+                  <p className="text-base sm:text-lg font-bold">{stat.value}</p>
+                  <p className="text-[11px] sm:text-xs text-primary-foreground/60">{t(lang, stat.labelKey)}</p>
                 </div>
               </div>
             ))}

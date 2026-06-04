@@ -106,8 +106,8 @@ export default function ReviewsSection() {
               {avgRating}/5 · {reviews.length}+ {t(lang, 'reviews_count_label') || 'reviews'}
             </span>
           </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">{t(lang, 'reviews_title') || 'Reviews'}</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-3 tracking-tight">{t(lang, 'reviews_title') || 'Reviews'}</h2>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {t(lang, 'reviews_sub') || 'Hundreds of satisfied travellers across Europe'}
           </p>
         </div>
@@ -131,16 +131,16 @@ export default function ReviewsSection() {
                   <Quote className="w-8 h-8 text-primary/20" />
                   <StarRating rating={review.rating || 5} />
                 </div>
-                <p className="text-sm text-foreground/80 leading-relaxed flex-1">"{review.comment}"</p>
+                <p className="text-sm leading-relaxed flex-1 text-foreground/75 dark:text-foreground/70">"{review.comment}"</p>
                 <div className="border-t border-border/40 pt-4 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{review.flag || '🌍'}</span>
+                    <span className="text-xl">{review.flag || '🌍'}</span>
                     <div>
-                      <p className="font-semibold text-sm">{review.customer_name}</p>
+                      <p className="font-semibold text-sm text-foreground">{review.customer_name}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(review.transfer_date)}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-primary bg-primary/5 px-2 py-1 rounded-full">{review.route}</span>
+                  <span className="text-xs text-primary bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded-full font-medium">{review.route}</span>
                 </div>
               </motion.div>
             ))}
@@ -162,7 +162,7 @@ export default function ReviewsSection() {
             href="https://g.page/r/CeOr3i7UjtNxEBM/review"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-white border border-border hover:border-primary/40 hover:shadow-md text-foreground font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+            className="inline-flex items-center gap-3 bg-card border border-border hover:border-primary/40 hover:shadow-md text-foreground font-semibold py-3 px-6 rounded-xl transition-all duration-200"
           >
             <svg width="20" height="20" viewBox="0 0 48 48" className="shrink-0">
               <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/>

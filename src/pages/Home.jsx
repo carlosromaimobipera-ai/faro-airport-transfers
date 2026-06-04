@@ -24,7 +24,8 @@ export default function Home() {
       <AlgarveNewsFeed />
       <FeaturesSection />
       <ReviewsSection />
-      <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
+      <<div id="soro-blog"></div>
+<script src="https://app.trysoro.com/api/embed/fee72956-6b91-40d4-b7f6-41effddffd65" defer></script>>
       <Footer />
     </div>
   );

@@ -21,7 +21,9 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <BookingForm />
-      <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
+      <div className="bg-white text-gray-900">
+        <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
+      </div>
       <AlgarveNewsFeed />
       <FeaturesSection />
       <ReviewsSection />

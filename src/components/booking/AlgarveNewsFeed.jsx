@@ -100,15 +100,14 @@ function EventCard({ item, lang }) {
         : formatDate(item.date_from))
     : null;
 
-  const Wrapper = item.external_link ? 'a' : 'div';
-  const wrapperProps = item.external_link
-    ? { href: item.external_link, target: '_blank', rel: 'noopener noreferrer' }
-    : {};
+  const handleClick = () => {
+    if (item.external_link) window.open(item.external_link, '_blank', 'noopener,noreferrer');
+  };
 
   return (
-    <Wrapper
-      {...wrapperProps}
-      className="group relative bg-white dark:bg-card rounded-2xl shadow-sm border border-border hover:shadow-md hover:border-primary/30 transition-all duration-300 overflow-hidden block"
+    <div
+      onClick={handleClick}
+      className={`group relative bg-white dark:bg-card rounded-2xl shadow-sm border border-border transition-all duration-300 overflow-hidden ${item.external_link ? 'cursor-pointer hover:shadow-md hover:border-primary/30' : ''}`}
     >
       <div className="p-5">
         <div className="flex items-start gap-3">
@@ -142,7 +141,7 @@ function EventCard({ item, lang }) {
           )}
         </div>
       </div>
-    </Wrapper>
+    </div>
   );
 }
 

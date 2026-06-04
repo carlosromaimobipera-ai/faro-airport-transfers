@@ -13,6 +13,12 @@ import ThemeProvider from '@/lib/ThemeProvider';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
 import MobileTopBar from '@/components/mobile/MobileTopBar';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import { Navigate } from 'react-router-dom';
 
 // Code-split major pages for faster WebView loading
 const About = lazy(() => import('@/pages/About'));
@@ -62,13 +68,8 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+  if (authError?.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
   return (
@@ -85,17 +86,29 @@ const AuthenticatedApp = () => {
         >
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Auth routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+
+              {/* Public routes */}
               <Route path="/" element={<Home />} />
               <Route path="/confirmacao" element={<Confirmation />} />
-              <Route path="/admin" element={<Admin />} />
               <Route path="/review" element={<Review />} />
-              <Route path="/driver" element={<Driver />} />
-              <Route path="/area-cliente" element={<CustomerArea />} />
               <Route path="/sobre" element={<About />} />
               <Route path="/contacto" element={<Contact />} />
               <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
               <Route path="/eliminar-conta" element={<DeleteAccount />} />
               <Route path="/termos-de-servico" element={<TermsOfService />} />
+
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/driver" element={<Driver />} />
+                <Route path="/area-cliente" element={<CustomerArea />} />
+              </Route>
+
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Suspense>

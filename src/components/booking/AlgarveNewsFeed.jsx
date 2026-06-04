@@ -100,8 +100,16 @@ function EventCard({ item, lang }) {
         : formatDate(item.date_from))
     : null;
 
+  const Wrapper = item.external_link ? 'a' : 'div';
+  const wrapperProps = item.external_link
+    ? { href: item.external_link, target: '_blank', rel: 'noopener noreferrer' }
+    : {};
+
   return (
-    <div className="group relative bg-white dark:bg-card rounded-2xl shadow-sm border border-border hover:shadow-md hover:border-primary/30 transition-all duration-300 overflow-hidden">
+    <Wrapper
+      {...wrapperProps}
+      className="group relative bg-white dark:bg-card rounded-2xl shadow-sm border border-border hover:shadow-md hover:border-primary/30 transition-all duration-300 overflow-hidden block"
+    >
       <div className="p-5">
         <div className="flex items-start gap-3">
           <div className="text-2xl flex-shrink-0 mt-0.5">{emoji}</div>
@@ -127,19 +135,14 @@ function EventCard({ item, lang }) {
               <MapPin className="w-3 h-3" />{item.location}
             </span>
           )}
-        </div>
-      </div>
-      {item.external_link && (
-        <>
-          <a href={item.external_link} target="_blank" rel="noopener noreferrer" className="absolute inset-0" aria-label={item.title} />
-          <div className="px-5 pb-4">
-            <span className="inline-flex items-center gap-1 text-xs text-primary/80 group-hover:text-primary transition-colors">
+          {item.external_link && (
+            <span className="inline-flex items-center gap-1 text-xs text-primary/80 group-hover:text-primary transition-colors ml-auto">
               <ExternalLink className="w-3 h-3" />{t(lang, 'feed_more_info')}
             </span>
-          </div>
-        </>
-      )}
-    </div>
+          )}
+        </div>
+      </div>
+    </Wrapper>
   );
 }
 

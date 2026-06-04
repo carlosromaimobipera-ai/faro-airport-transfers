@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from '@/pages/Home';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import ThemeProvider from '@/lib/ThemeProvider';
+import { CurrencyProvider } from '@/lib/CurrencyContext';
 import BottomTabBar from '@/components/mobile/BottomTabBar';
 import MobileTopBar from '@/components/mobile/MobileTopBar';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
@@ -123,6 +124,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <LanguageProvider>
+          <CurrencyProvider>
           <QueryClientProvider client={queryClientInstance}>
             <Router>
               <AuthenticatedApp />
@@ -131,6 +133,7 @@ function App() {
             </Router>
             <Toaster />
           </QueryClientProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </AuthProvider>
     </ThemeProvider>

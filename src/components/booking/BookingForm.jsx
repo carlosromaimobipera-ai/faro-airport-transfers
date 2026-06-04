@@ -24,10 +24,12 @@ import { useNavigate } from 'react-router-dom';
 import PayPalButton from './PayPalButton';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function BookingForm() {
   const navigate = useNavigate();
   const { lang } = useLang();
+  const { formatPrice } = useCurrency();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
@@ -348,7 +350,7 @@ export default function BookingForm() {
                        <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
                        {vehicleTypes.map(v => (
                          <span key={v.id} className="text-sm font-bold text-primary">
-                           {t(lang, v.nameKey)} <span className="text-secondary">€{(calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute) * tripMultiplier).toFixed(0)}</span>
+                           {t(lang, v.nameKey)} <span className="text-secondary">{formatPrice(calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute) * tripMultiplier)}</span>
                          </span>
                        ))}
                     </div>
@@ -550,7 +552,7 @@ export default function BookingForm() {
                   <Separator />
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold">{t(lang, 'total')}</span>
-                    <span className="text-3xl font-bold text-primary">€{price.toFixed(2)}</span>
+                    <span className="text-3xl font-bold text-primary">{formatPrice(price)}</span>
                   </div>
                 </div>
               </motion.div>
@@ -617,7 +619,7 @@ export default function BookingForm() {
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-secondary-foreground/30 border-t-secondary-foreground rounded-full animate-spin" />
                     ) : (
-                      <>{t(lang, 'confirm_booking')} — €{price.toFixed(2)}</>
+                      <>{t(lang, 'confirm_booking')} — {formatPrice(price)}</>
                     )}
                   </Button>
                 )}

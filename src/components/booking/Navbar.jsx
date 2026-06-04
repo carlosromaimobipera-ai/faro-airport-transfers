@@ -4,6 +4,7 @@ import { Plane, Menu, X, Car, LogIn, LogOut, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from './LanguageSwitcher';
+import CurrencySwitcher from './CurrencySwitcher';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 import { base44 } from '@/api/base44Client';
@@ -59,6 +60,7 @@ export default function Navbar() {
             <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
           <LanguageSwitcher dark={!scrolled} />
+          <CurrencySwitcher />
           {user ? (
             <Button
               size="sm"
@@ -86,6 +88,7 @@ export default function Navbar() {
         </div>
 
         <div className="md:hidden flex items-center gap-1">
+          <CurrencySwitcher />
           <LanguageSwitcher dark={!scrolled} />
           <button onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen

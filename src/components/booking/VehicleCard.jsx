@@ -5,9 +5,11 @@ import { Users, Briefcase, Check } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function VehicleCard({ vehicle, selected, onSelect, price }) {
   const { lang } = useLang();
+  const { formatPrice } = useCurrency();
 
   return (
     <Card
@@ -52,7 +54,7 @@ export default function VehicleCard({ vehicle, selected, onSelect, price }) {
 
         {price > 0 && (
           <div className="text-right">
-            <p className="text-2xl font-bold text-primary">€{price.toFixed(0)}</p>
+            <p className="text-2xl font-bold text-primary">{formatPrice(price)}</p>
             <p className="text-xs text-muted-foreground">{t(lang, 'total_price')}</p>
           </div>
         )}

@@ -20,7 +20,12 @@ export default function Home() {
       <HeroSection />
       <BookingForm />
       <div className="bg-white text-gray-900">
-        <div id="soro-blog" className="max-w-6xl mx-auto px-4 py-12" />
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div
+            id="soro-blog"
+            className="max-h-[420px] overflow-y-auto rounded-xl border border-gray-100 shadow-sm"
+          />
+        </div>
       </div>
 
       <FeaturesSection />

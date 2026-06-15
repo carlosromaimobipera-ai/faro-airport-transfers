@@ -13,6 +13,7 @@ import {
   Clock, TrendingUp, Search, LogOut, Trash2
 } from 'lucide-react';
 import BookingHistoryCard from '@/components/customer/BookingHistoryCard';
+import ClearPersonalDataSection from '@/components/customer/ClearPersonalDataSection';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useLang } from '@/lib/LanguageContext';
@@ -244,8 +245,10 @@ export default function CustomerArea() {
           </CardContent>
         </Card>
 
-        {/* Delete account link */}
-        <div className="pt-2 pb-2 text-center">
+        {/* Data & account actions */}
+        <div className="pt-2 pb-2 flex items-center justify-center gap-4 flex-wrap">
+          <ClearPersonalDataSection userEmail={user.email} />
+          <span className="text-border text-xs">|</span>
           <Link
             to="/eliminar-conta"
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"

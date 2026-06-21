@@ -8,15 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, UserCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, UserCheck, Eye, EyeOff, Loader2, KeyRound } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
-const emptyDriver = { name: '', phone: '', email: '', vehicle_plate: '', vehicle_model: '', vehicle_type: 'sedan', active: true, notes: '' };
+const emptyDriver = { name: '', phone: '', email: '', app_password: '', vehicle_plate: '', vehicle_model: '', vehicle_type: 'sedan', active: true, notes: '' };
 
 export default function DriversManager() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyDriver);
+  const [showPassword, setShowPassword] = useState(false);
+  const [createAccountLoading, setCreateAccountLoading] = useState(false);
+  const [createAccountMsg, setCreateAccountMsg] = useState({ type: '', text: '' });
+  const [visiblePasswords, setVisiblePasswords] = useState({});
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
@@ -38,9 +43,30 @@ export default function DriversManager() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['drivers'] }),
   });
 
-  const openNew = () => { setEditing(null); setForm(emptyDriver); setOpen(true); };
-  const openEdit = (d) => { setEditing(d); setForm({ ...d }); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(emptyDriver); setOpen(true); setShowPassword(false); setCreateAccountMsg({ type: '', text: '' }); };
+  const openEdit = (d) => { setEditing(d); setForm({ ...d }); setOpen(true); setShowPassword(false); setCreateAccountMsg({ type: '', text: '' }); };
   const update = (field, val) => setForm(prev => ({ ...prev, [field]: val }));
+
+  const handleCreateAccount = async () => {
+    if (!form.email || !form.app_password) {
+      setCreateAccountMsg({ type: 'error', text: 'Preencha o email e a palavra-passe antes de criar a conta.' });
+      return;
+    }
+    if (form.app_password.length < 8) {
+      setCreateAccountMsg({ type: 'error', text: 'A palavra-passe deve ter pelo menos 8 caracteres.' });
+      return;
+    }
+    setCreateAccountLoading(true);
+    setCreateAccountMsg({ type: '', text: '' });
+    try {
+      await base44.auth.register({ email: form.email, password: form.app_password });
+      setCreateAccountMsg({ type: 'success', text: `Conta criada para ${form.email}. O motorista receberá um email de verificação.` });
+    } catch (err) {
+      setCreateAccountMsg({ type: 'error', text: err?.message || 'Erro ao criar conta. O email pode já estar registado.' });
+    } finally {
+      setCreateAccountLoading(false);
+    }
+  };
 
   return (
     <Card>
@@ -63,6 +89,17 @@ export default function DriversManager() {
                   <p className="text-sm font-medium">{d.name}</p>
                   <p className="text-xs text-muted-foreground">{d.phone} {d.email ? `· ${d.email}` : ''}</p>
                   {d.vehicle_model && <p className="text-xs text-muted-foreground">{d.vehicle_model} {d.vehicle_plate ? `(${d.vehicle_plate})` : ''}</p>}
+                  {d.app_password && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <KeyRound className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {visiblePasswords[d.id] ? d.app_password : '••••••••'}
+                      </span>
+                      <button onClick={() => setVisiblePasswords(prev => ({ ...prev, [d.id]: !prev[d.id] }))} className="text-muted-foreground hover:text-foreground">
+                        {visiblePasswords[d.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={d.active ? 'text-green-700 border-green-200 bg-green-50' : 'text-gray-500 border-gray-200 bg-gray-50'}>
@@ -96,10 +133,6 @@ export default function DriversManager() {
               <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+351..." />
             </div>
             <div className="space-y-1">
-              <Label>Email</Label>
-              <Input value={form.email} onChange={e => update('email', e.target.value)} placeholder="email@..." />
-            </div>
-            <div className="space-y-1">
               <Label>Matrícula</Label>
               <Input value={form.vehicle_plate} onChange={e => update('vehicle_plate', e.target.value)} placeholder="AA-00-AA" />
             </div>
@@ -127,6 +160,38 @@ export default function DriversManager() {
                   <SelectItem value="false">Inativo</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="col-span-2 space-y-1">
+              <Label>Email de acesso à app</Label>
+              <Input value={form.email} onChange={e => update('email', e.target.value)} placeholder="motorista@email.com" />
+            </div>
+            <div className="col-span-2 space-y-1">
+              <Label className="flex items-center gap-1"><KeyRound className="w-3.5 h-3.5" /> Palavra-passe de acesso</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.app_password || ''}
+                    onChange={e => update('app_password', e.target.value)}
+                    placeholder="Palavra-passe do motorista"
+                    className="pr-9"
+                  />
+                  <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={handleCreateAccount} disabled={createAccountLoading} className="gap-1 shrink-0">
+                  {createAccountLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                  Criar conta
+                </Button>
+              </div>
+              {createAccountMsg.text && (
+                <div className={`text-xs mt-1 px-2 py-1.5 rounded flex items-center gap-1 ${createAccountMsg.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  {createAccountMsg.text}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">A palavra-passe é guardada na ficha para referência do admin. Clique "Criar conta" para registar o acesso à app.</p>
             </div>
             <div className="col-span-2 space-y-1">
               <Label>Notas internas</Label>

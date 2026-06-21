@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Email do motorista"
     },
+    "app_password": {
+      "type": "string",
+      "description": "Palavra-passe de acesso \u00e0 app (vis\u00edvel apenas para admin)"
+    },
     "vehicle_plate": {
       "type": "string",
       "description": "Matr\u00edcula do ve\u00edculo"

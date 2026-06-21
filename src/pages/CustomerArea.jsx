@@ -10,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, User, Calendar, CheckCircle2,
-  Clock, TrendingUp, Search, LogOut, Trash2
+  Clock, TrendingUp, Search, LogOut, Trash2, KeyRound, CheckCircle
 } from 'lucide-react';
 import BookingHistoryCard from '@/components/customer/BookingHistoryCard';
 import ClearPersonalDataSection from '@/components/customer/ClearPersonalDataSection';
+import ChangePasswordSection from '@/components/customer/ChangePasswordSection';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useLang } from '@/lib/LanguageContext';
@@ -244,6 +245,9 @@ export default function CustomerArea() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Change password */}
+        <ChangePasswordSection email={user.email} lang={lang} />
 
         {/* Data & account actions */}
         <div className="pt-2 pb-2 flex items-center justify-center gap-4 flex-wrap">

@@ -1,0 +1,36 @@
+{
+  "name": "EmailSent",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string",
+      "description": "ID da reserva"
+    },
+    "email_type": {
+      "type": "string",
+      "description": "Tipo de email enviado (ex: feedback_request)"
+    }
+  },
+  "required": [
+    "booking_id",
+    "email_type"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

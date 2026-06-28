@@ -52,6 +52,9 @@ Deno.serve(async (req) => {
     const existingReviews = await base44.asServiceRole.entities.Review.filter({ booking_id: booking.id });
     if (existingReviews.length > 0) continue;
 
+    const alreadySent = await base44.asServiceRole.entities.EmailSent.filter({ booking_id: booking.id, email_type: 'feedback_request' });
+    if (alreadySent.length > 0) continue;
+
     const transferTime = new Date(booking.transfer_date + 'T23:59:59').getTime();
     const hoursSince = (now - transferTime) / (1000 * 60 * 60);
 
@@ -92,6 +95,7 @@ Deno.serve(async (req) => {
 </html>`.trim();
 
       await sendEmail({ to: booking.customer_email, subject: langText.subject, body });
+      await base44.asServiceRole.entities.EmailSent.create({ booking_id: booking.id, email_type: 'feedback_request' });
       feedbackSent.push({ booking_ref: booking.booking_ref, customer_email: booking.customer_email });
     }
   }

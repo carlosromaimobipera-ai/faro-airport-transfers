@@ -16,7 +16,7 @@
     "email_type"
   ],
   "rls": {
-    "create": true,
+    "create": null,
     "read": {
       "user_condition": {
         "role": "admin"

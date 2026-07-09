@@ -1,0 +1,30 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Área de Operação Transfers",
+    "description": "Cobertura geográfica: Algarve, Portugal Continental e Sevilha (Espanha)"
+  },
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [-9.6, 36.8],
+          [-6.1, 36.8],
+          [-6.1, 42.2],
+          [-9.6, 42.2],
+          [-9.6, 36.8]
+        ]
+      ],
+      [
+        [
+          [-6.1, 37.2],
+          [-5.8, 37.2],
+          [-5.8, 37.5],
+          [-6.1, 37.5],
+          [-6.1, 37.2]
+        ]
+      ]
+    ]
+  }
+}

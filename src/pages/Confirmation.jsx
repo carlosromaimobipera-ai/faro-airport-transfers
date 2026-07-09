@@ -80,18 +80,19 @@ function VoucherDownloadButton({ booking }) {
 export default function Confirmation() {
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('id');
+  const bookingRef = urlParams.get('ref');
   const { lang } = useLang();
 
   const [booking, setBooking] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!bookingId) {
+    if (!bookingId || !bookingRef) {
       setIsLoading(false);
       return;
     }
     // Use public backend function — works for both guests and logged-in users
-    base44.functions.invoke('getBookingPublic', { booking_id: bookingId })
+    base44.functions.invoke('getBookingPublic', { booking_id: bookingId, booking_ref: bookingRef })
       .then(res => {
         setBooking(res.data?.booking || null);
       })

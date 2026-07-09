@@ -191,7 +191,7 @@ export default function BookingForm() {
       payment_status: 'unpaid',
       language: lang,
     });
-    navigate(`/confirmacao?id=${booking.id}`);
+    navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
   };
 
   const handlePaymentSuccess = async () => {
@@ -230,7 +230,7 @@ export default function BookingForm() {
       payment_status: 'paid',
       language: lang,
     });
-    navigate(`/confirmacao?id=${booking.id}`);
+    navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
   };
 
   const steps = [

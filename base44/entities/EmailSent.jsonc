@@ -9,6 +9,11 @@
     "email_type": {
       "type": "string",
       "description": "Tipo de email enviado (ex: feedback_request)"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Notas adicionais sobre este email enviado"
     }
   },
   "required": [
@@ -16,7 +21,7 @@
     "email_type"
   ],
   "rls": {
-    "create": null,
+    "create": true,
     "read": {
       "user_condition": {
         "role": "admin"

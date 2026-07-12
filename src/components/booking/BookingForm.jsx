@@ -369,7 +369,7 @@ export default function BookingForm() {
                   </div>
                 )}
                 {/* Estimated price preview */}
-                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && (
+                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && !isBothInSpain && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                     <p className="text-xs text-muted-foreground mb-1">
                   {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span>

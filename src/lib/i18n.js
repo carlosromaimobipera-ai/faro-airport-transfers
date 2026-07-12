@@ -230,6 +230,10 @@ export const translations = {
     price_reset: 'Repor',
     calculating_distance: 'A calcular distância por rota...',
     select_from_list: 'Selecione uma sugestão da lista',
+    spain_quote_title: 'Viagens internas em Espanha — pedido de orçamento',
+    spain_quote_desc: 'Para viagens com origem e destino em Espanha, entre em contacto connosco via WhatsApp para receber um orçamento personalizado.',
+    spain_quote_btn: 'Pedir orçamento via WhatsApp',
+    spain_quote_wa_msg: 'Olá! Gostaria de pedir um orçamento para uma viagem em Espanha (origem e destino em Espanha).',
 
     // About page
     about_title: 'Sobre a Transfers Algarvestar',
@@ -548,6 +552,10 @@ export const translations = {
     price_reset: 'Reset',
     calculating_distance: 'Calculating route distance...',
     select_from_list: 'Please select a suggestion from the list',
+    spain_quote_title: 'Trips within Spain — request a quote',
+    spain_quote_desc: 'For trips with both origin and destination in Spain, please contact us via WhatsApp to receive a personalised quote.',
+    spain_quote_btn: 'Request a quote via WhatsApp',
+    spain_quote_wa_msg: 'Hello! I would like to request a quote for a trip within Spain (both origin and destination in Spain).',
 
     about_title: 'About Transfers Algarvestar',
     about_subtitle: 'Your trusted partner for private transfers in the Algarve.',
@@ -861,6 +869,10 @@ export const translations = {
     price_reset: 'Restablecer',
     calculating_distance: 'Calculando distancia por ruta...',
     select_from_list: 'Seleccione una sugerencia de la lista',
+    spain_quote_title: 'Viajes internos en España — solicitar presupuesto',
+    spain_quote_desc: 'Para viajes con origen y destino en España, contáctenos por WhatsApp para recibir un presupuesto personalizado.',
+    spain_quote_btn: 'Solicitar presupuesto por WhatsApp',
+    spain_quote_wa_msg: 'Hola! Me gustaría solicitar un presupuesto para un viaje en España (origen y destino en España).',
 
     about_title: 'Sobre Transfers Algarvestar',
     about_subtitle: 'Su socio de confianza para traslados privados en el Algarve.',
@@ -1174,6 +1186,10 @@ export const translations = {
     price_reset: 'Réinitialiser',
     calculating_distance: 'Calcul de la distance par itinéraire...',
     select_from_list: 'Veuillez sélectionner une suggestion dans la liste',
+    spain_quote_title: 'Trajets internes en Espagne — demander un devis',
+    spain_quote_desc: 'Pour les trajets avec l\'origine et la destination en Espagne, contactez-nous via WhatsApp pour recevoir un devis personnalisé.',
+    spain_quote_btn: 'Demander un devis via WhatsApp',
+    spain_quote_wa_msg: 'Bonjour ! Je souhaiterais demander un devis pour un trajet en Espagne (origine et destination en Espagne).',
 
     about_title: 'À propos de Transfers Algarvestar',
     about_subtitle: 'Votre partenaire de confiance pour les transferts privés en Algarve.',
@@ -1487,6 +1503,10 @@ export const translations = {
     price_reset: 'Zurücksetzen',
     calculating_distance: 'Routenentfernung wird berechnet...',
     select_from_list: 'Bitte wählen Sie einen Vorschlag aus der Liste',
+    spain_quote_title: 'Fahrten innerhalb Spaniens — Angebot anfordern',
+    spain_quote_desc: 'Für Fahrten mit Abfahrtsort und Ziel in Spanien kontaktieren Sie uns bitte per WhatsApp für ein persönliches Angebot.',
+    spain_quote_btn: 'Angebot per WhatsApp anfordern',
+    spain_quote_wa_msg: 'Hallo! Ich möchte ein Angebot für eine Fahrt innerhalb Spaniens anfragen (Abfahrt und Ziel in Spanien).',
 
     about_title: 'Über Transfers Algarvestar',
     about_subtitle: 'Ihr vertrauenswürdiger Partner für private Transfers an der Algarve.',
@@ -1800,6 +1820,10 @@ export const translations = {
     price_reset: 'Herstellen',
     calculating_distance: 'Routeafstand berekenen...',
     select_from_list: 'Selecteer een suggestie uit de lijst',
+    spain_quote_title: 'Ritten binnen Spanje — offerte aanvragen',
+    spain_quote_desc: 'Voor ritten met vertrekpunt en bestemming in Spanje, neem contact met ons op via WhatsApp voor een persoonlijke offerte.',
+    spain_quote_btn: 'Offerte aanvragen via WhatsApp',
+    spain_quote_wa_msg: 'Hallo! Ik wil graag een offerte aanvragen voor een rit binnen Spanje (vertrek en bestemming in Spanje).',
 
     about_title: 'Over Transfers Algarvestar',
     about_subtitle: 'Uw vertrouwde partner voor privétransfers in de Algarve.',

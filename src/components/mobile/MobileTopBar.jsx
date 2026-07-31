@@ -31,14 +31,14 @@ export default function MobileTopBar() {
 
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-area-top">
-      <div className="flex items-center h-14 px-4 gap-3">
+      <div className="flex items-center h-12 px-4 gap-3">
         {isTabRoot ? (
           // Logo on tab roots
           <div className="flex items-center gap-2 flex-1">
             <img
               src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo.png"
               alt="Transfers Algarve"
-              className="h-8 object-contain"
+              className="h-7 object-contain"
             />
           </div>
         ) : (

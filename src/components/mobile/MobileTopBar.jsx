@@ -36,13 +36,9 @@ export default function MobileTopBar() {
           // Logo on tab roots
           <div className="flex items-center gap-2 flex-1">
             <img
-              src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo.png"
-              alt="Transfers Algarve"
-              className="h-8 object-contain"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
+              src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/a7bb1f3ed_Screenshot_20260731_233856_Chrome.jpg"
+              alt="Transfers Algarvestar"
+              className="h-10 object-contain"
             />
             <span
               className="font-display font-bold text-lg text-primary hidden"

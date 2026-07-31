@@ -34,23 +34,7 @@ export default function MobileTopBar() {
       <div className="flex items-center h-16 px-4 gap-3">
         {isTabRoot ? (
           // Logo on tab roots
-          <div className="flex items-center gap-2 flex-1">
-            <img
-              src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo.png"
-              alt="Transfers Algarve"
-              className="h-8 object-contain"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-            <span
-              className="font-display font-bold text-lg text-primary hidden"
-              style={{ display: 'none' }}
-            >
-              Transfers Algarve
-            </span>
-          </div>
+          <div className="flex-1" />
         ) : (
           // Back button + title on child routes
           <>

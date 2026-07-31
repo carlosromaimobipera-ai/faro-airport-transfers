@@ -83,7 +83,7 @@ const AuthenticatedApp = () => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -100, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="route-content min-h-screen overflow-y-auto pt-12 md:pt-0"
+          className="route-content min-h-screen overflow-y-auto pt-14 md:pt-0"
         >
           <Suspense fallback={<PageLoader />}>
             <Routes>

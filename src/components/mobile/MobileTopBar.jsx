@@ -39,17 +39,7 @@ export default function MobileTopBar() {
               src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo.png"
               alt="Transfers Algarve"
               className="h-8 object-contain"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
             />
-            <span
-              className="font-display font-bold text-lg text-primary hidden"
-              style={{ display: 'none' }}
-            >
-              Transfers Algarve
-            </span>
           </div>
         ) : (
           // Back button + title on child routes

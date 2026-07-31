@@ -24,13 +24,6 @@ export default function HeroSection() {
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
 
-            <img
-              src="https://media.base44.com/images/public/69f9fe03f147edc32575e815/logo.png"
-              alt="Transfers Algarve"
-              className="h-12 md:h-14 w-auto object-contain mb-5 brightness-0 invert"
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-4">
               {t(lang, 'hero_title_1')}{' '}
               <span className="text-secondary">{t(lang, 'hero_title_2')}</span>

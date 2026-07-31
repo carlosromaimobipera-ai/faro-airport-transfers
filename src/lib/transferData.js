@@ -116,10 +116,10 @@ export function getDistance() {
 
 // Tarifas por km por distância e veículo
 const PRICE_PER_KM = {
-  short:  { sedan: 1.05, minivan: 1.25, minibus: 1.45 }, // < 30 km
-  mid:    { sedan: 0.80, minivan: 0.90, minibus: 1.00 }, // 30–150 km
-  long:   { sedan: 1.10, minivan: 1.25, minibus: 1.50 }, // > 150 km
-  spain:  { sedan: 1.00, minivan: 1.15, minibus: 1.25 }, // Espanha
+  short:  { sedan: 1.00, minivan: 1.20, minibus: 1.40 }, // < 30 km
+  mid:    { sedan: 0.75, minivan: 0.85, minibus: 0.95 }, // 30–150 km
+  long:   { sedan: 1.05, minivan: 1.20, minibus: 1.45 }, // > 150 km
+  spain:  { sedan: 0.95, minivan: 1.10, minibus: 1.20 }, // Espanha
 };
 
 // Tarifas mínimas
@@ -252,7 +252,7 @@ export const vehicleTypes = [
     luggage: 3,
     maxPassengers: 3,
     maxLuggage: 3,
-    pricePerKm: 1.05,
+    pricePerKm: 1.00,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/2f3fbb999_Kia_Ceed_SW.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
@@ -263,7 +263,7 @@ export const vehicleTypes = [
     luggage: 3,
     maxPassengers: 3,
     maxLuggage: 3,
-    pricePerKm: 1.25,
+    pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/3e7495004_generated_image.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
@@ -274,7 +274,7 @@ export const vehicleTypes = [
     luggage: 5,
     maxPassengers: 5,
     maxLuggage: 5,
-    pricePerKm: 1.25,
+    pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/6db18abaf_VK_Caddy_Maxi.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_luggage", "feat_baby"],
   },
@@ -285,7 +285,7 @@ export const vehicleTypes = [
     luggage: 8,
     maxPassengers: 8,
     maxLuggage: 8,
-    pricePerKm: 1.45,
+    pricePerKm: 1.40,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/5e228dd60_Mercedes_vito.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_space", "feat_group", "feat_baby"],
   },

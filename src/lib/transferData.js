@@ -117,8 +117,8 @@ export function getDistance() {
 // Tarifas por km por distância e veículo
 const PRICE_PER_KM = {
   short:  { sedan: 1.15, minivan: 1.35, minibus: 1.55 }, // < 30 km
-  mid:    { sedan: 0.85, minivan: 0.95, minibus: 1.00 }, // 30–150 km
-  long:   { sedan: 1.20, minivan: 1.35, minibus: 1.60 }, // > 150 km
+  mid:    { sedan: 0.82, minivan: 0.93, minibus: 1.00 }, // 30–150 km
+  long:   { sedan: 1.15, minivan: 1.35, minibus: 1.50 }, // > 150 km
   spain:  { sedan: 1.15, minivan: 1.30, minibus: 1.45 }, // Espanha
 };
 
@@ -191,7 +191,7 @@ export function calculatePrice(distanceKm, vehicleTypeId, priceConfigs = [], dur
   else                    tier = 'long';
 
   const rate = PRICE_PER_KM[tier][pricingId];
-  const calculated = Math.round(distanceKm * rate * 100) / 100;
+  const calculated = Math.round(distanceKm * rate); // arredonda para o euro mais próximo
   return Math.max(calculated, MINIMUM_FARES[vehicleTypeId] || 15);
 }
 

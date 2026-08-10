@@ -1,3 +1,4 @@
+// Public endpoint — no authentication required
 Deno.serve(async (req) => {
   console.log('Function called, method:', req.method);
   try {

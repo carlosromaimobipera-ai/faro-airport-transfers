@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, UserCheck, Eye, EyeOff, Loader2, KeyRound } from 'lucide-react';
-import { AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, UserCheck, Eye, EyeOff, Loader2, KeyRound, AlertCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const emptyDriver = { name: '', phone: '', email: '', app_password: '', vehicle_plate: '', vehicle_model: '', vehicle_type: 'sedan', active: true, notes: '' };
 
@@ -22,10 +22,18 @@ export default function DriversManager() {
   const [createAccountLoading, setCreateAccountLoading] = useState(false);
   const [createAccountMsg, setCreateAccountMsg] = useState({ type: '', text: '' });
   const [visiblePasswords, setVisiblePasswords] = useState({});
+  const [deleteDriverTarget, setDeleteDriverTarget] = useState(null);
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [deleteAccountMsg, setDeleteAccountMsg] = useState({ type: '', text: '' });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list('name'),
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => base44.entities.User.list(),
   });
 
   const saveMutation = useMutation({
@@ -42,6 +50,32 @@ export default function DriversManager() {
     mutationFn: (id) => base44.entities.Driver.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['drivers'] }),
   });
+
+  // Delete driver record + optionally the associated user account
+  const handleDeleteDriverWithAccount = async (deleteAccount) => {
+    if (!deleteDriverTarget) return;
+    setDeleteAccountLoading(true);
+    setDeleteAccountMsg({ type: '', text: '' });
+    try {
+      if (deleteAccount && deleteDriverTarget.email) {
+        const userToDelete = users.find(u => u.email?.toLowerCase() === deleteDriverTarget.email.toLowerCase());
+        if (userToDelete) {
+          await base44.entities.User.delete(userToDelete.id);
+          setDeleteAccountMsg({ type: 'success', text: `Conta de utilizador ${deleteDriverTarget.email} eliminada. Email livre para recriar.` });
+        } else {
+          setDeleteAccountMsg({ type: 'error', text: `Não foi encontrada conta com email ${deleteDriverTarget.email}. Apenas a ficha do motorista será eliminada.` });
+        }
+      }
+      await deleteMutation.mutateAsync(deleteDriverTarget.id);
+      setDeleteDriverTarget(null);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setTimeout(() => setDeleteAccountMsg({ type: '', text: '' }), 4000);
+    } catch (err) {
+      setDeleteAccountMsg({ type: 'error', text: err?.message || 'Erro ao eliminar.' });
+    } finally {
+      setDeleteAccountLoading(false);
+    }
+  };
 
   const openNew = () => { setEditing(null); setForm(emptyDriver); setOpen(true); setShowPassword(false); setCreateAccountMsg({ type: '', text: '' }); };
   const openEdit = (d) => { setEditing(d); setForm({ ...d }); setOpen(true); setShowPassword(false); setCreateAccountMsg({ type: '', text: '' }); };
@@ -108,7 +142,7 @@ export default function DriversManager() {
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => deleteMutation.mutate(d.id)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => { setDeleteDriverTarget(d); setDeleteAccountMsg({ type: '', text: '' }); }}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -206,6 +240,51 @@ export default function DriversManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete driver confirmation */}
+      <AlertDialog open={!!deleteDriverTarget} onOpenChange={(open) => { if (!open) { setDeleteDriverTarget(null); setDeleteAccountMsg({ type: '', text: '' }); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar motorista?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vai eliminar a ficha de <strong>{deleteDriverTarget?.name}</strong>.
+              {deleteDriverTarget?.email
+                ? ' Pode também eliminar a conta de utilizador associada para libertar o email e permitir recriar no futuro.'
+                : ' Este motorista não tem email de acesso associado.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {deleteAccountMsg.text && (
+            <div className={`text-sm px-4 py-3 rounded-lg flex items-center gap-2 ${deleteAccountMsg.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {deleteAccountMsg.text}
+            </div>
+          )}
+
+          <AlertDialogFooter className="flex-col sm:flex-col gap-2">
+            {deleteDriverTarget?.email && (
+              <AlertDialogAction
+                disabled={deleteAccountLoading}
+                onClick={() => handleDeleteDriverWithAccount(true)}
+                className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+              >
+                {deleteAccountLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Eliminar ficha + conta de acesso
+              </AlertDialogAction>
+            )}
+            <div className="flex gap-2 w-full sm:w-auto">
+              <AlertDialogCancel disabled={deleteAccountLoading} className="flex-1 sm:flex-none">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deleteAccountLoading}
+                onClick={() => handleDeleteDriverWithAccount(false)}
+                className="bg-red-500 hover:bg-red-600 text-white flex-1 sm:flex-none"
+              >
+                Eliminar só a ficha
+              </AlertDialogAction>
+            </div>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

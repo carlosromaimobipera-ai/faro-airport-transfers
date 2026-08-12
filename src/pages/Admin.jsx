@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
@@ -25,6 +25,7 @@ import DailyScheduleExport from '@/components/admin/DailyScheduleExport';
 import BookingTableMobile from '@/components/admin/BookingTableMobile';
 import UsersManager from '@/components/admin/UsersManager';
 import AdminNotesCell from '@/components/admin/AdminNotesCell';
+import BookingDetailsDialog from '@/components/admin/BookingDetailsDialog';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -67,6 +68,7 @@ export default function Admin() {
   const [filterDateFrom, setFilterDateFrom]  = useState('');
   const [filterDateTo,   setFilterDateTo]    = useState('');
   const [search,         setSearch]          = useState('');
+  const [detailsBooking, setDetailsBooking]  = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -327,6 +329,7 @@ export default function Admin() {
                           <TableHead>Motorista</TableHead>
                           <TableHead>Notas internas</TableHead>
                           <TableHead>Alterar estado</TableHead>
+                          <TableHead>Detalhes</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -401,6 +404,16 @@ export default function Admin() {
                                 </SelectContent>
                               </Select>
                             </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5"
+                                onClick={() => setDetailsBooking(booking)}
+                              >
+                                <FileText className="w-3.5 h-3.5" /> Ver
+                              </Button>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -416,6 +429,7 @@ export default function Admin() {
                     unavailabilities={unavailabilities}
                     onStatusChange={(id, status) => updateMutation.mutate({ id, data: { status } })}
                     onAssignDriver={assignDriver}
+                    onViewDetails={setDetailsBooking}
                   />
                 </div>
               </>
@@ -452,6 +466,13 @@ export default function Admin() {
         </Tabs>
 
       </div>
+
+      {/* Booking details dialog with voucher PDF download */}
+      <BookingDetailsDialog
+        booking={detailsBooking}
+        open={!!detailsBooking}
+        onOpenChange={(open) => { if (!open) setDetailsBooking(null); }}
+      />
     </div>
   );
 }

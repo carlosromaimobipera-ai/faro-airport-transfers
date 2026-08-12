@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Euro, Calendar } from 'lucide-react';
+import { MapPin, Euro, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import MobileSelectDrawer from './MobileSelectDrawer';
@@ -20,7 +20,7 @@ const paymentConfig = {
   refunded: { label: "Reembolsado", color: "bg-gray-100 text-gray-800" },
 };
 
-export default function BookingTableMobile({ bookings, drivers, unavailabilities, onStatusChange, onAssignDriver }) {
+export default function BookingTableMobile({ bookings, drivers, unavailabilities, onStatusChange, onAssignDriver, onViewDetails }) {
   const isDriverAvailable = (driverId, transferDate) => {
     if (!transferDate) return true;
     return !unavailabilities.some(u =>
@@ -42,9 +42,19 @@ export default function BookingTableMobile({ bookings, drivers, unavailabilities
                 <p className="text-sm font-semibold text-foreground">{booking.customer_name}</p>
                 <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
               </div>
-              <Badge variant="outline" className={statusConfig[booking.status]?.color}>
-                {statusConfig[booking.status]?.label}
-              </Badge>
+              <div className="flex flex-col items-end gap-1.5">
+                <Badge variant="outline" className={statusConfig[booking.status]?.color}>
+                  {statusConfig[booking.status]?.label}
+                </Badge>
+                {onViewDetails && (
+                  <button
+                    onClick={() => onViewDetails(booking)}
+                    className="text-xs text-primary font-medium flex items-center gap-1 hover:underline min-h-0"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> Ver detalhes
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Route */}

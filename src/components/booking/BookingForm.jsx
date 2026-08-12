@@ -202,6 +202,11 @@ export default function BookingForm() {
       payment_status: 'unpaid',
       language: lang,
     });
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-18386612747/HgooCODe0OAcEIvktb9E',
+      });
+    }
     navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
   };
 
@@ -241,6 +246,14 @@ export default function BookingForm() {
       payment_status: 'paid',
       language: lang,
     });
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-18386612747/uWpyCOri0OAcEIvktb9E',
+        value: price,
+        currency: 'EUR',
+        transaction_id: booking.id,
+      });
+    }
     navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
   };
 

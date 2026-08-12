@@ -27,7 +27,17 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{t(lang, 'contact_phone_label')}</p>
-                  <a href="tel:+351913956971" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a
+                    href="tel:+351913956971"
+                    onClick={() => {
+                      if (typeof window !== 'undefined' && window.gtag) {
+                        window.gtag('event', 'conversion', {
+                          send_to: 'AW-18386612747/whuUCOy04eAcEIvktb9E',
+                        });
+                      }
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
                     +351 913 956 971
                   </a>
                 </div>
@@ -88,6 +98,11 @@ export default function Contact() {
                 const data = new FormData(e.target);
                 const msg = encodeURIComponent(`Olá, o meu nome é ${data.get('name')}. ${data.get('message')}`);
                 window.open(`https://wa.me/351913956971?text=${msg}`, '_blank');
+                if (typeof window !== 'undefined' && window.gtag) {
+                  window.gtag('event', 'conversion', {
+                    send_to: 'AW-18386612747/q0jwCOC04eAcEIvktb9E',
+                  });
+                }
               }}
               className="space-y-4"
             >

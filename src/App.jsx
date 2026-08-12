@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -58,8 +58,27 @@ const RouteWrapper = ({ children }) => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user, isAuthenticated } = useAuth();
   const location = useLocation();
+
+  // SIGNUP conversion — fires once on first authenticated render of a freshly-created user
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !user?.created_date) return;
+    const storageKey = `gads_signup_${user.id}`;
+    if (localStorage.getItem(storageKey)) return;
+    const created = new Date(user.created_date).getTime();
+    if (isNaN(created) || Date.now() - created > 2 * 60 * 1000) {
+      localStorage.setItem(storageKey, '1');
+      return;
+    }
+    localStorage.setItem(storageKey, '1');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-18386612747/yRwfCN204eAcEIvktb9E',
+        transaction_id: user.id,
+      });
+    }
+  }, [isAuthenticated, user]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -120,6 +139,39 @@ const AuthenticatedApp = () => {
 };
 
 function App() {
+  // Google Ads gtag bootstrap — runs once
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.__gads_loaded) return;
+    window.__gads_loaded = true;
+    window.dataLayer = window.dataLayer || [];
+    const inIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments);
+      if (inIframe) {
+        try {
+          const args = Array.prototype.slice.call(arguments);
+          const cmd = args[0];
+          window.parent.postMessage({
+            type: 'base44_gtag_event',
+            event: {
+              source: 'gtag',
+              timestamp: new Date().toLocaleTimeString(),
+              command: cmd,
+              params: args.slice(1),
+              type: cmd === 'event' ? (args[1] || 'event') : cmd,
+            },
+          }, '*');
+        } catch (_e) { /* relay must not break gtag */ }
+      }
+    };
+    const s = document.createElement('script');
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=AW-18386612747';
+    s.async = true;
+    document.head.appendChild(s);
+    window.gtag('js', new Date());
+    window.gtag('config', 'AW-18386612747', { send_page_view: false });
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

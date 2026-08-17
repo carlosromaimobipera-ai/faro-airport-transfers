@@ -23,6 +23,7 @@ export default function Register() {
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
     const otpParam = params.get("otp");
+    const verifyParam = params.get("verify");
     if (emailParam) setEmail(emailParam);
     if (otpParam && emailParam) {
       setOtpCode(otpParam);
@@ -38,6 +39,8 @@ export default function Register() {
           setError(err.message || "Invalid verification code");
         }
       })();
+    } else if (verifyParam && emailParam) {
+      setShowOtp(true);
     }
   }, []);
 
@@ -52,6 +55,9 @@ export default function Register() {
     try {
       await base44.auth.register({ email, password });
       setShowOtp(true);
+      const lang = localStorage.getItem('lang') || 'en';
+      const link = `${window.location.origin}/register?email=${encodeURIComponent(email)}&verify=true`;
+      base44.functions.invoke('sendVerificationLink', { email, link, lang }).catch(() => {});
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
@@ -79,6 +85,9 @@ export default function Register() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
+      const lang = localStorage.getItem('lang') || 'en';
+      const link = `${window.location.origin}/register?email=${encodeURIComponent(email)}&verify=true`;
+      base44.functions.invoke('sendVerificationLink', { email, link, lang }).catch(() => {});
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",

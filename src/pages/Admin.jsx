@@ -129,6 +129,7 @@ export default function Admin() {
       data: {
         driver_id: driverId || null,
         driver_name: driver ? driver.name : null,
+        driver_email: driver ? driver.email : null,
       },
     });
   };

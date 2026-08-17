@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { AlertCircle, Loader2, Mail, Plus, KeyRound, Trash2, ShieldCheck, User as UserIcon, Search } from 'lucide-react';
+import { AlertCircle, Loader2, Mail, Plus, KeyRound, Trash2, ShieldCheck, User as UserIcon, Search, Pencil } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -24,6 +24,8 @@ export default function UsersManager() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editData, setEditData] = useState({ full_name: '', role: 'user' });
   const [search, setSearch] = useState('');
 
   // Invite via email
@@ -43,6 +45,19 @@ export default function UsersManager() {
       setDeleteTarget(null);
     },
   });
+
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setEditTarget(null);
+    },
+  });
+
+  const handleEditSave = () => {
+    if (!editTarget) return;
+    updateUserMutation.mutate({ id: editTarget.id, data: { role: editData.role, full_name: editData.full_name } });
+  };
 
   const resetState = () => {
     setError('');
@@ -262,6 +277,16 @@ export default function UsersManager() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                        disabled={isSelf}
+                        onClick={() => { setEditTarget(u); setEditData({ full_name: u.full_name || '', role: u.role || 'user' }); }}
+                        title="Editar utilizador"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
                         disabled={isSelf || isDeleting}
                         onClick={() => setDeleteTarget(u)}
@@ -277,6 +302,47 @@ export default function UsersManager() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit user dialog */}
+      <Dialog open={!!editTarget} onOpenChange={(open) => { if (!open) setEditTarget(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Utilizador</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={editTarget?.email || ''} disabled className="bg-muted" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input
+                value={editData.full_name}
+                onChange={(e) => setEditData({ ...editData, full_name: e.target.value })}
+                placeholder="Nome completo"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Função (Acesso)</Label>
+              <Select value={editData.role} onValueChange={(role) => setEditData({ ...editData, role })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Utilizador / Motorista</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {updateUserMutation.isError && (
+              <ErrorBox msg={updateUserMutation.error?.message || 'Erro ao atualizar utilizador.'} />
+            )}
+            <Button onClick={handleEditSave} disabled={updateUserMutation.isPending} className="w-full">
+              {updateUserMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" />A guardar...</>
+              ) : 'Guardar Alterações'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>

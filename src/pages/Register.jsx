@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,28 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get("email");
+    const otpParam = params.get("otp");
+    if (emailParam) setEmail(emailParam);
+    if (otpParam && emailParam) {
+      setOtpCode(otpParam);
+      setShowOtp(true);
+      (async () => {
+        try {
+          const result = await base44.auth.verifyOtp({ email: emailParam, otpCode: otpParam });
+          if (result?.access_token) {
+            base44.auth.setToken(result.access_token);
+          }
+          window.location.href = "/";
+        } catch (err) {
+          setError(err.message || "Invalid verification code");
+        }
+      })();
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

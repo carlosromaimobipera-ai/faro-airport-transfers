@@ -46,7 +46,7 @@ export default function Navbar() {
           />
         </Link>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <a href="#booking" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_book')}
           </a>
@@ -80,27 +80,25 @@ export default function Navbar() {
               <LogIn className="w-4 h-4" /> Login
             </Button>
           )}
-          <div className="relative ml-1">
-            <a href="#booking">
-              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold">
-                {t(lang, 'nav_cta')}
-              </Button>
-            </a>
-            <a
-              href="https://play.google.com/store/apps/details?id=com.base69f9fe03f147edc32575e815.app&pcampaignid=web_share"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/90 hover:bg-black transition-opacity"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 512 512" fill="currentColor">
-                <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm424.7 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l220.7-221.3 60.1 60.1-280.8 161.2z"/>
-              </svg>
-              Google Play
-            </a>
-          </div>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.base69f9fe03f147edc32575e815.app&pcampaignid=web_share"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/90 hover:bg-black"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 512 512" fill="currentColor">
+              <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm424.7 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l220.7-221.3 60.1 60.1-280.8 161.2z"/>
+            </svg>
+            Google Play
+          </a>
+          <a href="#booking">
+            <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold ml-1">
+              {t(lang, 'nav_cta')}
+            </Button>
+          </a>
         </div>
 
-        <div className="md:hidden flex items-center gap-1">
+        <div className="lg:hidden flex items-center gap-1">
           <CurrencySwitcher />
           <LanguageSwitcher dark={!scrolled} />
           <button onClick={() => setMenuOpen(!menuOpen)}>
@@ -113,7 +111,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden bg-background border-t border-border p-4 space-y-3">
+        <div className="lg:hidden bg-background border-t border-border p-4 space-y-3">
           <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
           <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>
@@ -135,6 +133,22 @@ export default function Navbar() {
               <LogIn className="w-4 h-4" /> Login
             </button>
           )}
+          <a href="#booking" className="block" onClick={() => setMenuOpen(false)}>
+            <Button size="sm" className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold">
+              {t(lang, 'nav_cta')}
+            </Button>
+          </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.base69f9fe03f147edc32575e815.app&pcampaignid=web_share"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium text-white bg-black/90 hover:bg-black"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 512 512" fill="currentColor">
+              <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm424.7 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l220.7-221.3 60.1 60.1-280.8 161.2z"/>
+            </svg>
+            Google Play
+          </a>
         </div>
       )}
     </nav>

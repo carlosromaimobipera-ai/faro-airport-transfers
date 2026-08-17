@@ -171,6 +171,10 @@
       "type": "string",
       "description": "Nome do motorista (cache)"
     },
+    "driver_email": {
+      "type": "string",
+      "description": "Email do motorista (cache) - usado para RLS"
+    },
     "google_calendar_event_id": {
       "type": "string",
       "description": "ID do evento criado no Google Calendar"
@@ -211,7 +215,7 @@
           }
         },
         {
-          "data.driver_id": "{{user.id}}"
+          "data.driver_email": "{{user.email}}"
         }
       ]
     },
@@ -223,7 +227,7 @@
           }
         },
         {
-          "data.driver_id": "{{user.id}}"
+          "data.driver_email": "{{user.email}}"
         }
       ]
     },

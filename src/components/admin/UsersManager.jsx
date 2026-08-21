@@ -95,6 +95,16 @@ export default function UsersManager() {
     setIsLoading(true);
     try {
       await base44.auth.register({ email: createData.email, password: createData.password });
+
+        // Promover a admin se selecionado — register() cria sempre como 'user'
+        if (createData.role === 'admin') {
+          const allUsers = await base44.entities.User.list();
+          const newUser = allUsers.find(u => u.email?.toLowerCase() === createData.email.toLowerCase());
+          if (newUser) {
+            await base44.entities.User.update(newUser.id, { role: 'admin' });
+          }
+        }
+
       setSuccess(`Conta criada para ${createData.email}. O utilizador receberá um email de verificação.`);
       setCreateData({ email: '', password: '', confirmPassword: '', role: 'user' });
       setTimeout(() => { setIsOpen(false); setSuccess(''); queryClient.invalidateQueries({ queryKey: ['users'] }); }, 2500);

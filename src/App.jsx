@@ -60,6 +60,7 @@ const RouteWrapper = ({ children }) => {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user, isAuthenticated } = useAuth();
   const location = useLocation();
+  const isHome = location.pathname === '/';
 
   // SIGNUP conversion — fires once on first authenticated render of a freshly-created user
   useEffect(() => {
@@ -102,7 +103,7 @@ const AuthenticatedApp = () => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -100, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="route-content min-h-screen overflow-y-auto pt-16 md:pt-0"
+          className={`route-content min-h-screen overflow-y-auto ${isHome ? 'pt-16 md:pt-0' : 'pt-16 md:pt-20'}`}
         >
           <Suspense fallback={<PageLoader />}>
             <Routes>

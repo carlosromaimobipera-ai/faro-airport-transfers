@@ -46,17 +46,17 @@ export default function Navbar() {
           />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-2">
-          <a href="#booking" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+        <div className="hidden md:flex items-center gap-1 lg:gap-2">
+          <a href="#booking" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_book')}
           </a>
-          <Link to="/admin" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+          <Link to="/admin" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_manage')}
           </Link>
-          <Link to="/area-cliente" className={cn("text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+          <Link to="/area-cliente" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_myreservations')}
           </Link>
-          <Link to="/driver" className={cn("flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+          <Link to="/driver" className={cn("flex items-center gap-1 text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             <Car className="w-4 h-4" /> {t(lang, 'nav_drivers')}
           </Link>
           <LanguageSwitcher dark={!scrolled} />
@@ -66,18 +66,18 @@ export default function Navbar() {
               size="sm"
               variant="ghost"
               onClick={() => base44.auth.logout('/')}
-              className={cn("gap-1.5 ml-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
+              className={cn("gap-1.5 ml-1 lg:ml-2 px-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
             >
-              <LogOut className="w-4 h-4" /> {t(lang, 'customer_logout')}
+              <LogOut className="w-4 h-4" /> <span className="hidden xl:inline">{t(lang, 'customer_logout')}</span>
             </Button>
           ) : (
             <Button
               size="sm"
               variant="ghost"
               onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-              className={cn("gap-1.5 ml-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
+              className={cn("gap-1.5 ml-1 lg:ml-2 px-2", scrolled ? "text-foreground" : "text-white/90 hover:text-white hover:bg-white/10")}
             >
-              <LogIn className="w-4 h-4" /> Login
+              <LogIn className="w-4 h-4" /> <span className="hidden xl:inline">Login</span>
             </Button>
           )}
           <a href="#booking">
@@ -87,10 +87,10 @@ export default function Navbar() {
           </a>
         </div>
 
-        <div className="lg:hidden flex items-center gap-1">
+        <div className="md:hidden flex items-center gap-1">
           <CurrencySwitcher />
           <LanguageSwitcher dark={!scrolled} />
-          <button onClick={() => setMenuOpen(!menuOpen)}>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2">
             {menuOpen
               ? <X className={scrolled ? "text-foreground" : "text-white"} />
               : <Menu className={scrolled ? "text-foreground" : "text-white"} />
@@ -100,7 +100,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <div className="lg:hidden bg-background border-t border-border p-4 space-y-3">
+        <div className="md:hidden bg-background border-t border-border p-4 space-y-3">
           <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
           <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>

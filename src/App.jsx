@@ -103,7 +103,7 @@ const AuthenticatedApp = () => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -100, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className={`route-content min-h-screen overflow-y-auto ${isHome ? 'pt-16 md:pt-0' : 'pt-16 md:pt-20'}`}
+          className={`route-content min-h-screen overflow-y-auto ${isHome ? 'pt-20 md:pt-0' : 'pt-20'}`}
         >
           <Suspense fallback={<PageLoader />}>
             <Routes>

@@ -81,9 +81,12 @@ export default function Confirmation() {
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('id');
   const bookingRef = urlParams.get('ref');
+  const returnId = urlParams.get('return_id');
+  const returnRef = urlParams.get('return_ref');
   const { lang } = useLang();
 
   const [booking, setBooking] = useState(null);
+  const [returnBooking, setReturnBooking] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -92,12 +95,17 @@ export default function Confirmation() {
       return;
     }
     // Use public backend function — works for both guests and logged-in users
-    base44.functions.invoke('getBookingPublic', { booking_id: bookingId, booking_ref: bookingRef })
-      .then(res => {
-        setBooking(res.data?.booking || null);
-      })
-      .catch(() => setBooking(null))
-      .finally(() => setIsLoading(false));
+    const fetchOutbound = base44.functions.invoke('getBookingPublic', { booking_id: bookingId, booking_ref: bookingRef })
+      .then(res => setBooking(res.data?.booking || null))
+      .catch(() => setBooking(null));
+
+    const fetchReturn = (returnId && returnRef)
+      ? base44.functions.invoke('getBookingPublic', { booking_id: returnId, booking_ref: returnRef })
+          .then(res => setReturnBooking(res.data?.booking || null))
+          .catch(() => setReturnBooking(null))
+      : Promise.resolve();
+
+    Promise.all([fetchOutbound, fetchReturn]).finally(() => setIsLoading(false));
   }, [bookingId]);
 
   if (isLoading) {
@@ -211,6 +219,51 @@ export default function Confirmation() {
                 </div>
               )}
 
+              {/* Return trip (ida e volta) */}
+              {returnBooking && (
+                <>
+                  <Separator />
+                  <div className="flex items-center gap-2 text-xs font-semibold text-primary bg-primary/5 rounded-lg px-3 py-2">
+                    <ArrowRight className="w-4 h-4" />
+                    {t(lang, 'trip_round_trip')} — {t(lang, 'conf_ref')}: {returnBooking.booking_ref}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-sm font-medium flex-wrap">
+                        <span>{returnBooking.origin}</span>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span>{returnBooking.destination}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{returnBooking.distance_km} km</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {returnBooking.transfer_date && format(new Date(returnBooking.transfer_date), lang === 'pt' ? "d 'de' MMMM 'de' yyyy" : "PPP", { locale: locales[lang] || pt })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{t(lang, 'conf_time_label')}: {returnBooking.transfer_time}</p>
+                    </div>
+                  </div>
+                  {returnBooking.flight_number && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Plane className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{t(lang, 'conf_flight')}: {returnBooking.flight_number}</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
               <Separator />
 
               {/* Price */}
@@ -226,7 +279,7 @@ export default function Confirmation() {
                     {booking.payment_status === 'paid' ? t(lang, 'conf_paid_paypal') : t(lang, 'conf_paid_cash')}
                   </Badge>
                 </div>
-                <p className="text-4xl font-bold text-primary">€{booking.price?.toFixed(2)}</p>
+                <p className="text-4xl font-bold text-primary">€{(returnBooking ? (booking.price || 0) + (returnBooking.price || 0) : booking.price)?.toFixed(2)}</p>
               </div>
 
               {/* Voucher Download */}

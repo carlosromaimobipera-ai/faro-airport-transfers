@@ -173,95 +173,112 @@ export default function BookingForm() {
     }
   };
 
-  const handleCashBooking = async () => {
-    setIsSubmitting(true);
-    setPaymentError('');
+  // Cria 1 reserva (ida) ou 2 reservas separadas (ida + volta) consoante o trip_type.
+  // As reservas de ida e volta ficam ligadas via linked_booking_ref e cada uma gera
+  // o seu próprio evento na agenda quando confirmada.
+  const submitBooking = async (paymentStatus) => {
     const originName = form.origin_place?.address;
     const destName = form.destination_place?.address;
     const originCoords = form.origin_place?.coords;
     const destCoords = form.destination_place?.coords;
-    const bookingRef = generateBookingRef();
-    const booking = await base44.entities.Booking.create({
-      booking_ref: bookingRef,
+    const isRoundTrip = form.trip_type === 'round_trip';
+
+    const outboundRef = generateBookingRef();
+    const returnRef = isRoundTrip ? generateBookingRef() : null;
+
+    const fee = paymentStatus === 'paid' ? CARD_FEE : 0;
+    const outboundPrice = isRoundTrip
+      ? Math.round((basePrice + extrasTotal + fee) * 100) / 100
+      : Math.round((price + fee) * 100) / 100;
+
+    const commonFields = {
       customer_name: form.customer_name,
       customer_email: form.customer_email,
       customer_phone: form.customer_phone,
-      origin: originName,
-      destination: destName,
-      origin_coords: originCoords,
-      destination_coords: destCoords,
       vehicle_type: form.vehicle_type,
       distance_km: distance,
-      price: price,
-      extras: form.extras,
-      extras_price: extrasTotal,
-      transfer_date: form.transfer_date,
-      transfer_time: form.transfer_time,
-      trip_type: form.trip_type,
-      return_date: form.trip_type === 'round_trip' ? form.return_date : '',
-      return_time: form.trip_type === 'round_trip' ? form.return_time : '',
-      flight_number: form.flight_number,
-      return_flight_number: form.return_flight_number || '',
       passengers: form.passengers,
       luggage: form.luggage,
       notes: form.notes,
       status: 'pending',
-      payment_status: 'unpaid',
+      payment_status: paymentStatus,
       language: lang,
+    };
+
+    const outbound = await base44.entities.Booking.create({
+      ...commonFields,
+      booking_ref: outboundRef,
+      origin: originName,
+      destination: destName,
+      origin_coords: originCoords,
+      destination_coords: destCoords,
+      transfer_date: form.transfer_date,
+      transfer_time: form.transfer_time,
+      flight_number: form.flight_number,
+      trip_type: 'one_way',
+      extras: form.extras,
+      extras_price: extrasTotal,
+      price: outboundPrice,
+      linked_booking_ref: returnRef,
     });
+
+    let returnBooking = null;
+    if (isRoundTrip) {
+      returnBooking = await base44.entities.Booking.create({
+        ...commonFields,
+        booking_ref: returnRef,
+        origin: destName,
+        destination: originName,
+        origin_coords: destCoords,
+        destination_coords: originCoords,
+        transfer_date: form.return_date,
+        transfer_time: form.return_time,
+        flight_number: form.return_flight_number || '',
+        trip_type: 'one_way',
+        extras: [],
+        extras_price: 0,
+        price: basePrice,
+        linked_booking_ref: outboundRef,
+      });
+    }
+
+    return { outbound, returnBooking };
+  };
+
+  const navigateToConfirmation = (outbound, returnBooking) => {
+    const params = new URLSearchParams({ id: outbound.id, ref: outbound.booking_ref });
+    if (returnBooking) {
+      params.set('return_id', returnBooking.id);
+      params.set('return_ref', returnBooking.booking_ref);
+    }
+    navigate(`/confirmacao?${params.toString()}`);
+  };
+
+  const handleCashBooking = async () => {
+    setIsSubmitting(true);
+    setPaymentError('');
+    const { outbound, returnBooking } = await submitBooking('unpaid');
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'conversion', {
         send_to: 'AW-18386612747/HgooCODe0OAcEIvktb9E',
       });
     }
-    navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
+    navigateToConfirmation(outbound, returnBooking);
   };
 
   const handlePaymentSuccess = async () => {
     setIsSubmitting(true);
     setPaymentError('');
-    const originName = form.origin_place?.address;
-    const destName = form.destination_place?.address;
-    const originCoords = form.origin_place?.coords;
-    const destCoords = form.destination_place?.coords;
-    const bookingRef = generateBookingRef();
-    const booking = await base44.entities.Booking.create({
-      booking_ref: bookingRef,
-      customer_name: form.customer_name,
-      customer_email: form.customer_email,
-      customer_phone: form.customer_phone,
-      origin: originName,
-      destination: destName,
-      origin_coords: originCoords,
-      destination_coords: destCoords,
-      vehicle_type: form.vehicle_type,
-      distance_km: distance,
-      price: finalPrice,
-      extras: form.extras,
-      extras_price: extrasTotal,
-      transfer_date: form.transfer_date,
-      transfer_time: form.transfer_time,
-      trip_type: form.trip_type,
-      return_date: form.trip_type === 'round_trip' ? form.return_date : '',
-      return_time: form.trip_type === 'round_trip' ? form.return_time : '',
-      flight_number: form.flight_number,
-      return_flight_number: form.return_flight_number || '',
-      passengers: form.passengers,
-      luggage: form.luggage,
-      notes: form.notes,
-      status: 'pending',
-      payment_status: 'paid',
-      language: lang,
-    });
+    const { outbound, returnBooking } = await submitBooking('paid');
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'conversion', {
         send_to: 'AW-18386612747/uWpyCOri0OAcEIvktb9E',
         value: finalPrice,
         currency: 'EUR',
-        transaction_id: booking.id,
+        transaction_id: outbound.id,
       });
     }
-    navigate(`/confirmacao?id=${booking.id}&ref=${bookingRef}`);
+    navigateToConfirmation(outbound, returnBooking);
   };
 
   const steps = [

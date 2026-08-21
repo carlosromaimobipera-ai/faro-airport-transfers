@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Unique booking reference code"
     },
+    "linked_booking_ref": {
+      "type": "string",
+      "description": "Refer\u00eancia da reserva associada (ida e volta ligadas)"
+    },
     "customer_name": {
       "type": "string",
       "description": "Full name of the customer"

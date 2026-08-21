@@ -68,6 +68,7 @@ export default function Admin() {
   const [filterDateFrom, setFilterDateFrom]  = useState('');
   const [filterDateTo,   setFilterDateTo]    = useState('');
   const [search,         setSearch]          = useState('');
+  const [sortOrder,      setSortOrder]       = useState('asc');
   const [detailsBooking, setDetailsBooking]  = useState(null);
 
   useEffect(() => {
@@ -150,6 +151,12 @@ export default function Admin() {
       ) return false;
     }
     return true;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const da = `${a.transfer_date || ''}T${a.transfer_time || '00:00'}`;
+    const db = `${b.transfer_date || ''}T${b.transfer_time || '00:00'}`;
+    return sortOrder === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
   });
 
   const stats = {
@@ -287,6 +294,13 @@ export default function Admin() {
                     <span className="text-muted-foreground text-sm">→</span>
                     <Input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-9 w-36" />
                   </div>
+                  <Select value={sortOrder} onValueChange={setSortOrder}>
+                    <SelectTrigger className="w-56 h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">Data: mais próxima → mais distante</SelectItem>
+                      <SelectItem value="desc">Data: mais recente → mais antiga</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 h-9">
                     <Download className="w-4 h-4" /> Exportar CSV
                   </Button>
@@ -296,7 +310,7 @@ export default function Admin() {
                     </Button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">{filtered.length} reserva(s) encontrada(s)</p>
+                <p className="text-xs text-muted-foreground mt-2">{sorted.length} reserva(s) encontrada(s)</p>
               </CardContent>
             </Card>
 
@@ -305,7 +319,7 @@ export default function Admin() {
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>
-            ) : filtered.length === 0 ? (
+            ) : sorted.length === 0 ? (
               <Card>
                 <div className="text-center py-12 text-muted-foreground">
                   Nenhuma reserva encontrada
@@ -334,7 +348,7 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filtered.map(booking => (
+                        {sorted.map(booking => (
                           <TableRow key={booking.id}>
                             <TableCell className="font-mono text-xs font-bold text-primary">{booking.booking_ref}</TableCell>
                             <TableCell>
@@ -425,7 +439,7 @@ export default function Admin() {
                 {/* Mobile Card List */}
                 <div className="md:hidden">
                   <BookingTableMobile
-                    bookings={filtered}
+                    bookings={sorted}
                     drivers={drivers}
                     unavailabilities={unavailabilities}
                     onStatusChange={(id, status) => updateMutation.mutate({ id, data: { status } })}

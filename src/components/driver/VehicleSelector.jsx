@@ -32,7 +32,7 @@ export default function VehicleSelector({ driver, onUpdated }) {
       onOpenChange={setOpen}
       onValueChange={(v) => { mutation.mutate(v); setOpen(false); }}
     >
-      <SelectTrigger className="h-7 w-auto min-w-[140px] gap-1 border-0 bg-white/15 text-primary-foreground hover:bg-white/25 px-2 py-1 text-xs rounded-lg focus:ring-0">
+      <SelectTrigger className="h-8 w-auto min-w-[150px] gap-1.5 border-0 bg-white text-primary px-2.5 py-1 text-xs font-semibold rounded-lg shadow-sm hover:bg-white/90 focus:ring-2 focus:ring-white/50">
         <Car className="w-3.5 h-3.5 shrink-0" />
         <SelectValue placeholder="Selecionar veículo" />
         <ChevronDown className="w-3 h-3 opacity-70" />

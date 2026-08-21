@@ -135,6 +135,7 @@ export default function Admin() {
     });
   };
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
   const filtered = bookings.filter(b => {
     if (filterStatus  !== 'all' && b.status         !== filterStatus)  return false;
     if (filterPayment !== 'all' && b.payment_status !== filterPayment) return false;
@@ -149,6 +150,9 @@ export default function Admin() {
         !b.origin?.toLowerCase().includes(q) &&
         !b.destination?.toLowerCase().includes(q)
       ) return false;
+    } else if (b.transfer_date && b.transfer_date < todayStr) {
+      // Sem pesquisa: mostrar apenas reservas de hoje em diante
+      return false;
     }
     return true;
   });

@@ -31,7 +31,8 @@
       "enum": [
         "sedan",
         "minivan",
-        "minibus"
+        "minibus",
+        "nenhum"
       ],
       "description": "Tipo de ve\u00edculo que conduz"
     },

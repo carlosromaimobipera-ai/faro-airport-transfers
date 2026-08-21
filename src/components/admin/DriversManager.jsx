@@ -182,6 +182,7 @@ export default function DriversManager() {
                   <SelectItem value="sedan">Sedan</SelectItem>
                   <SelectItem value="minivan">Minivan</SelectItem>
                   <SelectItem value="minibus">Minibus</SelectItem>
+                  <SelectItem value="nenhum">Nenhum</SelectItem>
                 </SelectContent>
               </Select>
             </div>

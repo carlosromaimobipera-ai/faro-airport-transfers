@@ -13,8 +13,7 @@ import { useGpsTracking } from '@/hooks/useGpsTracking';
 import GpsTrackingBadge from '@/components/driver/GpsTrackingBadge';
 import GpsPermissionGate from '@/components/driver/GpsPermissionGate';
 import HistoryTab from '@/components/driver/HistoryTab';
-
-const vehicleLabel = { sedan: 'Sedan', minivan: 'Minivan (VW Caddy Maxi)', minibus: 'Minibus (Mercedes Vito)' };
+import VehicleSelector from '@/components/driver/VehicleSelector';
 
 export default function Driver() {
   const navigate = useNavigate();
@@ -149,10 +148,10 @@ export default function Driver() {
             <div>
               <p className="text-xs text-primary-foreground/60 uppercase tracking-wide">Painel do Motorista</p>
               <h1 className="text-xl font-bold leading-tight">{driver.name}</h1>
-              <p className="text-sm text-primary-foreground/70">
-                {vehicleLabel[driver.vehicle_type] || driver.vehicle_type}
-                {driver.vehicle_plate && <span> · {driver.vehicle_plate}</span>}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <VehicleSelector driver={driver} onUpdated={(vt) => setDriver(d => ({ ...d, vehicle_type: vt }))} />
+                {driver.vehicle_plate && <span className="text-sm text-primary-foreground/70">· {driver.vehicle_plate}</span>}
+              </div>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3">

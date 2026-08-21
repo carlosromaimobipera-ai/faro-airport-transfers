@@ -4,15 +4,21 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, ShieldCheck } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +28,48 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = "/";
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      const msg = err.message || "Invalid email or password";
+      if (/verif|unverified|not verified|email.*verif/i.test(msg)) {
+        setShowOtp(true);
+        setError("Please verify your email before logging in. Check your email for the verification code.");
+        const lang = localStorage.getItem('lang') || 'en';
+        const link = `${window.location.origin}/login?email=${encodeURIComponent(email)}&verify=true`;
+        base44.functions.invoke('sendVerificationLink', { email, link, lang }).catch(() => {});
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e?.preventDefault();
+    setError("");
+    setVerifying(true);
+    try {
+      const result = await base44.auth.verifyOtp({ email, otpCode });
+      if (result?.access_token) {
+        base44.auth.setToken(result.access_token);
+      }
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message || "Invalid verification code");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError("");
+    try {
+      await base44.auth.resendOtp(email);
+      const lang = localStorage.getItem('lang') || 'en';
+      const link = `${window.location.origin}/login?email=${encodeURIComponent(email)}&verify=true`;
+      base44.functions.invoke('sendVerificationLink', { email, link, lang }).catch(() => {});
+      toast({ title: "Code sent", description: "Check your email for the new code." });
+    } catch (err) {
+      setError(err.message || "Failed to resend code");
     }
   };
 
@@ -120,6 +165,54 @@ export default function Login() {
             />
           </div>
         </div>
+
+        {showOtp && (
+          <div className="space-y-2">
+            <Label htmlFor="otp">Email verification code</Label>
+            <InputOTP
+              id="otp"
+              maxLength={6}
+              value={otpCode}
+              onChange={(v) => setOtpCode(v)}
+              className="h-12"
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            <button
+              type="button"
+              onClick={handleResend}
+              className="text-xs text-primary hover:underline"
+            >
+              Resend code
+            </button>
+            <Button
+              type="button"
+              onClick={handleVerify}
+              className="w-full h-12 font-medium"
+              disabled={verifying || otpCode.length < 6}
+            >
+              {verifying ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Verify email & log in
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>

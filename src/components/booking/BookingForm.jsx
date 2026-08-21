@@ -137,6 +137,13 @@ export default function BookingForm() {
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
   const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
+  const CARD_FEE = 3;
+  const finalPrice = useMemo(() =>
+    (paymentMethod === 'card' || paymentMethod === 'paypal')
+      ? Math.round((price + CARD_FEE) * 100) / 100
+      : price,
+    [price, paymentMethod]
+  );
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -229,7 +236,7 @@ export default function BookingForm() {
       destination_coords: destCoords,
       vehicle_type: form.vehicle_type,
       distance_km: distance,
-      price: price,
+      price: finalPrice,
       extras: form.extras,
       extras_price: extrasTotal,
       transfer_date: form.transfer_date,
@@ -249,7 +256,7 @@ export default function BookingForm() {
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'conversion', {
         send_to: 'AW-18386612747/uWpyCOri0OAcEIvktb9E',
-        value: price,
+        value: finalPrice,
         currency: 'EUR',
         transaction_id: booking.id,
       });
@@ -592,9 +599,15 @@ export default function BookingForm() {
                     )}
                   </div>
                   <Separator />
+                  {(paymentMethod === 'card' || paymentMethod === 'paypal') && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{t(lang, 'card_fee_label') || 'Taxa cartão/PayPal'}:</span>
+                      <span className="font-medium text-muted-foreground">+{formatPrice(CARD_FEE)}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold">{t(lang, 'total')}</span>
-                    <span className="text-3xl font-bold text-primary">{formatPrice(price)}</span>
+                    <span className="text-3xl font-bold text-primary">{formatPrice(finalPrice)}</span>
                   </div>
                 </div>
               </motion.div>
@@ -636,7 +649,7 @@ export default function BookingForm() {
 
                 {paymentMethod === 'card' && (
                   <PayPalButton
-                    amount={price}
+                    amount={finalPrice}
                     onSuccess={handlePaymentSuccess}
                     onError={(msg) => setPaymentError(msg)}
                     fundingSource="CARD"
@@ -645,7 +658,7 @@ export default function BookingForm() {
 
                 {paymentMethod === 'paypal' && (
                   <PayPalButton
-                    amount={price}
+                    amount={finalPrice}
                     onSuccess={handlePaymentSuccess}
                     onError={(msg) => setPaymentError(msg)}
                     fundingSource="PAYPAL"

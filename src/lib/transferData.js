@@ -125,9 +125,9 @@ const PRICE_PER_KM = {
 
 // Tarifas mínimas
 const MINIMUM_FARES = {
-  sedan:   15,
-  minivan: 20,
-  minibus: 25,
+  sedan:   25,
+  minivan: 30,
+  minibus: 35,
 };
 
 // Apply dynamic price rules to a base price

@@ -95,6 +95,8 @@ export default function UsersManager() {
     setIsLoading(true);
     try {
       await base44.auth.register({ email: createData.email, password: createData.password });
+        // Enviar o código OTP de 6 dígitos imediatamente para o email do novo utilizador
+        try { await base44.auth.resendOtp(createData.email); } catch (_e) {}
 
         // Promover a admin se selecionado — register() cria sempre como 'user'
         if (createData.role === 'admin') {

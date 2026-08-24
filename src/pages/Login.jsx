@@ -34,6 +34,8 @@ export default function Login() {
         setError("Please verify your email before logging in. Check your email for the verification code.");
         const lang = localStorage.getItem('lang') || 'en';
         const link = `${window.location.origin}/login?email=${encodeURIComponent(email)}&verify=true`;
+        // Enviar o código OTP de 6 dígitos (não apenas o link de verificação)
+        base44.auth.resendOtp(email).catch(() => {});
         base44.functions.invoke('sendVerificationLink', { email, link, lang }).catch(() => {});
       } else {
         setError(msg);

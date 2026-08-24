@@ -137,12 +137,13 @@ export default function BookingForm() {
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
   const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
-  const CARD_FEE = 3;
+  const CARD_FEE_RATE = 0.035;
+  const cardFee = useMemo(() => Math.round(price * CARD_FEE_RATE * 100) / 100, [price]);
   const finalPrice = useMemo(() =>
     (paymentMethod === 'card' || paymentMethod === 'paypal')
-      ? Math.round((price + CARD_FEE) * 100) / 100
+      ? Math.round((price + cardFee) * 100) / 100
       : price,
-    [price, paymentMethod]
+    [price, paymentMethod, cardFee]
   );
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -186,7 +187,7 @@ export default function BookingForm() {
     const outboundRef = generateBookingRef();
     const returnRef = isRoundTrip ? generateBookingRef() : null;
 
-    const fee = paymentStatus === 'paid' ? CARD_FEE : 0;
+    const fee = paymentStatus === 'paid' ? Math.round((isRoundTrip ? (basePrice + extrasTotal) : price) * CARD_FEE_RATE * 100) / 100 : 0;
     const outboundPrice = isRoundTrip
       ? Math.round((basePrice + extrasTotal + fee) * 100) / 100
       : Math.round((price + fee) * 100) / 100;
@@ -619,7 +620,7 @@ export default function BookingForm() {
                   {(paymentMethod === 'card' || paymentMethod === 'paypal') && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">{t(lang, 'card_fee_label') || 'Taxa cartão/PayPal'}:</span>
-                      <span className="font-medium text-muted-foreground">+{formatPrice(CARD_FEE)}</span>
+                      <span className="font-medium text-muted-foreground">+{formatPrice(cardFee)}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">

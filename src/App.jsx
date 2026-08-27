@@ -39,24 +39,6 @@ const PageLoader = () => (
   </div>
 );
 
-const RouteWrapper = ({ children }) => {
-  const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -100, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="route-content min-h-screen overflow-y-auto"
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user, isAuthenticated } = useAuth();
   const location = useLocation();
@@ -99,10 +81,10 @@ const AuthenticatedApp = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ x: 100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -100, opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className={`route-content min-h-screen overflow-y-auto ${isHome ? 'pt-20 md:pt-0' : 'pt-20'}`}
         >
           <Suspense fallback={<PageLoader />}>

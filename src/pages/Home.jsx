@@ -10,25 +10,41 @@ export default function Home() {
   const [blogVisible, setBlogVisible] = useState(false);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://app.trysoro.com/api/embed/fee72956-6b91-40d4-b7f6-41effddffd65';
-    script.defer = true;
-    document.body.appendChild(script);
+    let script;
+    let observer;
+    let idleId;
+    let timeoutId;
 
-    // Only show the blog section if the external script actually populates it
-    const observer = new MutationObserver(() => {
-      if (blogRef.current && blogRef.current.children.length > 0) {
-        setBlogVisible(true);
-        observer.disconnect();
+    const loadScript = () => {
+      script = document.createElement('script');
+      script.src = 'https://app.trysoro.com/api/embed/fee72956-6b91-40d4-b7f6-41effddffd65';
+      script.defer = true;
+      document.body.appendChild(script);
+
+      // Only show the blog section if the external script actually populates it
+      observer = new MutationObserver(() => {
+        if (blogRef.current && blogRef.current.children.length > 0) {
+          setBlogVisible(true);
+          observer.disconnect();
+        }
+      });
+      if (blogRef.current) {
+        observer.observe(blogRef.current, { childList: true, subtree: true });
       }
-    });
-    if (blogRef.current) {
-      observer.observe(blogRef.current, { childList: true, subtree: true });
+    };
+
+    // Defer script loading until the main content is visible
+    if ('requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(loadScript, { timeout: 1000 });
+    } else {
+      timeoutId = setTimeout(loadScript, 200);
     }
 
     return () => {
-      document.body.removeChild(script);
-      observer.disconnect();
+      if (idleId && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      if (observer) observer.disconnect();
     };
   }, []);
 

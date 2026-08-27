@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import DatePicker from './DatePicker.jsx';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
-import RouteMap from './RouteMap';
+const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName } from '@/lib/transferData';
 import { useQuery } from '@tanstack/react-query';
@@ -433,10 +433,12 @@ export default function BookingForm() {
                       duration_minutes={distanceData?.duration_minutes}
                       isLoading={isLoadingDistance}
                     />
-                    <RouteMap 
-                      originCoords={form.origin_place?.coords}
-                      destinationCoords={form.destination_place?.coords}
-                    />
+                    <Suspense fallback={<div className="w-full h-72 md:h-96 rounded-xl bg-muted animate-pulse" />}>
+                      <RouteMap 
+                        originCoords={form.origin_place?.coords}
+                        destinationCoords={form.destination_place?.coords}
+                      />
+                    </Suspense>
                   </>
                 )}
               </motion.div>
@@ -649,7 +651,7 @@ export default function BookingForm() {
                     onClick={() => setPaymentMethod('paypal')}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
                   >
-                    <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" className="h-5 object-contain" />
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" width="64" height="20" loading="lazy" className="h-5 w-16 object-contain" />
                     <span className="text-xs font-medium text-foreground">{t(lang, 'pay_paypal')}</span>
                   </button>
                   <button

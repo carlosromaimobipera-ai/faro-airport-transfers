@@ -39,6 +39,8 @@ export default function ReviewsSection() {
     queryKey: ['reviews-public'],
     queryFn: () => base44.entities.Review.list('-created_date', 12),
     staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const dbWithComments = dbReviews.filter(r => r.comment && r.rating >= 4);

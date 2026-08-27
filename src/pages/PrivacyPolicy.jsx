@@ -33,6 +33,9 @@ export default function PrivacyPolicy() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-8">
+          <p className="text-foreground leading-relaxed font-medium">{t(lang, 'privacy_app_identity')}</p>
+        </div>
         <div className="space-y-8">
           {sections.map(({ titleKey, contentKey }) => (
             <div key={titleKey} className="bg-card border border-border rounded-xl p-6">

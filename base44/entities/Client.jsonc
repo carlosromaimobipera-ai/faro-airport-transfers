@@ -1,0 +1,63 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome completo do cliente"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do cliente"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone do cliente"
+    },
+    "total_bookings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de reservas do cliente"
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total gasto pelo cliente (em euros)"
+    },
+    "last_booking_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da \u00faltima reserva"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas internas sobre o cliente"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

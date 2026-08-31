@@ -26,6 +26,7 @@ import BookingTableMobile from '@/components/admin/BookingTableMobile';
 import UsersManager from '@/components/admin/UsersManager';
 import AdminNotesCell from '@/components/admin/AdminNotesCell';
 import BookingDetailsDialog from '@/components/admin/BookingDetailsDialog';
+import CrmManager from '@/components/admin/CrmManager';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -240,6 +241,9 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="users" className="gap-1.5">
               <Users className="w-4 h-4" /> Utilizadores
+            </TabsTrigger>
+            <TabsTrigger value="crm" className="gap-1.5">
+              <Users className="w-4 h-4" /> CRM
             </TabsTrigger>
             <TabsTrigger value="locations" className="gap-1.5">
               <Navigation className="w-4 h-4" /> Localização
@@ -481,6 +485,11 @@ export default function Admin() {
           {/* ── Utilizadores Tab ── */}
           <TabsContent value="users" className="mt-4">
             <UsersManager />
+          </TabsContent>
+
+          {/* ── CRM Tab ── */}
+          <TabsContent value="crm" className="mt-4">
+            <CrmManager />
           </TabsContent>
         </Tabs>
 

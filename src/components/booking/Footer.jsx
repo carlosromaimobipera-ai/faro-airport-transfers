@@ -3,6 +3,7 @@ import { Plane, Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import StoreBadges from './StoreBadges';
 
 export default function Footer() {
   const { lang } = useLang();
@@ -54,23 +55,11 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Social Media Buttons */}
-        <div className="border-t border-background/10 mt-10 pt-8 flex flex-col items-center gap-4">
+        {/* App Store / Google Play badges */}
+        <div className="border-t border-background/10 mt-10 pt-8 flex flex-col items-center gap-6">
+          <StoreBadges />
           <p className="text-sm text-background/50">{t(lang, 'social_follow')}</p>
           <div className="flex flex-wrap justify-center gap-3">
-            {/* Google Play Store */}
-            <a
-              href="https://play.google.com/store/apps/details?id=com.base69f9fe03f147edc32575e815.app&pcampaignid=web_share"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white bg-black transition-opacity hover:opacity-80"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 512 512" fill="currentColor">
-                <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm424.7 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l220.7-221.3 60.1 60.1-280.8 161.2z"/>
-              </svg>
-              Google Play
-            </a>
-
             {/* Instagram */}
             <a
               href="https://www.instagram.com/algarvestar/"

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users, FileText } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users, FileText, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
@@ -27,6 +27,7 @@ import UsersManager from '@/components/admin/UsersManager';
 import AdminNotesCell from '@/components/admin/AdminNotesCell';
 import BookingDetailsDialog from '@/components/admin/BookingDetailsDialog';
 import CrmManager from '@/components/admin/CrmManager';
+import CreateBookingDialog from '@/components/admin/CreateBookingDialog';
 
 const statusConfig = {
   pending:     { label: "Pendente",   color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -71,6 +72,7 @@ export default function Admin() {
   const [search,         setSearch]          = useState('');
   const [sortOrder,      setSortOrder]       = useState('asc');
   const [detailsBooking, setDetailsBooking]  = useState(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -263,6 +265,13 @@ export default function Admin() {
 
           {/* ── Reservas Tab ── */}
           <TabsContent value="bookings" className="space-y-4 mt-4">
+
+            {/* Create Booking Button */}
+            <div className="flex justify-end">
+              <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                <Plus className="w-4 h-4" /> Nova Reserva
+              </Button>
+            </div>
 
             {/* Filters */}
             <Card>
@@ -517,6 +526,13 @@ export default function Admin() {
         open={!!detailsBooking}
         onOpenChange={(open) => { if (!open) setDetailsBooking(null); }}
         onPaymentChange={(payment_status) => updateMutation.mutate({ id: detailsBooking?.id, data: { payment_status } })}
+      />
+
+      {/* Create booking dialog */}
+      <CreateBookingDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: ['bookings-admin'] })}
       />
     </div>
   );

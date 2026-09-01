@@ -196,6 +196,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
+    // Marketing KPI: Reservas semanais
+    try {
+      await base44.analytics.track({ eventName: 'booking_created' });
+    } catch (trackErr) {
+      console.error('analytics.track booking_created failed:', trackErr?.message || trackErr);
+    }
+
     const lang = booking.language || 'pt';
     const langText = langTexts[lang] || langTexts['pt'];
 

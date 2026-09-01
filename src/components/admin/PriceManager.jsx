@@ -14,6 +14,7 @@ import PriceRulesManager from '@/components/admin/PriceRulesManager';
 
 const DEFAULT_VEHICLE_PRICES = {
   sedan: 1.00,
+  premium: 1.15,
   minivan: 1.20,
   minibus: 1.40,
 };
@@ -149,7 +150,7 @@ export default function PriceManager() {
             {vehicleTypes.map(v => {
               const current = vehiclePrices[v.id];
               const editing = editingVehicle[v.id];
-              const displayVal = editing !== undefined ? editing : current.toFixed(2);
+              const displayVal = editing !== undefined ? editing : (current ?? 0).toFixed(2);
               const isDirty = editing !== undefined && parseFloat(editing) !== current;
               return (
                 <div key={v.id} className="border rounded-xl p-4 space-y-3">

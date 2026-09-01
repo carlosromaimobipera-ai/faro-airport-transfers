@@ -20,7 +20,7 @@ const paymentConfig = {
   refunded: { label: "Reembolsado", color: "bg-gray-100 text-gray-800" },
 };
 
-export default function BookingTableMobile({ bookings, drivers, unavailabilities, onStatusChange, onAssignDriver, onViewDetails }) {
+export default function BookingTableMobile({ bookings, drivers, unavailabilities, onStatusChange, onPaymentChange, onAssignDriver, onViewDetails }) {
   const isDriverAvailable = (driverId, transferDate) => {
     if (!transferDate) return true;
     return !unavailabilities.some(u =>
@@ -88,9 +88,19 @@ export default function BookingTableMobile({ bookings, drivers, unavailabilities
             </div>
 
             {/* Payment Status */}
-            <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
-              {paymentConfig[booking.payment_status]?.label}
-            </Badge>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground">Pagamento</label>
+              <MobileSelectDrawer
+                value={booking.payment_status}
+                onSelect={val => onPaymentChange(booking.id, val)}
+                options={[
+                  { value: 'unpaid', label: 'Não pago' },
+                  { value: 'paid', label: 'Pago' },
+                  { value: 'refunded', label: 'Reembolsado' },
+                ]}
+                trigger={<div className="hidden" />}
+              />
+            </div>
 
             {/* Driver Assignment */}
             <div className="space-y-2">

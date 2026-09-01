@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Download, Loader2, MapPin, Calendar, Clock, Car, Euro, Users, Luggage, Phone, Mail, User, Plane, StickyNote, FileText, CheckCircle2, XCircle } from 'lucide-react';
+import { Download, Loader2, MapPin, Calendar, Clock, Car, Euro, Users, Luggage, Phone, Mail, User, Plane, StickyNote, FileText, CheckCircle2, XCircle, CreditCard } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { format } from 'date-fns';
@@ -38,7 +39,7 @@ function Field({ icon: Icon, label, value }) {
   );
 }
 
-export default function BookingDetailsDialog({ booking, open, onOpenChange }) {
+export default function BookingDetailsDialog({ booking, open, onOpenChange, onPaymentChange }) {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
 
@@ -146,9 +147,31 @@ export default function BookingDetailsDialog({ booking, open, onOpenChange }) {
                   <Field icon={FileText} label="Extras" value={`€${booking.extras_price.toFixed(2)}`} />
                 )}
               </div>
-              <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
-                {paymentConfig[booking.payment_status]?.label}
-              </Badge>
+              {onPaymentChange ? (
+                <div className="flex flex-col items-end gap-1.5">
+                  <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
+                    {paymentConfig[booking.payment_status]?.label}
+                  </Badge>
+                  <Select
+                    value={booking.payment_status}
+                    onValueChange={onPaymentChange}
+                  >
+                    <SelectTrigger className="h-8 w-36 text-xs gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">Não pago</SelectItem>
+                      <SelectItem value="paid">Pago</SelectItem>
+                      <SelectItem value="refunded">Reembolsado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <Badge variant="outline" className={paymentConfig[booking.payment_status]?.color}>
+                  {paymentConfig[booking.payment_status]?.label}
+                </Badge>
+              )}
             </div>
           </div>
 

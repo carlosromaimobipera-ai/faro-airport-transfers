@@ -352,6 +352,7 @@ export default function Admin() {
                           <TableHead>Motorista</TableHead>
                           <TableHead>Notas internas</TableHead>
                           <TableHead>Alterar estado</TableHead>
+                          <TableHead>Alterar pagamento</TableHead>
                           <TableHead>Detalhes</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -428,6 +429,20 @@ export default function Admin() {
                               </Select>
                             </TableCell>
                             <TableCell>
+                              <Select
+                                value={booking.payment_status}
+                                onValueChange={val => updateMutation.mutate({ id: booking.id, data: { payment_status: val } })}
+                                disabled={updateMutation.isPending}
+                              >
+                                <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unpaid">Não pago</SelectItem>
+                                  <SelectItem value="paid">Pago</SelectItem>
+                                  <SelectItem value="refunded">Reembolsado</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -451,6 +466,7 @@ export default function Admin() {
                     drivers={drivers}
                     unavailabilities={unavailabilities}
                     onStatusChange={(id, status) => updateMutation.mutate({ id, data: { status } })}
+                    onPaymentChange={(id, payment_status) => updateMutation.mutate({ id, data: { payment_status } })}
                     onAssignDriver={assignDriver}
                     onViewDetails={setDetailsBooking}
                   />
@@ -500,6 +516,7 @@ export default function Admin() {
         booking={detailsBooking}
         open={!!detailsBooking}
         onOpenChange={(open) => { if (!open) setDetailsBooking(null); }}
+        onPaymentChange={(payment_status) => updateMutation.mutate({ id: detailsBooking?.id, data: { payment_status } })}
       />
     </div>
   );

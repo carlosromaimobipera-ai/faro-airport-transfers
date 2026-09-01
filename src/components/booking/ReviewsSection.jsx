@@ -30,7 +30,7 @@ function formatDate(dateStr) {
   try { return format(new Date(dateStr + 'T00:00:00'), 'MMM yyyy'); } catch { return dateStr; }
 }
 
-export default function ReviewsSection() {
+export default function ReviewsSection({ routeFilter = '' }) {
   const { lang } = useLang();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -44,7 +44,14 @@ export default function ReviewsSection() {
   });
 
   const dbWithComments = dbReviews.filter(r => r.comment && r.rating >= 4);
-  const reviews = dbWithComments.length >= 3 ? dbWithComments : STATIC_REVIEWS;
+  let reviews = dbWithComments.length >= 3 ? dbWithComments : STATIC_REVIEWS;
+
+  if (routeFilter) {
+    const filtered = reviews.filter(r =>
+      r.route && r.route.toLowerCase().includes(routeFilter.toLowerCase())
+    );
+    if (filtered.length >= 1) reviews = filtered;
+  }
 
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)

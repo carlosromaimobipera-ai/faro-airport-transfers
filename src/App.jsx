@@ -32,6 +32,9 @@ const CustomerArea = lazy(() => import('@/pages/CustomerArea'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+const TransferFaro = lazy(() => import('@/pages/TransferFaro'));
+const TransferLisbon = lazy(() => import('@/pages/TransferLisbon'));
+const TransferSeville = lazy(() => import('@/pages/TransferSeville'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -104,6 +107,11 @@ const AuthenticatedApp = () => {
               <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
               <Route path="/eliminar-conta" element={<DeleteAccount />} />
               <Route path="/termos-de-servico" element={<TermsOfService />} />
+
+              {/* SEO landing pages */}
+              <Route path="/transfers/faro" element={<TransferFaro />} />
+              <Route path="/transfers/lisbon" element={<TransferLisbon />} />
+              <Route path="/transfers/seville" element={<TransferSeville />} />
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>

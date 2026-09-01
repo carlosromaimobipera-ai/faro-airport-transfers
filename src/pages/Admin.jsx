@@ -526,6 +526,7 @@ export default function Admin() {
         open={!!detailsBooking}
         onOpenChange={(open) => { if (!open) setDetailsBooking(null); }}
         onPaymentChange={(payment_status) => updateMutation.mutate({ id: detailsBooking?.id, data: { payment_status } })}
+        onUpdate={(data) => updateMutation.mutate({ id: detailsBooking?.id, data })}
       />
 
       {/* Create booking dialog */}

@@ -31,7 +31,7 @@ export const locations = COMMON_LOCATIONS;
 // Define allowed regions
 const REGIONS = {
   FARO_MUNICIPALITY: { name: 'Faro (Município)', bounds: { lat: [36.94, 37.06], lng: [-8.63, -7.99] } },
-  ALGARVE: { name: 'Algarve', bounds: { lat: [36.8, 37.3], lng: [-8.7, -7.8] } },
+  ALGARVE: { name: 'Algarve', bounds: { lat: [36.8, 37.3], lng: [-9.0, -7.8] } },
   PORTUGAL: { name: 'Portugal', bounds: { lat: [36.8, 42.2], lng: [-9.6, -6.1] } },
   SEVILLE: { name: 'Sevilha', bounds: { lat: [37.2, 37.5], lng: [-6.1, -5.8] } },
   SPAIN: { name: 'Espanha', bounds: { lat: [35.9, 43.8], lng: [-9.4, 4.4] } },

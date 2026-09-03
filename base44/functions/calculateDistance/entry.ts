@@ -1,99 +1,70 @@
-function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.44";
+import { waitUntil } from "base44:runtime";
+import { buildLookupKey, fetchRealRoute, haversineFallback, roundCoord } from "../../shared/routing.ts";
 
-Deno.serve(async (req) => {
+export default async function(req: Request): Promise<Response> {
   try {
     const { origin_lat, origin_lng, destination_lat, destination_lng } = await req.json();
 
     if (!origin_lat || !origin_lng || !destination_lat || !destination_lng) {
-      return Response.json({ error: 'Missing coordinates' }, { status: 400 });
+      return Response.json({ error: "Missing coordinates" }, { status: 400 });
     }
 
-    // Primary: OSRM (free, no key, real road routing)
-    try {
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origin_lng},${origin_lat};${destination_lng},${destination_lat}?overview=false`;
-      const osrmRes = await fetch(osrmUrl, { signal: AbortSignal.timeout(8000) });
-      const osrmData = await osrmRes.json();
+    const base44 = createClientFromRequest(req);
+    const lookup_key = buildLookupKey(origin_lat, origin_lng, destination_lat, destination_lng);
 
-      if (osrmData.code === 'Ok' && osrmData.routes?.length > 0) {
-        const route = osrmData.routes[0];
-        const distance_km = Math.round((route.distance / 1000) * 100) / 100;
-        const duration_minutes = Math.ceil(route.duration / 60);
-        console.log('OSRM success, distance:', distance_km, 'km');
+    // 1) Cache lookup — instant if found
+    try {
+      const cached = await base44.asServiceRole.entities.RouteDistance.filter({ lookup_key }, undefined, 1);
+      if (cached && cached.length > 0) {
+        const c = cached[0];
         return Response.json({
-          distance_km,
-          duration_minutes,
-          distance_text: `${distance_km} km`,
-          duration_text: `${duration_minutes} min`,
-          source: 'osrm',
+          distance_km: c.distance_km,
+          duration_minutes: c.duration_minutes,
+          distance_text: `${c.distance_km} km`,
+          duration_text: `${c.duration_minutes} min`,
+          source: "cache",
         });
       }
     } catch (e) {
-      console.log('OSRM error:', e.message);
+      console.log("Cache lookup error:", e.message);
     }
 
-    // Secondary: Google Routes API (needs Routes API enabled)
-    const mapsKey = Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
-    if (mapsKey) {
-      try {
-        const routesRes = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': mapsKey,
-            'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration',
-          },
-          body: JSON.stringify({
-            origin: { location: { latLng: { latitude: origin_lat, longitude: origin_lng } } },
-            destination: { location: { latLng: { latitude: destination_lat, longitude: destination_lng } } },
-            travelMode: 'DRIVE',
-            routingPreference: 'TRAFFIC_UNAWARE',
-          }),
-          signal: AbortSignal.timeout(8000),
-        });
-        const routesData = await routesRes.json();
-        console.log('Routes API status:', routesRes.status, 'error:', routesData.error?.message);
-
-        if (routesData.routes?.length > 0) {
-          const route = routesData.routes[0];
-          const distance_km = Math.round((route.distanceMeters / 1000) * 100) / 100;
-          const duration_minutes = Math.ceil(parseInt(route.duration) / 60);
-          console.log('Routes API success, distance:', distance_km, 'km');
-          return Response.json({
-            distance_km,
-            duration_minutes,
-            distance_text: `${distance_km} km`,
-            duration_text: `${duration_minutes} min`,
-            source: 'google',
-          });
-        }
-      } catch (e) {
-        console.log('Routes API error:', e.message);
-      }
+    // 2) Real routing — OSRM then Google
+    const real = await fetchRealRoute(origin_lat, origin_lng, destination_lat, destination_lng);
+    if (real) {
+      // Store in cache for future calls (fire-and-forget)
+      waitUntil(
+        base44.asServiceRole.entities.RouteDistance.create({
+          lookup_key,
+          origin_lat: roundCoord(origin_lat),
+          origin_lng: roundCoord(origin_lng),
+          destination_lat: roundCoord(destination_lat),
+          destination_lng: roundCoord(destination_lng),
+          distance_km: real.distance_km,
+          duration_minutes: real.duration_minutes,
+          source: real.source,
+        }).catch((e) => console.log("Cache store error:", e.message))
+      );
+      return Response.json({
+        distance_km: real.distance_km,
+        duration_minutes: real.duration_minutes,
+        distance_text: `${real.distance_km} km`,
+        duration_text: `${real.duration_minutes} min`,
+        source: real.source,
+      });
     }
 
-    // Final fallback: Haversine (straight line * 1.35)
-    console.log('Using Haversine fallback');
-    const straight_km = haversineKm(origin_lat, origin_lng, destination_lat, destination_lng);
-    const distance_km = Math.round(straight_km * 1.35 * 100) / 100;
-    const duration_minutes = Math.ceil((distance_km / 80) * 60);
-
+    // 3) Haversine fallback — not cached (approximate)
+    const fallback = haversineFallback(origin_lat, origin_lng, destination_lat, destination_lng);
     return Response.json({
-      distance_km,
-      duration_minutes,
-      distance_text: `${distance_km} km`,
-      duration_text: `${duration_minutes} min`,
-      source: 'haversine',
+      distance_km: fallback.distance_km,
+      duration_minutes: fallback.duration_minutes,
+      distance_text: `${fallback.distance_km} km`,
+      duration_text: `${fallback.duration_minutes} min`,
+      source: "haversine",
     });
-
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}

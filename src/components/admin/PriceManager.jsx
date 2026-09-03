@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Euro, Route, Save, RotateCcw, Zap } from 'lucide-react';
+import { Euro, Route, Save, RotateCcw, Zap, DatabaseZap } from 'lucide-react';
 import { vehicleTypes, routeDistances, locations } from '@/lib/transferData';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
@@ -29,6 +29,7 @@ export default function PriceManager() {
   const [editingVehicle, setEditingVehicle] = useState({});
   const [editingRoute, setEditingRoute] = useState({});
   const [routeSearch, setRouteSearch] = useState('');
+  const [precomputeStatus, setPrecomputeStatus] = useState(null);
 
   const { data: configs = [] } = useQuery({
     queryKey: ['price-configs'],
@@ -125,6 +126,16 @@ export default function PriceManager() {
     }
   };
 
+  const precomputeDistances = async () => {
+    setPrecomputeStatus({ loading: true });
+    try {
+      const res = await base44.functions.invoke('precomputeRouteDistances', {});
+      setPrecomputeStatus({ loading: false, result: res.data });
+    } catch (e) {
+      setPrecomputeStatus({ loading: false, error: e.message });
+    }
+  };
+
   return (
     <Tabs defaultValue="base">
       <TabsList className="mb-4">
@@ -191,13 +202,36 @@ export default function PriceManager() {
             <CardTitle className="text-base flex items-center gap-2">
               <Route className="w-4 h-4 text-primary" /> {t(lang, 'price_route_distances')}
             </CardTitle>
-            <Input
-              placeholder={t(lang, 'price_search_route')}
-              value={routeSearch}
-              onChange={e => setRouteSearch(e.target.value)}
-              className="h-8 w-52 text-sm"
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5"
+                onClick={precomputeDistances}
+                disabled={precomputeStatus?.loading}
+              >
+                {precomputeStatus?.loading ? (
+                  <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                ) : (
+                  <DatabaseZap className="w-3.5 h-3.5" />
+                )}
+                Pré-calcular distâncias
+              </Button>
+              <Input
+                placeholder={t(lang, 'price_search_route')}
+                value={routeSearch}
+                onChange={e => setRouteSearch(e.target.value)}
+                className="h-8 w-52 text-sm"
+              />
+            </div>
           </div>
+          {precomputeStatus && !precomputeStatus.loading && (
+            <div className={`text-xs mt-2 ${precomputeStatus.error ? 'text-destructive' : 'text-green-600'}`}>
+              {precomputeStatus.error
+                ? `Erro: ${precomputeStatus.error}`
+                : `Pré-cálculo concluído: ${precomputeStatus.result?.computed || 0} calculadas, ${precomputeStatus.result?.cached || 0} já em cache, ${precomputeStatus.result?.failed || 0} falharam.`}
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[500px] overflow-y-auto divide-y">

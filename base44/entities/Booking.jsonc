@@ -195,6 +195,11 @@
       ],
       "default": "pt",
       "description": "Idioma selecionado na reserva"
+    },
+    "review_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o pedido de avalia\u00e7\u00e3o Google j\u00e1 foi enviado automaticamente"
     }
   },
   "required": [

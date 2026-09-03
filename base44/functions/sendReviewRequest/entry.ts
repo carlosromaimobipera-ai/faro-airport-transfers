@@ -22,12 +22,13 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('x-internal-secret');
     const base44 = createClientFromRequest(req);
-    if (!INTERNAL_SECRET || authHeader !== INTERNAL_SECRET) {
+    const payload = await req.json();
+    const { data: booking, internal_secret } = payload;
+    const authed = (INTERNAL_SECRET && authHeader === INTERNAL_SECRET) || (INTERNAL_SECRET && internal_secret === INTERNAL_SECRET);
+    if (!authed) {
       const user = await base44.auth.me().catch(() => null);
       if (user?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-    const payload = await req.json();
-    const { data: booking } = payload;
 
     if (!booking?.customer_email || !booking?.id) return Response.json({ skipped: 'invalid payload' });
     if (booking.status !== 'completed') return Response.json({ skipped: 'booking not completed' });

@@ -1,0 +1,44 @@
+{
+  "name": "Lembrete Motorista \u2014 1h antes da recolha",
+  "description": "Verifica a cada 5 minutos se h\u00e1 reservas com recolha daqui a ~1 hora e envia email de lembrete ao motorista atribu\u00eddo.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-05-09T01:07:26.112000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lembrete_motorista_1h_antes_da_recolha",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendDriverReminder",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "sendDriverReminder"
+  }
+}

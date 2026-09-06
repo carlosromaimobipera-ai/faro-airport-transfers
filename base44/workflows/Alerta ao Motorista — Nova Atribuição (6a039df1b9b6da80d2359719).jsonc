@@ -1,0 +1,37 @@
+{
+  "name": "Alerta ao Motorista \u2014 Nova Atribui\u00e7\u00e3o (6a039df1b9b6da80d2359719)",
+  "description": "Envia email ao motorista quando \u00e9 atribu\u00eddo a uma reserva.",
+  "trigger": {
+    "condition": "${ ((.trigger.changed_fields | index(\"driver_id\") != null) and (.trigger.data.driver_id != null)) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "Booking"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "alerta_ao_motorista_nova_atribui_o_6a039df1b9b6da80d2359719",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyDriverAssigned",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "notifyDriverAssigned"
+  }
+}

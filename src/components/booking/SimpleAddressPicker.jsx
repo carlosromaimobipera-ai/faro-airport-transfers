@@ -4,21 +4,35 @@ import { MapPin, CheckCircle2, Loader2, X, Search } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+// Build a readable address string from a Photon GeoJSON feature properties
+function photonAddress(props) {
+  if (!props) return '';
+  const parts = [];
+  if (props.name && props.street && props.name !== props.street) {
+    // name is often a venue/POI name
+    parts.push(props.name);
+  }
+  const street = [props.street, props.housenumber].filter(Boolean).join(' ');
+  if (street) parts.push(street);
+  const city = [props.postcode, props.city].filter(Boolean).join(' ');
+  if (city) parts.push(city);
+  if (props.country) parts.push(props.country);
+  return parts.join(', ');
+}
 
-// Load Google Maps JS SDK (places library) once, cached on window
-function loadGoogleMaps() {
-  if (window.google?.maps?.places) return Promise.resolve();
-  if (window._googleMapsLoading) return window._googleMapsLoading;
-  window._googleMapsLoading = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&language=pt`;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Google Maps'));
-    document.head.appendChild(script);
+// Fetch autocomplete suggestions from Photon (free, no API key, CORS-enabled)
+async function fetchPhoton(input) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(input)}&limit=5`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Photon request failed');
+  const data = await res.json();
+  return (data.features || []).map((f) => {
+    const [lng, lat] = f.geometry.coordinates;
+    return {
+      address: photonAddress(f.properties) || input,
+      coords: { lat, lng },
+    };
   });
-  return window._googleMapsLoading;
 }
 
 const COMMON_LOCATIONS_BASE = [
@@ -42,7 +56,6 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const debounceTimer = useRef(null);
-  const placesServiceRef = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
@@ -59,40 +72,20 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     if (!value) setInputValue('');
   }, [value]);
 
-  // Fetch predictions from Google Maps JS SDK (client-side)
+  // Fetch predictions from Photon (free, no API key, CORS-enabled)
   const fetchPredictions = useCallback(async (input) => {
-    if (!input || input.length < 1 || !GOOGLE_API_KEY) {
+    if (!input || input.length < 2) {
       setPredictions([]);
       setLoading(false);
       return;
     }
 
     try {
-      await loadGoogleMaps();
-      const service = new window.google.maps.places.AutocompleteService();
-      service.getPlacePredictions(
-        {
-          input,
-          componentRestrictions: { country: ['pt', 'es'] },
-          types: ['geocode', 'establishment'],
-        },
-        (results, status) => {
-          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !results) {
-            setPredictions([]);
-            setLoading(false);
-            return;
-          }
-          setPredictions(
-            results.slice(0, 5).map((p) => ({
-              placeId: p.place_id,
-              address: p.description,
-            }))
-          );
-          setLoading(false);
-        }
-      );
+      const results = await fetchPhoton(input);
+      setPredictions(results.slice(0, 5));
     } catch {
       setPredictions([]);
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -130,37 +123,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   const handleSelectPrediction = (prediction) => {
     setInputValue(prediction.address);
-    setLoading(true);
-    loadGoogleMaps()
-      .then(() => {
-        if (!placesServiceRef.current) {
-          placesServiceRef.current = new window.google.maps.places.PlacesService(
-            document.createElement('div')
-          );
-        }
-        placesServiceRef.current.getDetails(
-          { placeId: prediction.placeId, fields: ['name', 'formatted_address', 'geometry'] },
-          (place, status) => {
-            setLoading(false);
-            if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place?.geometry) {
-              onChange({ address: prediction.address, coords: null });
-              setPredictions([]);
-              setShowDropdown(false);
-              return;
-            }
-            const address = place.formatted_address || place.name || prediction.address;
-            onChange({ address, coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } });
-            setPredictions([]);
-            setShowDropdown(false);
-          }
-        );
-      })
-      .catch(() => {
-        setLoading(false);
-        onChange({ address: prediction.address, coords: null });
-        setPredictions([]);
-        setShowDropdown(false);
-      });
+    onChange({ address: prediction.address, coords: prediction.coords });
+    setPredictions([]);
+    setShowDropdown(false);
   };
 
   const handleSelectCommon = (location) => {

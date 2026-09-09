@@ -49,22 +49,34 @@ const AuthenticatedApp = () => {
 
   // SIGNUP conversion — fires once on first authenticated render of a freshly-created user
   useEffect(() => {
-    if (!isAuthenticated || !user?.id || !user?.created_date) return;
-    const storageKey = `gads_signup_${user.id}`;
-    if (localStorage.getItem(storageKey)) return;
-    const created = new Date(user.created_date).getTime();
-    if (isNaN(created) || Date.now() - created > 2 * 60 * 1000) {
-      localStorage.setItem(storageKey, '1');
-      return;
-    }
-    localStorage.setItem(storageKey, '1');
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (typeof window === 'undefined' || !user || !user.id) return;
+    // brand-new signup, not a returning login: created_date within the
+    // delayed OTP/resend window (Google/social signups are near-instant)
+    const createdDate = String(user.created_date || '');
+    const createdDateUtc = /(?:Z|[+-]\d{2}:?\d{2})$/.test(createdDate)
+        ? createdDate
+        : createdDate + 'Z';
+    const createdAtMs = Date.parse(createdDateUtc);
+    const isNewSignup = Number.isFinite(createdAtMs) &&
+        Date.now() - createdAtMs < 24 * 60 * 60 * 1000;
+    const key = '_aw_signup_fired_AW-18386612747/yRwfCN204eAcEIvktb9E_' + user.id;
+    if (!isNewSignup || localStorage.getItem(key)) return;
+    // gtag may not exist yet (Layout's bootstrap effect runs after this
+    // child effect), so retry briefly rather than skipping for good
+    let tries = 0;
+    const fire = () => {
+      if (!window.gtag) { if (tries++ < 20) setTimeout(fire, 250); return; }
+      // re-check inside the callback: a remount can start a second
+      // retry loop that also passed the guard before gtag existed
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
       window.gtag('event', 'conversion', {
         send_to: 'AW-18386612747/yRwfCN204eAcEIvktb9E',
         transaction_id: user.id,
       });
-    }
-  }, [isAuthenticated, user]);
+    };
+    fire();
+  }, [user]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (

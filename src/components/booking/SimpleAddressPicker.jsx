@@ -3,7 +3,23 @@ import { Label } from "@/components/ui/label";
 import { MapPin, CheckCircle2, Loader2, X, Search } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
-import { base44 } from '@/api/base44Client';
+
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+
+// Load Google Maps JS SDK (places library) once, cached on window
+function loadGoogleMaps() {
+  if (window.google?.maps?.places) return Promise.resolve();
+  if (window._googleMapsLoading) return window._googleMapsLoading;
+  window._googleMapsLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&language=pt`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Google Maps'));
+    document.head.appendChild(script);
+  });
+  return window._googleMapsLoading;
+}
 
 const COMMON_LOCATIONS_BASE = [
   { nameKey: 'common_location_airport',        icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
@@ -26,7 +42,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const debounceTimer = useRef(null);
-  const abortRef = useRef(null);
+  const placesServiceRef = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
     ...loc,
@@ -43,17 +59,40 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     if (!value) setInputValue('');
   }, [value]);
 
-  // Fetch predictions from backend
+  // Fetch predictions from Google Maps JS SDK (client-side)
   const fetchPredictions = useCallback(async (input) => {
-    if (!input || input.length < 1) { setPredictions([]); setLoading(false); return; }
+    if (!input || input.length < 1 || !GOOGLE_API_KEY) {
+      setPredictions([]);
+      setLoading(false);
+      return;
+    }
 
-    setLoading(true);
     try {
-      const res = await base44.functions.invoke('getPlacePredictions', { input });
-      setPredictions(res.data?.suggestions || []);
+      await loadGoogleMaps();
+      const service = new window.google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input,
+          componentRestrictions: { country: ['pt', 'es'] },
+          types: ['geocode', 'establishment'],
+        },
+        (results, status) => {
+          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !results) {
+            setPredictions([]);
+            setLoading(false);
+            return;
+          }
+          setPredictions(
+            results.slice(0, 5).map((p) => ({
+              placeId: p.place_id,
+              address: p.description,
+            }))
+          );
+          setLoading(false);
+        }
+      );
     } catch {
       setPredictions([]);
-    } finally {
       setLoading(false);
     }
   }, []);
@@ -91,9 +130,37 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   const handleSelectPrediction = (prediction) => {
     setInputValue(prediction.address);
-    onChange({ address: prediction.address, coords: prediction.coords });
-    setPredictions([]);
-    setShowDropdown(false);
+    setLoading(true);
+    loadGoogleMaps()
+      .then(() => {
+        if (!placesServiceRef.current) {
+          placesServiceRef.current = new window.google.maps.places.PlacesService(
+            document.createElement('div')
+          );
+        }
+        placesServiceRef.current.getDetails(
+          { placeId: prediction.placeId, fields: ['name', 'formatted_address', 'geometry'] },
+          (place, status) => {
+            setLoading(false);
+            if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place?.geometry) {
+              onChange({ address: prediction.address, coords: null });
+              setPredictions([]);
+              setShowDropdown(false);
+              return;
+            }
+            const address = place.formatted_address || place.name || prediction.address;
+            onChange({ address, coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } });
+            setPredictions([]);
+            setShowDropdown(false);
+          }
+        );
+      })
+      .catch(() => {
+        setLoading(false);
+        onChange({ address: prediction.address, coords: null });
+        setPredictions([]);
+        setShowDropdown(false);
+      });
   };
 
   const handleSelectCommon = (location) => {
@@ -167,7 +234,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 {predictions.map((pred, i) => (
                   <button
                     key={i}
-                    onMouseDown={() => handleSelectPrediction(pred)}
+                    onMouseDown={(e) => { e.preventDefault(); handleSelectPrediction(pred); }}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-start gap-2 min-h-0"
                   >
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
@@ -186,7 +253,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 {filteredCommon.map((location) => (
                   <button
                     key={location.nameKey}
-                    onMouseDown={() => handleSelectCommon(location)}
+                    onMouseDown={(e) => { e.preventDefault(); handleSelectCommon(location); }}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-center gap-2 min-h-0"
                   >
                     <span className="truncate">{location.name}</span>

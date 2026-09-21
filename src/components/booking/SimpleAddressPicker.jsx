@@ -3,29 +3,11 @@ import { Label } from "@/components/ui/label";
 import { MapPin, CheckCircle2, Loader2, X, Search } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
+import { appParams } from '@/lib/app-params';
 
-const GOOGLE_PLACES_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-
-// Loads Google Maps JS SDK once (shared across all pickers)
-function loadGoogleMaps() {
-  if (window.google?.maps?.places) return Promise.resolve();
-  if (window._googleMapsLoading) return window._googleMapsLoading;
-  window._googleMapsLoading = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_KEY}&libraries=places&v=weekly`;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Google Maps'));
-    document.head.appendChild(script);
-  });
-  return window._googleMapsLoading;
-}
-
-// --- LocalStorage cache for Google Places (predictions + resolved details) ---
-const PLACE_CACHE_PREFIX = 'gmaps_place_';
+// --- LocalStorage cache for backend predictions ---
 const PRED_CACHE_PREFIX = 'gmaps_pred_';
-const PLACE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
-const PRED_TTL  = 7  * 24 * 60 * 60 * 1000; // 7 days
+const PRED_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 function readCache(key, ttl) {
   try {
@@ -67,7 +49,6 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const { lang } = useLang();
   const inputRef = useRef(null);
   const containerRef = useRef(null);
-  const attributionsRef = useRef(null);
   const debounceTimer = useRef(null);
 
   const COMMON_LOCATIONS = COMMON_LOCATIONS_BASE.map(loc => ({
@@ -79,31 +60,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [showDropdown, setShowDropdown] = useState(false);
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [resolving, setResolving] = useState(false);
-  const [sdkReady, setSdkReady] = useState(() => !!window.google?.maps?.places);
-  const [sdkError, setSdkError] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Load Google Maps SDK on mount
-  useEffect(() => {
-    if (sdkReady) return;
-    if (!GOOGLE_PLACES_KEY) {
-      console.error('[SimpleAddressPicker] VITE_GOOGLE_PLACES_API_KEY is not defined — Google Maps SDK cannot load.');
-      setSdkError('missing_key');
-      return;
-    }
-    let active = true;
-    loadGoogleMaps().then(() => {
-      if (active) setSdkReady(true);
-    }).catch((err) => {
-      console.error('[SimpleAddressPicker] Failed to load Google Maps SDK:', err);
-      if (active) setSdkError('load_failed');
-    });
-    return () => { active = false; };
-  }, [sdkReady]);
-
-  // Fetch predictions from Google Places AutocompleteService
+  // Fetch predictions from backend function getPlacePredictions (server-side Google API key)
   const fetchPredictions = useCallback(async (input) => {
-    if (!input || input.length < 2 || !sdkReady) {
+    if (!input || input.length < 2) {
       setPredictions([]);
       setLoading(false);
       return;
@@ -117,33 +78,31 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     }
 
     try {
-      const service = new window.google.maps.places.AutocompleteService();
-      const results = await new Promise((resolve) => {
-        service.getPlacePredictions(
-          {
-            input,
-            componentRestrictions: { country: ['pt', 'es'] },
-            language: lang,
+      const { appId, token } = appParams;
+      const apiBase = window.location.origin;
+      const res = await fetch(
+        `${apiBase}/api/apps/${appId}/functions/getPlacePredictions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
-          (preds, status) => {
-            if (status === window.google.maps.places.PlacesServiceStatus.OK && preds) {
-              resolve(preds);
-            } else {
-              console.warn('[SimpleAddressPicker] AutocompleteService status:', status, 'for input:', input);
-              resolve([]);
-            }
-          }
-        );
-      });
-      const top = results.slice(0, 5).map(p => ({ place_id: p.place_id, description: p.description }));
-      if (top.length) writeCache(predCacheKey(lang, input), top);
-      setPredictions(top);
-    } catch {
+          body: JSON.stringify({ input }),
+        }
+      );
+      const data = await res.json();
+      const suggestions = (data.suggestions || []).slice(0, 5);
+      if (suggestions.length) writeCache(predCacheKey(lang, input), suggestions);
+      setPredictions(suggestions);
+    } catch (err) {
+      console.error('[SimpleAddressPicker] getPlacePredictions failed:', err);
+      setError('fetch_failed');
       setPredictions([]);
     } finally {
       setLoading(false);
     }
-  }, [sdkReady, lang]);
+  }, [lang]);
 
   // Debounce input → fetch
   useEffect(() => {
@@ -157,6 +116,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       return;
     }
 
+    setError(null);
     setLoading(true);
     debounceTimer.current = setTimeout(() => {
       fetchPredictions(trimmed);
@@ -181,47 +141,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Resolve coordinates for a selected Google prediction via PlacesService
-  const resolvePlace = (placeId) => {
-    const cacheKey = `${PLACE_CACHE_PREFIX}${placeId}`;
-    const cached = readCache(cacheKey, PLACE_TTL);
-    if (cached) return Promise.resolve(cached);
-
-    return new Promise((resolve) => {
-      if (!sdkReady || !attributionsRef.current) { resolve(null); return; }
-      const service = new window.google.maps.places.PlacesService(attributionsRef.current);
-      service.getDetails(
-        { placeId, fields: ['formatted_address', 'geometry'], language: lang },
-        (place, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-          const result = {
-            address: place.formatted_address || place.name || '',
-            coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() },
-          };
-          writeCache(cacheKey, result);
-          resolve(result);
-        } else {
-          console.warn('[SimpleAddressPicker] PlacesService getDetails status:', status, 'for placeId:', placeId);
-          resolve(null);
-        }
-        }
-      );
-    });
-  };
-
-  const handleSelectPrediction = async (prediction) => {
-    setInputValue(prediction.description);
+  const handleSelectPrediction = (prediction) => {
+    setInputValue(prediction.address);
     setPredictions([]);
     setShowDropdown(false);
-    setResolving(true);
-    const resolved = await resolvePlace(prediction.place_id);
-    setResolving(false);
-    if (resolved) {
-      setInputValue(resolved.address);
-      onChange({ address: resolved.address, coords: resolved.coords });
-    } else {
-      onChange(null);
-    }
+    onChange({ address: prediction.address, coords: prediction.coords });
   };
 
   const handleSelectCommon = (location) => {
@@ -245,14 +169,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   );
 
   const isDropdownVisible = showDropdown && !value?.coords;
-  const hasContent = loading || resolving || predictions.length > 0 || filteredCommon.length > 0 || !!sdkError;
+  const hasContent = loading || predictions.length > 0 || filteredCommon.length > 0 || !!error;
   const resolvedPlaceholder = placeholder || t(lang, 'select_place');
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      {/* Hidden container required by Google PlacesService for attributions */}
-      <div ref={attributionsRef} className="hidden" />
-
       <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
         <MapPin className="w-4 h-4 text-primary" />
         {label}
@@ -277,7 +198,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           className="w-full h-14 pl-9 pr-10 rounded-xl border border-input bg-background text-foreground text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 hover:bg-muted/50 placeholder:text-muted-foreground transition-all cursor-text"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          {loading || resolving ? (
+          {loading ? (
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           ) : value?.coords ? (
             <button onClick={handleClear} className="text-muted-foreground hover:text-foreground min-h-0 min-w-0">
@@ -297,12 +218,12 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
                 </div>
                 {predictions.map((pred, i) => (
                   <button
-                    key={pred.place_id || i}
+                    key={i}
                     onMouseDown={(e) => { e.preventDefault(); handleSelectPrediction(pred); }}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0 flex items-start gap-2 min-h-0"
                   >
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-                    <span className="text-foreground">{pred.description}</span>
+                    <span className="text-foreground">{pred.address}</span>
                   </button>
                 ))}
               </>
@@ -326,13 +247,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
               </>
             )}
 
-            {!loading && !resolving && predictions.length === 0 && filteredCommon.length === 0 && (
+            {!loading && predictions.length === 0 && filteredCommon.length === 0 && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
-                {sdkError === 'missing_key'
-                  ? '⚠️ Google Maps API key em falta (VITE_GOOGLE_PLACES_API_KEY). Verifica os segredos da app.'
-                  : sdkError === 'load_failed'
-                    ? '⚠️ Google Maps SDK não carregou. Verifica a consola do navegador.'
-                    : t(lang, 'no_location_found')}
+                {error === 'fetch_failed'
+                  ? '⚠️ Erro ao procurar moradas. Verifica a consola do navegador.'
+                  : t(lang, 'no_location_found')}
               </div>
             )}
           </div>

@@ -21,6 +21,32 @@ function loadGoogleMaps() {
   return window._googleMapsLoading;
 }
 
+// --- LocalStorage cache for Google Places (predictions + resolved details) ---
+const PLACE_CACHE_PREFIX = 'gmaps_place_';
+const PRED_CACHE_PREFIX = 'gmaps_pred_';
+const PLACE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+const PRED_TTL  = 7  * 24 * 60 * 60 * 1000; // 7 days
+
+function readCache(key, ttl) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (!entry || typeof entry !== 'object') return null;
+    if (Date.now() - (entry.ts || 0) > ttl) return null;
+    return entry.data;
+  } catch { return null; }
+}
+
+function writeCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
+
+function predCacheKey(lang, query) {
+  const safe = encodeURIComponent(query.trim().toLowerCase());
+  return `${PRED_CACHE_PREFIX}${lang}_${safe}`;
+}
+
 const COMMON_LOCATIONS_BASE = [
   { nameKey: 'common_location_airport',        icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
   { nameKey: 'common_location_lisbon_airport',  icon: '✈️', coords: { lat: 38.6747, lng: -9.1283 } },
@@ -72,6 +98,13 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       return;
     }
 
+    const cached = readCache(predCacheKey(lang, input), PRED_TTL);
+    if (cached) {
+      setPredictions(cached);
+      setLoading(false);
+      return;
+    }
+
     try {
       const service = new window.google.maps.places.AutocompleteService();
       const results = await new Promise((resolve) => {
@@ -90,7 +123,9 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
           }
         );
       });
-      setPredictions(results.slice(0, 5));
+      const top = results.slice(0, 5).map(p => ({ place_id: p.place_id, description: p.description }));
+      if (top.length) writeCache(predCacheKey(lang, input), top);
+      setPredictions(top);
     } catch {
       setPredictions([]);
     } finally {
@@ -136,6 +171,10 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
   // Resolve coordinates for a selected Google prediction via PlacesService
   const resolvePlace = (placeId) => {
+    const cacheKey = `${PLACE_CACHE_PREFIX}${placeId}`;
+    const cached = readCache(cacheKey, PLACE_TTL);
+    if (cached) return Promise.resolve(cached);
+
     return new Promise((resolve) => {
       if (!sdkReady || !attributionsRef.current) { resolve(null); return; }
       const service = new window.google.maps.places.PlacesService(attributionsRef.current);
@@ -143,10 +182,12 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
         { placeId, fields: ['formatted_address', 'geometry'], language: lang },
         (place, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-            resolve({
+            const result = {
               address: place.formatted_address || place.name || '',
               coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() },
-            });
+            };
+            writeCache(cacheKey, result);
+            resolve(result);
           } else {
             resolve(null);
           }

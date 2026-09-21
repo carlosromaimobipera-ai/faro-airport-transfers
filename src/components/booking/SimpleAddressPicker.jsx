@@ -81,12 +81,23 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   const [loading, setLoading] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [sdkReady, setSdkReady] = useState(() => !!window.google?.maps?.places);
+  const [sdkError, setSdkError] = useState(null);
 
   // Load Google Maps SDK on mount
   useEffect(() => {
-    if (sdkReady || !GOOGLE_PLACES_KEY) return;
+    if (sdkReady) return;
+    if (!GOOGLE_PLACES_KEY) {
+      console.error('[SimpleAddressPicker] VITE_GOOGLE_PLACES_API_KEY is not defined — Google Maps SDK cannot load.');
+      setSdkError('missing_key');
+      return;
+    }
     let active = true;
-    loadGoogleMaps().then(() => { if (active) setSdkReady(true); }).catch(() => {});
+    loadGoogleMaps().then(() => {
+      if (active) setSdkReady(true);
+    }).catch((err) => {
+      console.error('[SimpleAddressPicker] Failed to load Google Maps SDK:', err);
+      if (active) setSdkError('load_failed');
+    });
     return () => { active = false; };
   }, [sdkReady]);
 
@@ -118,6 +129,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
             if (status === window.google.maps.places.PlacesServiceStatus.OK && preds) {
               resolve(preds);
             } else {
+              console.warn('[SimpleAddressPicker] AutocompleteService status:', status, 'for input:', input);
               resolve([]);
             }
           }
@@ -181,16 +193,17 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
       service.getDetails(
         { placeId, fields: ['formatted_address', 'geometry'], language: lang },
         (place, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-            const result = {
-              address: place.formatted_address || place.name || '',
-              coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() },
-            };
-            writeCache(cacheKey, result);
-            resolve(result);
-          } else {
-            resolve(null);
-          }
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+          const result = {
+            address: place.formatted_address || place.name || '',
+            coords: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() },
+          };
+          writeCache(cacheKey, result);
+          resolve(result);
+        } else {
+          console.warn('[SimpleAddressPicker] PlacesService getDetails status:', status, 'for placeId:', placeId);
+          resolve(null);
+        }
         }
       );
     });
@@ -232,7 +245,7 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
   );
 
   const isDropdownVisible = showDropdown && !value?.coords;
-  const hasContent = loading || resolving || predictions.length > 0 || filteredCommon.length > 0;
+  const hasContent = loading || resolving || predictions.length > 0 || filteredCommon.length > 0 || !!sdkError;
   const resolvedPlaceholder = placeholder || t(lang, 'select_place');
 
   return (
@@ -315,7 +328,11 @@ export default function SimpleAddressPicker({ label, value, onChange, placeholde
 
             {!loading && !resolving && predictions.length === 0 && filteredCommon.length === 0 && (
               <div className="px-4 py-3 text-sm text-muted-foreground text-center">
-                {t(lang, 'no_location_found')}
+                {sdkError === 'missing_key'
+                  ? '⚠️ Google Maps API key em falta (VITE_GOOGLE_PLACES_API_KEY). Verifica os segredos da app.'
+                  : sdkError === 'load_failed'
+                    ? '⚠️ Google Maps SDK não carregou. Verifica a consola do navegador.'
+                    : t(lang, 'no_location_found')}
               </div>
             )}
           </div>

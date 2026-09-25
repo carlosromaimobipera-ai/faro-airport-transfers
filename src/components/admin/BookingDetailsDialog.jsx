@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Download, Loader2, MapPin, Calendar, Clock, Car, Euro, Users, Luggage, Phone, Mail, User, Plane, StickyNote, FileText, CheckCircle2, XCircle, CreditCard, Pencil, Save, X } from 'lucide-react';
+import { Download, Loader2, MapPin, Calendar, Clock, Car, Euro, Users, Luggage, Phone, Mail, User, Plane, StickyNote, FileText, CheckCircle2, XCircle, CreditCard, Pencil, Save, X, Send } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
@@ -46,6 +46,8 @@ function Field({ icon: Icon, label, value }) {
 
 export default function BookingDetailsDialog({ booking, open, onOpenChange, onPaymentChange, onUpdate }) {
   const [downloading, setDownloading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState(false);
   const [error, setError] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -152,6 +154,34 @@ export default function BookingDetailsDialog({ booking, open, onOpenChange, onPa
       setError(err?.message || 'Erro ao gerar voucher');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleSendVoucher = async () => {
+    setSending(true);
+    setSendSuccess(false);
+    setError('');
+    try {
+      const { appId, token } = appParams;
+      const res = await fetch(
+        `${window.location.origin}/api/apps/${appId}/functions/sendVoucherToClient`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ booking_id: booking.id }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Erro ${res.status}`);
+      setSendSuccess(true);
+      setTimeout(() => setSendSuccess(false), 4000);
+    } catch (err) {
+      setError(err?.message || 'Erro ao enviar voucher');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -458,13 +488,27 @@ export default function BookingDetailsDialog({ booking, open, onOpenChange, onPa
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
               onClick={handleDownloadVoucher}
-              disabled={downloading}
+              disabled={downloading || sending}
               className="gap-2 bg-primary hover:bg-primary/90 flex-1"
             >
               {downloading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> A gerar voucher...</>
               ) : (
                 <><Download className="w-4 h-4" /> Descarregar Voucher PDF</>
+              )}
+            </Button>
+            <Button
+              onClick={handleSendVoucher}
+              disabled={downloading || sending || !booking.customer_email}
+              variant="outline"
+              className="gap-2 flex-1 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              {sending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> A enviar...</>
+              ) : sendSuccess ? (
+                <><CheckCircle2 className="w-4 h-4 text-green-600" /> Voucher enviado!</>
+              ) : (
+                <><Send className="w-4 h-4" /> Enviar Voucher ao Cliente</>
               )}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="sm:w-auto">

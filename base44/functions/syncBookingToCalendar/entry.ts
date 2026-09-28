@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     const extrasInfo = booking.extras?.length ? `\nExtras: ${booking.extras.join(', ')}` : '';
 
     const eventBody = {
-      summary: `🚗 Transfer ${booking.booking_ref} — ${booking.customer_name}`,
+      summary: `🚗 ${booking.origin} → ${booking.destination} — ${booking.booking_ref} — ${booking.customer_name}`,
       description: [
         `Ref: ${booking.booking_ref}`,
         `Cliente: ${booking.customer_name}`,

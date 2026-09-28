@@ -43,6 +43,20 @@ Deno.serve(async (req) => {
         : undefined,
     });
 
+    // Cópia do voucher para a empresa
+    try {
+      await sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `[Cópia] ${getVoucherSubject(booking)}`,
+        body: buildVoucherEmailHtml(booking),
+        attachments: pdfBase64
+          ? [{ filename: `voucher-${booking.booking_ref}.pdf`, content: pdfBase64 }]
+          : undefined,
+      });
+    } catch (copyErr) {
+      console.error("Voucher copy to admin failed:", copyErr?.message);
+    }
+
     // Email ao admin
     const adminBody = `<p>Nova reserva recebida: <strong>${booking.booking_ref}</strong></p>
 <p>Cliente: ${booking.customer_name} (${booking.customer_email})<br/>

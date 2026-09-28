@@ -8,6 +8,9 @@ const VEHICLE_LABEL = {
 
 const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
 
+// Agenda Google onde as reservas são sincronizadas (agenda "Transfers")
+const CALENDAR_ID = '3f9k2hr03io640mb6qh07g9ock@group.calendar.google.com';
+
 Deno.serve(async (req) => {
   try {
     const internalSecret = req.headers.get('x-internal-secret');
@@ -34,7 +37,7 @@ Deno.serve(async (req) => {
       if (booking.google_calendar_event_id) {
         const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
         await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/primary/events/${booking.google_calendar_event_id}`,
+          `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${booking.google_calendar_event_id}`,
           { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }
         );
         await base44.asServiceRole.entities.Booking.update(booking.id, { google_calendar_event_id: null });
@@ -91,7 +94,7 @@ Deno.serve(async (req) => {
     if (calendarEventId) {
       // Update existing event
       response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${calendarEventId}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${calendarEventId}`,
         { method: 'PUT', headers: authHeader, body: JSON.stringify(eventBody) }
       );
       if (response.status === 404) {
@@ -103,7 +106,7 @@ Deno.serve(async (req) => {
     if (!calendarEventId) {
       // Create new event
       response = await fetch(
-        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+        `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events`,
         { method: 'POST', headers: authHeader, body: JSON.stringify(eventBody) }
       );
     }

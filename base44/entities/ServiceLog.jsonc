@@ -1,0 +1,97 @@
+{
+  "name": "ServiceLog",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "ID do motorista"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Nome do motorista (cache)"
+    },
+    "driver_email": {
+      "type": "string",
+      "description": "Email do motorista (cache)"
+    },
+    "vehicle_plate": {
+      "type": "string",
+      "description": "Matr\u00edcula do ve\u00edculo usado no servi\u00e7o"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "Modelo do ve\u00edculo (cache)"
+    },
+    "service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do servi\u00e7o (YYYY-MM-DD)"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Timestamp ISO do in\u00edcio do servi\u00e7o"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "Timestamp ISO do fim do servi\u00e7o (vazio se em curso)"
+    },
+    "total_minutes": {
+      "type": "number",
+      "description": "Total de minutos de servi\u00e7o"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ],
+      "default": "open",
+      "description": "open = servi\u00e7o em curso, closed = terminado"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Observa\u00e7\u00f5es sobre o per\u00edodo de servi\u00e7o"
+    }
+  },
+  "required": [
+    "driver_id",
+    "service_date",
+    "start_time",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

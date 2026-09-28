@@ -7,13 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format, addDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Calendar, Car, Loader2, CalendarDays, LogOut, History } from 'lucide-react';
+import { Calendar, Car, Loader2, CalendarDays, LogOut, History, Clock } from 'lucide-react';
 import BookingCard from '@/components/driver/BookingCard';
 import { useGpsTracking } from '@/hooks/useGpsTracking';
 import GpsTrackingBadge from '@/components/driver/GpsTrackingBadge';
 import GpsPermissionGate from '@/components/driver/GpsPermissionGate';
 import HistoryTab from '@/components/driver/HistoryTab';
 import VehicleSelector from '@/components/driver/VehicleSelector';
+import ServiceHoursTab from '@/components/driver/ServiceHoursTab';
 
 export default function Driver() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Driver() {
   const [user, setUser] = useState(null);
   const [driver, setDriver] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'upcoming' | 'history'
+  const [activeTab, setActiveTab] = useState('today'); // 'today' | 'upcoming' | 'history' | 'hours'
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   useEffect(() => {
@@ -172,7 +173,7 @@ export default function Driver() {
         {/* Tab switcher */}
         <Card>
           <CardContent className="p-1.5">
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-4 gap-1">
               <button
                 onClick={() => setActiveTab('today')}
                 className={`flex items-center justify-center gap-2 py-2.5 px-2 rounded-lg text-sm font-semibold transition-all ${
@@ -205,6 +206,17 @@ export default function Driver() {
               >
                 <History className="w-4 h-4" />
                 <span className="hidden sm:inline">Histórico</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('hours')}
+                className={`flex items-center justify-center gap-2 py-2.5 px-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === 'hours'
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span className="hidden sm:inline">Horas</span>
               </button>
             </div>
           </CardContent>
@@ -309,6 +321,9 @@ export default function Driver() {
 
         {/* ── Tab: Histórico ── */}
         {activeTab === 'history' && <HistoryTab driver={driver} />}
+
+        {/* ── Tab: Horas de Serviço ── */}
+        {activeTab === 'hours' && <ServiceHoursTab driver={driver} />}
 
         {/* ── Tab: Próximas ── */}
         {activeTab === 'upcoming' && (

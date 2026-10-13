@@ -6,6 +6,20 @@ const VEHICLE_LABEL = {
   minibus: 'Minibus Grupo',
 };
 
+// Cor fixa por motorista (Google Calendar colorId): 10=basil (manjericão), 3=grape (uva), 7=peacock (pavão), 9=blueberry (sem motorista)
+const DRIVER_COLOR = [
+  { match: 'edinalva', colorId: '10' },
+  { match: 'ingrid', colorId: '3' },
+  { match: 'carlos', colorId: '7' },
+];
+
+function driverColorId(driverName) {
+  if (!driverName) return '9';
+  const name = String(driverName).toLowerCase();
+  const found = DRIVER_COLOR.find((d) => name.includes(d.match));
+  return found ? found.colorId : '9';
+}
+
 const INTERNAL_SECRET = Deno.env.get('INTERNAL_AUTOMATION_SECRET');
 
 // Agenda Google onde as reservas são sincronizadas (agenda "Transfers")
@@ -29,9 +43,6 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'skipped', reason: 'no booking data' });
     }
 
-    // Only sync if status is confirmed (or in_progress) and has a driver
-    const syncableStatuses = ['confirmed', 'in_progress'];
-
     // If cancelled, delete the calendar event if it exists
     if (booking.status === 'cancelled') {
       if (booking.google_calendar_event_id) {
@@ -43,10 +54,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Booking.update(booking.id, { google_calendar_event_id: null });
       }
       return Response.json({ status: 'deleted' });
-    }
-
-    if (!syncableStatuses.includes(booking.status)) {
-      return Response.json({ status: 'skipped', reason: 'status not syncable' });
     }
 
     if (!booking.transfer_date || !booking.transfer_time) {
@@ -85,17 +92,27 @@ Deno.serve(async (req) => {
       start: { dateTime: startDateTime, timeZone: 'Europe/Lisbon' },
       end: { dateTime: endDateTime, timeZone: 'Europe/Lisbon' },
       location: booking.origin,
-      colorId: booking.status === 'confirmed' ? '9' : '6', // 9=blueberry, 6=tangerine
+      colorId: driverColorId(booking.driver_name),
+    };
+
+    // Campos estruturais que a app gere. A descrição NÃO é enviada na atualização
+    // para preservar notas/editais manuais já colocados na agenda.
+    const updateBody = {
+      summary: eventBody.summary,
+      start: eventBody.start,
+      end: eventBody.end,
+      location: eventBody.location,
+      colorId: eventBody.colorId,
     };
 
     let calendarEventId = booking.google_calendar_event_id;
     let response;
 
     if (calendarEventId) {
-      // Update existing event
+      // Update existing event (PATCH — preserva a descrição já existente na agenda)
       response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${calendarEventId}`,
-        { method: 'PUT', headers: authHeader, body: JSON.stringify(eventBody) }
+        `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${calendarEventId}?sendUpdates=none`,
+        { method: 'PATCH', headers: authHeader, body: JSON.stringify(updateBody) }
       );
       if (response.status === 404) {
         // Event no longer exists — create a new one
@@ -104,7 +121,7 @@ Deno.serve(async (req) => {
     }
 
     if (!calendarEventId) {
-      // Create new event
+      // Create new event (descrição completa só na criação)
       response = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events`,
         { method: 'POST', headers: authHeader, body: JSON.stringify(eventBody) }

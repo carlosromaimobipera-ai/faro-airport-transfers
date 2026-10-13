@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, Calendar, Car, MapPin, Euro, Clock, Loader2, Search, FilterX, UserCheck, Star, Tag, BarChart2, Navigation, Download, Users, FileText, Plus, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import DriversManager from '@/components/admin/DriversManager';
@@ -71,8 +71,15 @@ export default function Admin() {
   const [filterDateTo,   setFilterDateTo]    = useState('');
   const [search,         setSearch]          = useState('');
   const [sortOrder,      setSortOrder]       = useState('asc');
+  const [includePast,    setIncludePast]     = useState(false);
   const [detailsBooking, setDetailsBooking]  = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -88,6 +95,27 @@ export default function Admin() {
     queryFn: () => base44.entities.Booking.list('-transfer_date', 500),
     enabled: !!user,
   });
+
+  // Pesquisa server-side: encontra reservas antigas para além das 500 mais recentes
+  const { data: searchBookings = [], isLoading: isSearchLoading } = useQuery({
+    queryKey: ['bookings-admin-search', debouncedSearch],
+    queryFn: async () => {
+      const page = await base44.entities.Booking.filter({
+        $or: [
+          { customer_name: { $regex: debouncedSearch, $options: 'i' } },
+          { customer_email: { $regex: debouncedSearch, $options: 'i' } },
+          { booking_ref: { $regex: debouncedSearch, $options: 'i' } },
+          { origin: { $regex: debouncedSearch, $options: 'i' } },
+          { destination: { $regex: debouncedSearch, $options: 'i' } },
+        ],
+      }, { sort: '-transfer_date', limit: 200 });
+      return page.items;
+    },
+    enabled: !!user && debouncedSearch.length > 0,
+  });
+
+  const sourceBookings = debouncedSearch ? searchBookings : bookings;
+  const isLoadingBookings = debouncedSearch ? isSearchLoading : isLoading;
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
@@ -139,22 +167,13 @@ export default function Admin() {
   };
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const filtered = bookings.filter(b => {
+  const filtered = sourceBookings.filter(b => {
     if (filterStatus  !== 'all' && b.status         !== filterStatus)  return false;
     if (filterPayment !== 'all' && b.payment_status !== filterPayment) return false;
     if (filterDateFrom && b.transfer_date < filterDateFrom) return false;
     if (filterDateTo   && b.transfer_date > filterDateTo)   return false;
-    if (search) {
-      const q = search.toLowerCase();
-      if (
-        !b.customer_name?.toLowerCase().includes(q) &&
-        !b.customer_email?.toLowerCase().includes(q) &&
-        !b.booking_ref?.toLowerCase().includes(q) &&
-        !b.origin?.toLowerCase().includes(q) &&
-        !b.destination?.toLowerCase().includes(q)
-      ) return false;
-    } else if (b.transfer_date && b.transfer_date < todayStr) {
-      // Sem pesquisa: mostrar apenas reservas de hoje em diante
+    if (!debouncedSearch && !includePast && b.transfer_date && b.transfer_date < todayStr) {
+      // Sem pesquisa e sem "incluir passadas": mostrar apenas reservas de hoje em diante
       return false;
     }
     return true;
@@ -175,9 +194,9 @@ export default function Admin() {
 
   const clearFilters = () => {
     setFilterStatus('all'); setFilterPayment('all');
-    setFilterDateFrom(''); setFilterDateTo(''); setSearch('');
+    setFilterDateFrom(''); setFilterDateTo(''); setSearch(''); setIncludePast(false);
   };
-  const hasFilters = filterStatus !== 'all' || filterPayment !== 'all' || filterDateFrom || filterDateTo || search;
+  const hasFilters = filterStatus !== 'all' || filterPayment !== 'all' || filterDateFrom || filterDateTo || search || includePast;
 
   const exportCSV = async () => {
     const res = await base44.functions.invoke('exportBookingsCSV', {});
@@ -318,6 +337,14 @@ export default function Admin() {
                       <SelectItem value="desc">Data: mais recente → mais antiga</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button
+                    variant={includePast ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setIncludePast(v => !v)}
+                    className="gap-1 h-9"
+                  >
+                    <History className="w-4 h-4" /> {includePast ? 'Passadas: ON' : 'Incluir passadas'}
+                  </Button>
                   <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 h-9">
                     <Download className="w-4 h-4" /> Exportar CSV
                   </Button>
@@ -332,7 +359,7 @@ export default function Admin() {
             </Card>
 
             {/* Table (Desktop) / Cards (Mobile) */}
-            {isLoading ? (
+            {isLoadingBookings ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>

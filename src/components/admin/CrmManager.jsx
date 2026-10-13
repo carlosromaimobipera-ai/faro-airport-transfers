@@ -67,6 +67,16 @@ export default function CrmManager() {
     };
   }, [selectedClient, clientBookings]);
 
+  const futureBookings = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    return clientBookings.filter(b => (b.transfer_date || '') >= today);
+  }, [clientBookings]);
+
+  const pastBookings = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    return clientBookings.filter(b => (b.transfer_date || '') < today);
+  }, [clientBookings]);
+
   const filteredClients = useMemo(() => {
     if (!search) return clients;
     const q = search.toLowerCase();
@@ -209,55 +219,19 @@ export default function CrmManager() {
           </CardContent>
         </Card>
 
-        {/* All bookings for this client */}
+        {/* Reservas futuras */}
         <Card>
           <CardContent className="p-4">
-            <h3 className="font-bold text-lg mb-4">Histórico de reservas ({clientBookings.length})</h3>
-            {clientBookings.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">Nenhuma reserva encontrada para este cliente.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Ref.</TableHead>
-                      <TableHead>Rota</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Veículo</TableHead>
-                      <TableHead>Preço</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Pagamento</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {clientBookings.map(b => (
-                      <TableRow key={b.id}>
-                        <TableCell className="font-mono text-xs font-bold text-primary">{b.booking_ref}</TableCell>
-                        <TableCell className="text-xs max-w-[180px]">
-                          <span className="leading-tight">{b.origin} → {b.destination}</span>
-                        </TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">
-                          {b.transfer_date && format(new Date(b.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
-                          <br /><span className="text-muted-foreground text-xs">{b.transfer_time}</span>
-                        </TableCell>
-                        <TableCell className="text-xs">{vehicleLabel[b.vehicle_type] || b.vehicle_type}</TableCell>
-                        <TableCell className="font-bold text-primary">€{b.price?.toFixed(0)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={statusConfig[b.status]?.color}>
-                            {statusConfig[b.status]?.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={paymentConfig[b.payment_status]?.color}>
-                            {paymentConfig[b.payment_status]?.label}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <h3 className="font-bold text-lg mb-4">Reservas futuras ({futureBookings.length})</h3>
+            <ClientBookingsTable bookings={futureBookings} emptyText="Nenhuma reserva futura para este cliente." />
+          </CardContent>
+        </Card>
+
+        {/* Reservas anteriores */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-bold text-lg mb-4">Reservas anteriores ({pastBookings.length})</h3>
+            <ClientBookingsTable bookings={pastBookings} emptyText="Nenhuma reserva anterior para este cliente." />
           </CardContent>
         </Card>
       </div>
@@ -347,6 +321,55 @@ export default function CrmManager() {
           </div>
         </Card>
       )}
+    </div>
+  );
+}
+
+function ClientBookingsTable({ bookings, emptyText }) {
+  if (!bookings || bookings.length === 0) {
+    return <p className="text-center py-6 text-muted-foreground text-sm">{emptyText}</p>;
+  }
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Ref.</TableHead>
+            <TableHead>Rota</TableHead>
+            <TableHead>Data</TableHead>
+            <TableHead>Veículo</TableHead>
+            <TableHead>Preço</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Pagamento</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {bookings.map(b => (
+            <TableRow key={b.id}>
+              <TableCell className="font-mono text-xs font-bold text-primary">{b.booking_ref}</TableCell>
+              <TableCell className="text-xs max-w-[180px]">
+                <span className="leading-tight">{b.origin} → {b.destination}</span>
+              </TableCell>
+              <TableCell className="text-sm whitespace-nowrap">
+                {b.transfer_date && format(new Date(b.transfer_date + 'T00:00:00'), "d MMM yyyy", { locale: pt })}
+                <br /><span className="text-muted-foreground text-xs">{b.transfer_time}</span>
+              </TableCell>
+              <TableCell className="text-xs">{vehicleLabel[b.vehicle_type] || b.vehicle_type}</TableCell>
+              <TableCell className="font-bold text-primary">€{b.price?.toFixed(0)}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className={statusConfig[b.status]?.color}>
+                  {statusConfig[b.status]?.label}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className={paymentConfig[b.payment_status]?.color}>
+                  {paymentConfig[b.payment_status]?.label}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

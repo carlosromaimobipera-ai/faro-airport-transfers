@@ -6,16 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane, Moon } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane, Moon, Timer } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import TimePicker from './TimePicker.jsx';
 import DatePicker from './DatePicker.jsx';
 import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
+import ServiceTypeSelector from './ServiceTypeSelector';
+import StopsSelector from './StopsSelector';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
+import { hourlyPrice, stopsPrice, HOURLY_RATE, STOP_HOURLY_RATE } from '@/lib/extraServices';
 import { useQuery } from '@tanstack/react-query';
 
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
@@ -38,12 +41,15 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
 
 
   const [form, setForm] = useState({
+    service_type: 'transfer',
     origin: initialOrigin, destination: initialDestination, vehicle_type: '',
     origin_place: null, destination_place: null,
     trip_type: 'one_way',
     transfer_date: '', transfer_time: '', flight_number: '',
     return_date: '', return_time: '', return_flight_number: '',
     passengers: 1, luggage: 1,
+    hours: 2,
+    stops: [{ name: '', hours: 1 }],
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
     extras: [],
     language: lang,
@@ -133,13 +139,30 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
     if (form.luggage > maxLuggage) updateForm('luggage', maxLuggage);
   }, [form.vehicle_type]);
 
-  const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
+  const isHourly = form.service_type === 'hourly';
+  const isDayTrip = form.service_type === 'daytrip';
+  const hours = parseFloat(form.hours) || 0;
+  const stopsTotal = useMemo(() => stopsPrice(form.stops), [form.stops]);
+  // Tarifa de transfer da rota escolhida (usada no transfer e no transfer + day trip)
+  const transferPrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
+  const vehiclePrice = (vehicleId) => {
+    if (isHourly) return hourlyPrice(hours);
+    const transfer = calculatePrice(distance, vehicleId, [], duration, isSpainRoute);
+    return isDayTrip ? Math.round((transfer + stopsTotal) * 100) / 100 : transfer;
+  };
+  const basePrice = useMemo(() => {
+    if (isHourly) return hourlyPrice(hours);
+    if (isDayTrip) return Math.round((transferPrice + stopsTotal) * 100) / 100;
+    return transferPrice;
+  }, [isHourly, isDayTrip, hours, transferPrice, stopsTotal]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
-  const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
+  const tripMultiplier = form.service_type === 'transfer' && form.trip_type === 'round_trip' ? 2 : 1;
   // Suplemento noturno: +5€ por trajecto recolhido/entregue entre as 22h00 e as 06h00
   const nightFee = useMemo(
-    () => getNightSurcharge(form.transfer_time) + (form.trip_type === 'round_trip' ? getNightSurcharge(form.return_time) : 0),
-    [form.transfer_time, form.return_time, form.trip_type]
+    () => form.service_type === 'transfer'
+      ? getNightSurcharge(form.transfer_time) + (form.trip_type === 'round_trip' ? getNightSurcharge(form.return_time) : 0)
+      : 0,
+    [form.transfer_time, form.return_time, form.trip_type, form.service_type]
   );
   const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal + nightFee) * 100) / 100, [basePrice, tripMultiplier, extrasTotal, nightFee]);
   const CARD_FEE_RATE = 0.035;
@@ -154,9 +177,20 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  // Muda o tipo de serviço; ida e volta só se aplica a transfers
+  const handleServiceChange = (service) => {
+    setForm(prev => ({
+      ...prev,
+      service_type: service,
+      trip_type: service === 'transfer' ? prev.trip_type : 'one_way',
+    }));
+  };
+
   const canProceed = () => {
     switch (step) {
       case 1: {
+        // Chauffeur por hora: basta a recolha, o destino final é opcional
+        if (form.service_type === 'hourly') return !!form.origin_place?.coords;
         if (!form.origin_place || !form.destination_place) return false;
         if (isLoadingDistance) return false;
         if (isBothInSpain) return false;
@@ -171,6 +205,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
         const bookingDateTime = new Date(`${form.transfer_date}T${form.transfer_time}`);
         const minAllowed = new Date(Date.now() + 24 * 60 * 60 * 1000);
         if (bookingDateTime < minAllowed) return false;
+        if (form.service_type === 'hourly' && !(parseFloat(form.hours) > 0)) return false;
         if (form.trip_type === 'round_trip' && (!form.return_date || !form.return_time)) return false;
         return true;
       }
@@ -182,7 +217,52 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   // Cria 1 reserva (ida) ou 2 reservas separadas (ida + volta) consoante o trip_type.
   // As reservas de ida e volta ficam ligadas via linked_booking_ref e cada uma gera
   // o seu próprio evento na agenda quando confirmada.
+  // Chauffeur por hora / transfer + day trip: reserva única com o serviço detalhado nas notas
+  const submitServiceBooking = async (paymentStatus) => {
+    const fee = paymentStatus === 'paid' ? Math.round(price * CARD_FEE_RATE * 100) / 100 : 0;
+    const originCoords = form.origin_place?.coords;
+    const destCoords = form.destination_place?.coords;
+    const stopsLabel = form.stops
+      .filter(s => s.name || parseFloat(s.hours) > 0)
+      .map(s => `${s.name || 'Paragem'} (${parseFloat(s.hours) || 0}h)`)
+      .join(', ');
+
+    const serviceNotes = isHourly
+      ? [`Chauffeur por hora — ${hours} × ${HOURLY_RATE}€/hora (até 30 km por hora incluídos)`, form.notes].filter(Boolean).join(' · ')
+      : [`Transfer + day trip — paragens: ${stopsLabel} (${STOP_HOURLY_RATE}€/hora por paragem)`, `Transfer ${transferPrice}€ + paragens ${stopsTotal}€`, form.notes].filter(Boolean).join(' · ');
+
+    const booking = await base44.entities.Booking.create({
+      booking_ref: generateBookingRef(),
+      customer_name: form.customer_name,
+      customer_email: form.customer_email,
+      customer_phone: form.customer_phone,
+      origin: form.origin_place?.address,
+      destination: form.destination_place?.address || `Chauffeur à disposição — ${hours}h`,
+      origin_coords: originCoords,
+      destination_coords: destCoords || originCoords,
+      vehicle_type: form.vehicle_type,
+      distance_km: distance || 0,
+      trip_type: 'one_way',
+      transfer_date: form.transfer_date,
+      transfer_time: form.transfer_time,
+      flight_number: form.flight_number,
+      passengers: form.passengers,
+      luggage: form.luggage,
+      extras: form.extras,
+      extras_price: extrasTotal,
+      price: Math.round((price + fee) * 100) / 100,
+      notes: serviceNotes,
+      status: 'pending',
+      payment_status: paymentStatus,
+      language: lang,
+    });
+
+    return { outbound: booking, returnBooking: null };
+  };
+
   const submitBooking = async (paymentStatus) => {
+    if (form.service_type !== 'transfer') return submitServiceBooking(paymentStatus);
+
     const originName = form.origin_place?.address;
     const destName = form.destination_place?.address;
     const originCoords = form.origin_place?.coords;
@@ -292,7 +372,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   const steps = [
     { id: 1, labelKey: 'step_route',   icon: MapPin },
     { id: 2, labelKey: 'step_vehicle', icon: CircleDot },
-    { id: 3, labelKey: 'extras_title', icon: Gift },
+    { id: 3, labelKey: isDayTrip ? 'stops_title' : 'extras_title', icon: Gift },
     { id: 4, labelKey: 'step_details', icon: Calendar },
     { id: 5, labelKey: 'step_data',    icon: User },
   ];
@@ -334,6 +414,11 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'step1_title')}</h2>
                   <p className="text-muted-foreground text-sm">{t(lang, 'step1_sub')}</p>
                 </div>
+                <ServiceTypeSelector
+                  value={form.service_type}
+                  onChange={handleServiceChange}
+                  lang={lang}
+                />
                 <div className="grid md:grid-cols-2 gap-4">
                   <SimpleAddressPicker
                     label={t(lang, 'origin')}
@@ -342,13 +427,20 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     placeholder={t(lang, 'select_place')}
                   />
                   <SimpleAddressPicker
-                    label={t(lang, 'destination')}
+                    label={isHourly ? t(lang, 'optional_dest') : t(lang, 'destination')}
                     value={form.destination_place}
                     onChange={(place) => setForm(prev => ({ ...prev, destination_place: place }))}
                     placeholder={t(lang, 'select_place')}
                   />
                 </div>
-                {/* Trip type selector */}
+                {isHourly && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
+                    <Timer className="w-4 h-4 shrink-0" />
+                    {t(lang, 'service_hourly_desc')}
+                  </div>
+                )}
+                {/* Trip type selector — apenas para transfers */}
+                {form.service_type === 'transfer' && (
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -367,6 +459,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     {t(lang, 'trip_round_trip')}
                   </button>
                 </div>
+                )}
 
                 {isLoadingDistance && form.origin_place && form.destination_place && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
@@ -389,7 +482,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   </div>
                 )}
 
-                {isBothInSpain && (
+                {!isHourly && isBothInSpain && (
                   <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-4 text-sm text-green-900 space-y-3">
                     <div className="flex items-start gap-2">
                       <span className="text-xl shrink-0">🇪🇸</span>
@@ -407,14 +500,14 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     </a>
                   </div>
                 )}
-                {!isBothInSpain && form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                {!isHourly && !isBothInSpain && form.origin_place && form.destination_place && !isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{t(lang, 'invalid_route_algarve')}</span>
                   </div>
                 )}
                 {/* Estimated price preview */}
-                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && !isBothInSpain && (
+                {!isHourly && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && !isBothInSpain && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                     <p className="text-xs text-muted-foreground mb-1">
                   {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span>
@@ -424,13 +517,13 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                        <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
                        {vehicleTypes.map(v => (
                          <span key={v.id} className="text-sm font-bold text-primary">
-                           {t(lang, v.nameKey)} <span className="text-secondary">{formatPrice(calculatePrice(distance, v.id, [], distanceData?.duration_minutes || 0, isSpainRoute) * tripMultiplier)}</span>
+                           {t(lang, v.nameKey)} <span className="text-secondary">{formatPrice(vehiclePrice(v.id) * tripMultiplier)}</span>
                          </span>
                        ))}
                     </div>
                   </div>
                 )}
-                {distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                {!isHourly && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
                   <>
                     <RouteInfoBadge 
                       origin={form.origin_place?.address}
@@ -465,7 +558,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                       vehicle={vehicle}
                       selected={form.vehicle_type === vehicle.id}
                       onSelect={(id) => updateForm('vehicle_type', id)}
-                      price={calculatePrice(distance, vehicle.id, [], duration, isSpainRoute)}
+                      price={vehiclePrice(vehicle.id)}
                     />
                   ))}
                 </div>
@@ -476,9 +569,16 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                <div>
-                 <h2 className="font-display text-2xl font-bold mb-1">{t(lang, 'extras_title')}</h2>
-                 <p className="text-muted-foreground text-sm">{t(lang, 'extras_sub')}</p>
+                 <h2 className="font-display text-2xl font-bold mb-1">{isDayTrip ? t(lang, 'stops_title') : t(lang, 'extras_title')}</h2>
+                 <p className="text-muted-foreground text-sm">{isDayTrip ? t(lang, 'stops_sub') : t(lang, 'extras_sub')}</p>
                </div>
+                {isDayTrip && (
+                  <StopsSelector
+                    stops={form.stops}
+                    onChange={(stops) => updateForm('stops', stops)}
+                    lang={lang}
+                  />
+                )}
                 <ExtrasSelector
                   selected={form.extras}
                   onChange={(extras) => updateForm('extras', extras)}
@@ -518,14 +618,33 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> {t(lang, 'time')}</Label>
                     <TimePicker value={form.transfer_time} onChange={(v) => updateForm('transfer_time', v)} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>{t(lang, 'flight_no')}</Label>
-                    <Input placeholder={t(lang, 'flight_ph')} value={form.flight_number} onChange={(e) => updateForm('flight_number', e.target.value)} className="h-12" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t(lang, 'return_flight_no')}</Label>
-                    <Input placeholder={t(lang, 'return_flight_ph')} value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
-                  </div>
+                  {isHourly && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Timer className="w-4 h-4 text-primary" /> {t(lang, 'hours_label')}</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        step={0.5}
+                        value={form.hours}
+                        onChange={(e) => updateForm('hours', e.target.value)}
+                        onBlur={(e) => { if (!e.target.value || parseFloat(e.target.value) < 1) updateForm('hours', 1); }}
+                        className="h-12"
+                      />
+                      <p className="text-xs text-muted-foreground">{hours} × {HOURLY_RATE} € = {formatPrice(hourlyPrice(hours))}</p>
+                    </div>
+                  )}
+                  {form.service_type === 'transfer' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>{t(lang, 'flight_no')}</Label>
+                        <Input placeholder={t(lang, 'flight_ph')} value={form.flight_number} onChange={(e) => updateForm('flight_number', e.target.value)} className="h-12" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t(lang, 'return_flight_no')}</Label>
+                        <Input placeholder={t(lang, 'return_flight_ph')} value={form.return_flight_number || ''} onChange={(e) => updateForm('return_flight_number', e.target.value)} className="h-12" />
+                      </div>
+                    </>
+                  )}
 
                   {/* Return date/time — only for round trip */}
                   {form.trip_type === 'round_trip' && (
@@ -599,13 +718,40 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   <h3 className="font-bold text-lg">{t(lang, 'summary')}</h3>
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     <span className="text-muted-foreground">{t(lang, 'route')}:</span>
-                    <span className="font-medium">{form.origin_place?.address} → {form.destination_place?.address}</span>
+                    <span className="font-medium">
+                      {form.origin_place?.address}
+                      {form.destination_place?.address ? ` → ${form.destination_place.address}` : ''}
+                    </span>
+                    {form.service_type !== 'transfer' && (
+                      <>
+                        <span className="text-muted-foreground">{t(lang, 'summary_service')}:</span>
+                        <span className="font-medium">{t(lang, isHourly ? 'service_hourly' : 'service_daytrip')}</span>
+                      </>
+                    )}
+                    {isHourly && (
+                      <>
+                        <span className="text-muted-foreground">{t(lang, 'hours_label')}:</span>
+                        <span className="font-medium">{hours} h</span>
+                      </>
+                    )}
+                    {isDayTrip && (
+                      <>
+                        <span className="text-muted-foreground">{t(lang, 'summary_stops')}:</span>
+                        <span className="font-medium">
+                          {form.stops.filter(s => s.name || parseFloat(s.hours) > 0).map(s => `${s.name || t(lang, 'stop_ph')} (${parseFloat(s.hours) || 0}h)`).join(', ') || '—'}
+                        </span>
+                      </>
+                    )}
                     <span className="text-muted-foreground">{t(lang, 'distance')}:</span>
                     <span className="font-medium">{distance ? `${distance} km` : '—'}</span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>
                     <span className="font-medium">{form.vehicle_type && t(lang, vehicleTypes.find(v => v.id === form.vehicle_type)?.nameKey || '')}</span>
-                    <span className="text-muted-foreground">{t(lang, 'trip_type_label')}:</span>
-                    <span className="font-medium">{form.trip_type === 'round_trip' ? t(lang, 'trip_round_trip') : t(lang, 'trip_one_way')}</span>
+                    {form.service_type === 'transfer' && (
+                      <>
+                        <span className="text-muted-foreground">{t(lang, 'trip_type_label')}:</span>
+                        <span className="font-medium">{form.trip_type === 'round_trip' ? t(lang, 'trip_round_trip') : t(lang, 'trip_one_way')}</span>
+                      </>
+                    )}
                     <span className="text-muted-foreground">{t(lang, 'date')}:</span>
                     <span className="font-medium">{form.transfer_date} {form.transfer_time}</span>
                     {form.trip_type === 'round_trip' && form.return_date && (
@@ -632,6 +778,24 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     )}
                   </div>
                   <Separator />
+                  {isDayTrip && (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t(lang, 'summary_transfer_part')}:</span>
+                        <span className="font-medium text-muted-foreground">{formatPrice(transferPrice)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t(lang, 'summary_stops')}:</span>
+                        <span className="font-medium text-muted-foreground">+{formatPrice(stopsTotal)}</span>
+                      </div>
+                    </>
+                  )}
+                  {isHourly && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{hours} h × {HOURLY_RATE} €:</span>
+                      <span className="font-medium text-muted-foreground">{formatPrice(hourlyPrice(hours))}</span>
+                    </div>
+                  )}
                   {nightFee > 0 && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-1.5">

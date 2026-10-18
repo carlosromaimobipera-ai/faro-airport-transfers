@@ -173,3 +173,27 @@ export async function fetchRouteGeometry(origin, destination) {
   }
   return { geometry: [origin, destination], distanceKm: null };
 }
+
+// Paragens escolhidas na página "Lugares na rota", para passar ao formulário de reserva
+const SELECTION_STORAGE_KEY = 'routePlacesSelection';
+
+export function saveRoutePlacesSelection(stops) {
+  const payload = { stops, saved_at: Date.now() };
+  try {
+    window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {
+    console.warn('Não foi possível guardar as paragens escolhidas:', e?.message);
+  }
+  return payload;
+}
+
+export function readRoutePlacesSelection() {
+  try {
+    const raw = window.localStorage.getItem(SELECTION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed?.stops) && parsed.stops.length ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+}

@@ -410,6 +410,8 @@ export const translations = {
     rp_route_value: 'Valor da rota (transfer)',
     rp_visits_value: 'Valor das visitas',
     rp_total_estimated: 'Total estimado',
+    rp_send: 'Passar para a reserva',
+    rp_sent: 'Paragens enviadas para o formulário de reserva. Volte ao separador onde está a reservar.',
   },
 
   en: {
@@ -782,6 +784,8 @@ export const translations = {
     rp_route_value: 'Route value (transfer)',
     rp_visits_value: 'Visits value',
     rp_total_estimated: 'Estimated total',
+    rp_send: 'Send to the booking',
+    rp_sent: 'Stops sent to the booking form. Go back to the tab where you are booking.',
   },
 
   es: {
@@ -1154,6 +1158,8 @@ export const translations = {
     rp_route_value: 'Valor de la ruta (traslado)',
     rp_visits_value: 'Valor de las visitas',
     rp_total_estimated: 'Total estimado',
+    rp_send: 'Pasar a la reserva',
+    rp_sent: 'Paradas enviadas al formulario de reserva. Vuelva a la pestaña donde está reservando.',
     },
     fr: {
     nav_book: 'Réserver',
@@ -1525,6 +1531,8 @@ export const translations = {
     rp_route_value: 'Valeur de l\'itinéraire (transfert)',
     rp_visits_value: 'Valeur des visites',
     rp_total_estimated: 'Total estimé',
+    rp_send: 'Envoyer à la réservation',
+    rp_sent: 'Arrêts envoyés au formulaire de réservation. Revenez à l\'onglet de réservation.',
   },
 
   de: {
@@ -1897,6 +1905,8 @@ export const translations = {
     rp_route_value: 'Routenpreis (Transfer)',
     rp_visits_value: 'Preis der Besuche',
     rp_total_estimated: 'Geschätzte Gesamtsumme',
+    rp_send: 'Zur Buchung übertragen',
+    rp_sent: 'Stopps an das Buchungsformular gesendet. Kehren Sie zum Buchungs-Tab zurück.',
   },
 
   nl: {
@@ -2269,6 +2279,8 @@ export const translations = {
     rp_route_value: 'Routprijs (transfer)',
     rp_visits_value: 'Prijs van de bezoeken',
     rp_total_estimated: 'Geschatte totaal',
+    rp_send: 'Naar de boeking sturen',
+    rp_sent: 'Stops verzonden naar het boekingsformulier. Ga terug naar het tabblad waar u boekt.',
   },
 };
 

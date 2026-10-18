@@ -127,7 +127,6 @@ export default function RoutePlaces() {
               </div>
             </div>
 
-            <p className="text-xs text-muted-foreground text-center">{t(lang, 'rp_note')}</p>
           </>
         )}
       </div>

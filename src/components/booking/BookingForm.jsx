@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import VehicleCard from './VehicleCard';
 import ServiceTypeSelector from './ServiceTypeSelector';
 import StopsSelector from './StopsSelector';
 import RoutePlacesPrompt from './RoutePlacesPrompt';
+import { readRoutePlacesSelection } from '@/lib/routePlaces';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
@@ -104,6 +105,25 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
       setIsLoadingDistance(false);
     });
   }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
+
+  // Paragens escolhidas na página "Lugares na rota": recolhe a selecção quando o cliente
+  // regressa a este separador (transfer + day trip)
+  const appliedPlacesRef = useRef(null);
+  useEffect(() => {
+    const applyPlacesSelection = () => {
+      const saved = readRoutePlacesSelection();
+      if (!saved || saved.saved_at === appliedPlacesRef.current) return;
+      appliedPlacesRef.current = saved.saved_at;
+      setForm(prev => ({ ...prev, stops: saved.stops }));
+    };
+    applyPlacesSelection();
+    window.addEventListener('focus', applyPlacesSelection);
+    window.addEventListener('storage', applyPlacesSelection);
+    return () => {
+      window.removeEventListener('focus', applyPlacesSelection);
+      window.removeEventListener('storage', applyPlacesSelection);
+    };
+  }, []);
 
   const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Send } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { t } from '@/lib/i18n';
 import { useCurrency } from '@/lib/CurrencyContext';
 import { vehicleTypes, calculatePrice } from '@/lib/transferData';
 import { STOP_HOURLY_RATE, stopsPrice } from '@/lib/extraServices';
+import { saveRoutePlacesSelection } from '@/lib/routePlaces';
 
 export default function RouteVisitPlanner({ selection, onChange, routeKm, initialVehicle, isSpainRoute, lang }) {
   const { formatPrice } = useCurrency();
@@ -20,10 +21,21 @@ export default function RouteVisitPlanner({ selection, onChange, routeKm, initia
   const routeValue = routeKm ? calculatePrice(routeKm, vehicle, [], 0, isSpainRoute) : 0;
   const total = Math.round((routeValue + visitsTotal) * 100) / 100;
 
+  const [sent, setSent] = useState(false);
+
   const updateHours = (name, value) => {
+    setSent(false);
     onChange(selection.map(p => (p.name === name ? { ...p, hours: value } : p)));
   };
-  const removePlace = (name) => onChange(selection.filter(p => p.name !== name));
+  const removePlace = (name) => {
+    setSent(false);
+    onChange(selection.filter(p => p.name !== name));
+  };
+
+  const sendToBooking = () => {
+    saveRoutePlacesSelection(selection);
+    setSent(true);
+  };
 
   return (
     <Card className="border-secondary/30 shadow-lg shadow-black/5">
@@ -100,6 +112,21 @@ export default function RouteVisitPlanner({ selection, onChange, routeKm, initia
             <span className="text-2xl font-bold text-primary">{formatPrice(total)}</span>
           </div>
         </div>
+
+        <Button
+          type="button"
+          className="w-full gap-2"
+          disabled={selection.length === 0}
+          onClick={sendToBooking}
+        >
+          <Send className="w-4 h-4" /> {t(lang, 'rp_send')}
+        </Button>
+
+        {sent && (
+          <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">
+            {t(lang, 'rp_sent')}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

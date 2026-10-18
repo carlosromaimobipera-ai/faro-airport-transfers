@@ -110,6 +110,7 @@ export default function Footer() {
             <span className="text-background/50 font-medium">{t(lang, 'footer_rnavt')}</span>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
+            <Link to="/chauffeur-por-hora" className="hover:text-background/70 transition-colors">{t(lang, 'nav_chauffeur')}</Link>
             <Link to="/sobre" className="hover:text-background/70 transition-colors">{t(lang, 'about_title')}</Link>
             <Link to="/contacto" className="hover:text-background/70 transition-colors">{t(lang, 'contact_title')}</Link>
             <Link to="/politica-de-privacidade" className="hover:text-background/70 transition-colors">{t(lang, 'footer_privacy')}</Link>

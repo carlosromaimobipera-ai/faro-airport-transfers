@@ -29,7 +29,7 @@ import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 import { useCurrency } from '@/lib/CurrencyContext';
 
-export default function BookingForm({ initialOrigin = '', initialDestination = '' }) {
+export default function BookingForm({ initialOrigin = '', initialDestination = '', initialService = 'transfer' }) {
   const navigate = useNavigate();
   const { lang } = useLang();
   const { formatPrice } = useCurrency();
@@ -41,7 +41,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
 
 
   const [form, setForm] = useState({
-    service_type: 'transfer',
+    service_type: initialService,
     origin: initialOrigin, destination: initialDestination, vehicle_type: '',
     origin_place: null, destination_place: null,
     trip_type: 'one_way',

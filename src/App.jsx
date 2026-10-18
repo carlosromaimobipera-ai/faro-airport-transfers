@@ -35,6 +35,7 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const TransferFaro = lazy(() => import('@/pages/TransferFaro'));
 const TransferLisbon = lazy(() => import('@/pages/TransferLisbon'));
 const TransferSeville = lazy(() => import('@/pages/TransferSeville'));
+const ChauffeurPerHour = lazy(() => import('@/pages/ChauffeurPerHour'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -124,6 +125,7 @@ const AuthenticatedApp = () => {
               <Route path="/transfers/faro" element={<TransferFaro />} />
               <Route path="/transfers/lisbon" element={<TransferLisbon />} />
               <Route path="/transfers/seville" element={<TransferSeville />} />
+              <Route path="/chauffeur-por-hora" element={<ChauffeurPerHour />} />
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>

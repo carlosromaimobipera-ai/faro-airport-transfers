@@ -50,6 +50,9 @@ export default function Navbar() {
           <a href="#booking" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_book')}
           </a>
+          <Link to="/chauffeur-por-hora" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
+            {t(lang, 'nav_chauffeur')}
+          </Link>
           <Link to="/admin" className={cn("text-xs lg:text-sm font-medium transition-colors hover:text-primary px-2 lg:px-3 py-2", scrolled ? "text-foreground" : "text-white/90")}>
             {t(lang, 'nav_manage')}
           </Link>
@@ -102,6 +105,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-background border-t border-border p-4 space-y-3">
           <a href="#booking" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_book')}</a>
+          <Link to="/chauffeur-por-hora" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_chauffeur')}</Link>
           <Link to="/admin" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_manage')}</Link>
           <Link to="/area-cliente" className="block text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>{t(lang, 'nav_myreservations')}</Link>
           <Link to="/driver" className="flex items-center gap-2 text-sm font-medium py-2" onClick={() => setMenuOpen(false)}>

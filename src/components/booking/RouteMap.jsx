@@ -1,7 +1,8 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import BasemapTiles from '@/components/maps/BasemapTiles';
 
 // Inline SVG marker icons — no external network requests
 const pinSvg = (color) => encodeURIComponent(`
@@ -61,12 +62,7 @@ export default function RouteMap({ originCoords, destinationCoords }) {
         className="w-full h-full"
         scrollWheelZoom={false}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
-          maxZoom={20}
-        />
+        <BasemapTiles />
         
         <FitBounds origin={origin} destination={destination} />
 

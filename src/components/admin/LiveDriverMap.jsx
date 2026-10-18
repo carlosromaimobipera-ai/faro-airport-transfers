@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import { MapContainer, Marker, Popup, Circle } from 'react-leaflet';
+import BasemapTiles from '@/components/maps/BasemapTiles';
 import { subHours, parseISO, format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
@@ -119,12 +120,7 @@ export default function LiveDriverMap() {
             zoom={9}
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              subdomains="abcd"
-              maxZoom={20}
-            />
+            <BasemapTiles />
             {latestPerDriver.map(loc => {
               const driver = drivers.find(d => d.id === loc.driver_id);
               const name = loc.driver_name || driver?.name || '?';

@@ -128,6 +128,8 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
 
   const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;
+  // Valor aproximado (linha reta) quando nenhum serviço de rotas respondeu
+  const isApproximate = !!distanceData?.approximate;
 
   // Detect when BOTH origin and destination are in Spain (not Portugal) — quote-only route
   const isBothInSpain = useMemo(() => {
@@ -543,10 +545,13 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                 {!isHourly && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && !isBothInSpain && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                     <p className="text-xs text-muted-foreground mb-1">
-                  {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{routeKm} km</span>
+                  {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{isApproximate ? '≈ ' : ''}{routeKm} km</span>
                   {form.route_km && <span className="ml-1 text-xs text-muted-foreground">({t(lang, 'distance_with_stops')})</span>}
                   {form.trip_type === 'round_trip' && <span className="ml-2 text-primary font-medium">× 2 ({t(lang, 'trip_round_trip')})</span>}
                 </p>
+                    {isApproximate && (
+                      <p className="text-xs text-amber-700 mb-2">{t(lang, 'distance_approx_note')}</p>
+                    )}
                     <div className="flex items-center gap-3 flex-wrap">
                        <span className="text-xs text-muted-foreground">{t(lang, 'from_price')}:</span>
                        {vehicleTypes.map(v => (
@@ -566,6 +571,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                       price={basePrice}
                       duration_minutes={distanceData?.duration_minutes}
                       isLoading={isLoadingDistance}
+                      isApproximate={isApproximate}
                     />
                     <Suspense fallback={<div className="w-full h-72 md:h-96 rounded-xl bg-muted animate-pulse" />}>
                       <RouteMap 
@@ -788,7 +794,8 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     )}
                     <span className="text-muted-foreground">{t(lang, 'distance')}:</span>
                     <span className="font-medium">
-                      {routeKm ? `${routeKm} km` : '—'}
+                      {routeKm ? `${isApproximate ? '≈ ' : ''}${routeKm} km` : '—'}
+                      {isApproximate && <span className="text-amber-700 text-xs"> ({t(lang, 'distance_approx_note')})</span>}
                       {form.route_km && <span className="text-muted-foreground text-xs"> ({t(lang, 'distance_with_stops')})</span>}
                     </span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>

@@ -13,7 +13,7 @@ const routeLabels = {
   nl: { origin: 'Vertrek', destination: 'Bestemming', distance: 'Afstand', duration: 'Duur', basePrice: 'Basisprijs' },
 };
 
-export default function RouteInfoBadge({ origin, destination, distance, price, duration_minutes, isLoading }) {
+export default function RouteInfoBadge({ origin, destination, distance, price, duration_minutes, isLoading, isApproximate }) {
   const { lang } = useLang();
   const labels = routeLabels[lang] || routeLabels['en'];
 
@@ -50,7 +50,8 @@ export default function RouteInfoBadge({ origin, destination, distance, price, d
           </div>
           <div className="text-xs">
             <p className="text-muted-foreground">{labels.distance}</p>
-            <p className="font-semibold text-foreground">{distance} km</p>
+            <p className="font-semibold text-foreground">{isApproximate ? `≈ ${distance} km` : `${distance} km`}</p>
+            {isApproximate && <p className="text-amber-600">{t(lang, 'distance_approx_note')}</p>}
           </div>
         </div>
 

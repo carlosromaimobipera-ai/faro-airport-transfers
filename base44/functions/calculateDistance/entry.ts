@@ -24,6 +24,7 @@ export default async function(req: Request): Promise<Response> {
           distance_text: `${c.distance_km} km`,
           duration_text: `${c.duration_minutes} min`,
           source: "cache",
+          approximate: false,
         });
       }
     } catch (e) {
@@ -52,6 +53,7 @@ export default async function(req: Request): Promise<Response> {
         distance_text: `${real.distance_km} km`,
         duration_text: `${real.duration_minutes} min`,
         source: real.source,
+        approximate: false,
       });
     }
 
@@ -62,7 +64,8 @@ export default async function(req: Request): Promise<Response> {
       duration_minutes: fallback.duration_minutes,
       distance_text: `${fallback.distance_km} km`,
       duration_text: `${fallback.duration_minutes} min`,
-      source: "haversine",
+      source: fallback.source,
+      approximate: true,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

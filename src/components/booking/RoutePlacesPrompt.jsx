@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 
 const shortName = (address) => (address || '').split(',')[0];
 
-export default function RoutePlacesPrompt({ originPlace, destinationPlace, lang }) {
+export default function RoutePlacesPrompt({ originPlace, destinationPlace, distanceKm, vehicleType, isSpainRoute, lang }) {
   const origin = originPlace?.coords;
   const destination = destinationPlace?.coords;
   if (!origin || !destination) return null;
@@ -16,6 +16,9 @@ export default function RoutePlacesPrompt({ originPlace, destinationPlace, lang 
     dLng: destination.lng,
     o: originPlace.address || '',
     d: destinationPlace.address || '',
+    km: distanceKm ? String(distanceKm) : '',
+    veh: vehicleType || '',
+    es: isSpainRoute ? '1' : '',
   });
 
   const description = t(lang, 'places_prompt_desc')

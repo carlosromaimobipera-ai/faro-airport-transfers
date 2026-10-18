@@ -546,6 +546,9 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   <RoutePlacesPrompt
                     originPlace={form.origin_place}
                     destinationPlace={form.destination_place}
+                    distanceKm={distance}
+                    vehicleType={form.vehicle_type}
+                    isSpainRoute={isSpainRoute}
                     lang={lang}
                   />
                 )}

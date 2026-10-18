@@ -4,6 +4,7 @@ import Navbar from '@/components/booking/Navbar';
 import Footer from '@/components/booking/Footer';
 import RoutePlacesMap from '@/components/maps/RoutePlacesMap';
 import RoutePlaceCard from '@/components/booking/RoutePlaceCard';
+import RouteVisitPlanner from '@/components/booking/RouteVisitPlanner';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
 import { fetchRouteGeometry, geometryLengthKm, rankPlacesAlongRoute } from '@/lib/routePlaces';
@@ -25,6 +26,10 @@ export default function RoutePlaces() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const [route, setRoute] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selection, setSelection] = useState([]);
+  const routeKmParam = parseFloat(params.get('km')) || null;
+  const vehicleParam = params.get('veh') || '';
+  const isSpainRoute = params.get('es') === '1';
 
   const origin = useMemo(() => ({
     lat: parseFloat(params.get('oLat')),
@@ -53,7 +58,13 @@ export default function RoutePlaces() {
   }, [hasCoords, origin.lat, origin.lng, destination.lat, destination.lng]);
 
   const places = useMemo(() => (route ? rankPlacesAlongRoute(route.geometry) : []), [route]);
-  const routeKm = route ? (route.distanceKm ?? geometryLengthKm(route.geometry)) : null;
+  const routeKm = routeKmParam ?? (route ? (route.distanceKm ?? geometryLengthKm(route.geometry)) : null);
+
+  const togglePlace = (place) => setSelection(prev => (
+    prev.some(p => p.name === place.name)
+      ? prev.filter(p => p.name !== place.name)
+      : [...prev, { name: place.name, hours: 1 }]
+  ));
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,20 +91,41 @@ export default function RoutePlaces() {
               <RoutePlacesMap geometry={route.geometry} places={places} origin={origin} destination={destination} />
             )}
 
-            {isLoading ? (
-              <div className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm">{t(lang, 'rp_searching')}</span>
+            <div className="grid lg:grid-cols-3 gap-6 items-start">
+              <div className="lg:order-2 lg:sticky lg:top-24">
+                <RouteVisitPlanner
+                  selection={selection}
+                  onChange={setSelection}
+                  routeKm={routeKm}
+                  initialVehicle={vehicleParam}
+                  isSpainRoute={isSpainRoute}
+                  lang={lang}
+                />
               </div>
-            ) : places.length === 0 ? (
-              <RoutePlacesEmpty lang={lang} message={t(lang, 'rp_empty')} />
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {places.map(place => (
-                  <RoutePlaceCard key={place.name} place={place} lang={lang} />
-                ))}
+
+              <div className="lg:order-1 lg:col-span-2 space-y-4">
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-sm">{t(lang, 'rp_searching')}</span>
+                  </div>
+                ) : places.length === 0 ? (
+                  <RoutePlacesEmpty lang={lang} message={t(lang, 'rp_empty')} />
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {places.map(place => (
+                      <RoutePlaceCard
+                        key={place.name}
+                        place={place}
+                        lang={lang}
+                        isAdded={selection.some(p => p.name === place.name)}
+                        onToggle={() => togglePlace(place)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             <p className="text-xs text-muted-foreground text-center">{t(lang, 'rp_note')}</p>
           </>

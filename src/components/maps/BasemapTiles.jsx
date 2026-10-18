@@ -1,20 +1,20 @@
 import React, { useRef, useState } from 'react';
 import { TileLayer } from 'react-leaflet';
 
-// Servidores de mapas usados pelo app. Se um deles recusar os pedidos
-// (como aconteceu com os servidores públicos do OpenStreetMap), o mapa
-// passa automaticamente para o seguinte.
+// Servidores de tiles gratuitos e sem chave de API.
+// O primeiro é o principal; se os pedidos falharem, o mapa passa
+// automaticamente para o seguinte (com a atribuição correspondente).
 const PROVIDERS = [
-  {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    subdomains: 'abcd',
-    maxZoom: 20,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  },
   {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; Esri',
+  },
+  {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    subdomains: 'abc',
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   },
 ];
 

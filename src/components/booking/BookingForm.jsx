@@ -15,6 +15,7 @@ import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
 import ServiceTypeSelector from './ServiceTypeSelector';
 import StopsSelector from './StopsSelector';
+import RoutePlacesPrompt from './RoutePlacesPrompt';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
@@ -540,6 +541,13 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                       />
                     </Suspense>
                   </>
+                )}
+                {isDayTrip && distance && form.origin_place?.coords && form.destination_place?.coords && !isBothInSpain && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                  <RoutePlacesPrompt
+                    originPlace={form.origin_place}
+                    destinationPlace={form.destination_place}
+                    lang={lang}
+                  />
                 )}
               </motion.div>
             )}

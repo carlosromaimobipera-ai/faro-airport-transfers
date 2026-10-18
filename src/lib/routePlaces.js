@@ -155,6 +155,33 @@ export function rankPlacesAlongRoute(geometry) {
   return ranked.slice(0, MAX_RESULTS);
 }
 
+// Distância desde o início da rota até um local (qualquer local do catálogo)
+export function alongKmForPlace(place, geometry) {
+  if (!geometry || geometry.length < 2) return null;
+  return Math.round(closestOnRoute(place, geometry).alongKm);
+}
+
+function normalizeText(value) {
+  return (value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+// Pesquisa no catálogo de locais (nome e descrição, sem acentos)
+export function searchRoutePlaces(query, limit = 8) {
+  const q = normalizeText(query);
+  if (q.length < 2) return [];
+  return ROUTE_PLACES
+    .filter(place => (
+      normalizeText(place.name).includes(q)
+      || normalizeText(place.pt).includes(q)
+      || normalizeText(place.en).includes(q)
+    ))
+    .slice(0, limit);
+}
+
 // Traçado real da estrada por vários pontos, na ordem dada (OSRM).
 // Usado na rota simples (origem-destino) e na rota com as paragens escolhidas.
 export async function fetchRouteThroughPoints(points) {

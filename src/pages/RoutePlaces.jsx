@@ -7,7 +7,10 @@ import RoutePlaceCard from '@/components/booking/RoutePlaceCard';
 import RouteVisitPlanner from '@/components/booking/RouteVisitPlanner';
 import { useLang } from '@/lib/LanguageContext';
 import { t } from '@/lib/i18n';
-import { fetchRouteGeometry, geometryLengthKm, rankPlacesAlongRoute } from '@/lib/routePlaces';
+import RoutePlacesSearch from '@/components/booking/RoutePlacesSearch';
+import PopularPlaces from '@/components/booking/PopularPlaces';
+import { base44 } from '@/api/base44Client';
+import { fetchRouteGeometry, geometryLengthKm, rankPlacesAlongRoute, alongKmForPlace } from '@/lib/routePlaces';
 
 function RoutePlacesEmpty({ lang, message }) {
   return (
@@ -27,6 +30,7 @@ export default function RoutePlaces() {
   const [route, setRoute] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selection, setSelection] = useState([]);
+  const [popular, setPopular] = useState([]);
   const routeKmParam = parseFloat(params.get('km')) || null;
   const vehicleParam = params.get('veh') || '';
   const isSpainRoute = params.get('es') === '1';
@@ -60,11 +64,45 @@ export default function RoutePlaces() {
   const places = useMemo(() => (route ? rankPlacesAlongRoute(route.geometry) : []), [route]);
   const routeKm = routeKmParam ?? (route ? (route.distanceKm ?? geometryLengthKm(route.geometry)) : null);
 
-  const togglePlace = (place) => setSelection(prev => (
-    prev.some(p => p.name === place.name)
-      ? prev.filter(p => p.name !== place.name)
-      : [...prev, { name: place.name, hours: 1, lat: place.lat, lng: place.lng, alongKm: place.alongKm }]
-  ));
+  // Locais mais escolhidos por outros clientes (sugestões de "mais procurados")
+  const loadPopular = () => base44.entities.PopularPlace
+    .filter({}, { sort: '-search_count', limit: 6 })
+    .then(res => setPopular(res.items || []))
+    .catch(() => {});
+
+  useEffect(() => { loadPopular(); }, []);
+
+  const selectedNames = selection.map(p => p.name);
+  const popularPlaces = popular.map(p => ({
+    name: p.name,
+    cat: p.category || 'historic',
+    lat: p.lat,
+    lng: p.lng,
+    search_count: p.search_count || 0,
+  }));
+
+  // Adiciona/remove um local da lista de paragens e registra a escolha
+  const togglePlace = (place) => {
+    if (selection.some(p => p.name === place.name)) {
+      setSelection(prev => prev.filter(p => p.name !== place.name));
+      return;
+    }
+
+    setSelection(prev => [...prev, {
+      name: place.name,
+      hours: 1,
+      lat: place.lat,
+      lng: place.lng,
+      alongKm: place.alongKm ?? alongKmForPlace(place, route?.geometry),
+    }]);
+
+    base44.functions.invoke('recordPlaceSearch', {
+      name: place.name,
+      category: place.cat,
+      lat: place.lat,
+      lng: place.lng,
+    }).then(loadPopular).catch(() => {});
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,6 +128,11 @@ export default function RoutePlaces() {
             {route && route.geometry.length > 1 && (
               <RoutePlacesMap geometry={route.geometry} places={places} origin={origin} destination={destination} />
             )}
+
+            <div className="space-y-4">
+              <RoutePlacesSearch lang={lang} selectedNames={selectedNames} onToggle={togglePlace} />
+              <PopularPlaces places={popularPlaces} lang={lang} selectedNames={selectedNames} onToggle={togglePlace} />
+            </div>
 
             <div className="grid lg:grid-cols-3 gap-6 items-start">
               <div className="lg:order-2 lg:sticky lg:top-24">

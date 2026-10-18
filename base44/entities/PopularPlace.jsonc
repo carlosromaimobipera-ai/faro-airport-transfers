@@ -1,0 +1,52 @@
+{
+  "name": "PopularPlace",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do local de interesse escolhido pelo cliente"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categoria do local (beach, viewpoint, historic, nature, wine, market)"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude do local"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitude do local"
+    },
+    "search_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantas vezes os clientes escolheram este local"
+    },
+    "last_search": {
+      "type": "string",
+      "description": "Data e hora da \u00faltima escolha (ISO)"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

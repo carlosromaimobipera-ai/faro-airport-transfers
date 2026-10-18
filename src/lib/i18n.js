@@ -413,6 +413,13 @@ export const translations = {
     rp_send: 'Passar para a reserva',
     rp_sent: 'Paragens enviadas para o formulário de reserva. Volte ao separador onde está a reservar.',
     distance_with_stops: 'com paragens',
+    rp_search_title: 'Procurar outros locais de interesse',
+    rp_search_sub: 'Pesquise praias, miradouros, castelos, adegas e mercados.',
+    rp_search_ph: 'Escreva o nome do local…',
+    rp_search_none: 'Sem resultados. Tente outro nome ou escolha nas sugestões.',
+    rp_popular: 'Mais procurados por clientes',
+    rp_popular_sub: 'Sugestões com base nos locais que outros clientes escolheram.',
+    rp_chosen: '{count}×',
   },
 
   en: {
@@ -788,6 +795,13 @@ export const translations = {
     rp_send: 'Send to the booking',
     rp_sent: 'Stops sent to the booking form. Go back to the tab where you are booking.',
     distance_with_stops: 'with stops',
+    rp_search_title: 'Search other places of interest',
+    rp_search_sub: 'Search beaches, viewpoints, castles, wine cellars and markets.',
+    rp_search_ph: 'Type the place name…',
+    rp_search_none: 'No results. Try another name or pick from the suggestions.',
+    rp_popular: 'Most requested by clients',
+    rp_popular_sub: 'Suggestions based on the places other clients chose.',
+    rp_chosen: '{count}×',
   },
 
   es: {
@@ -1163,6 +1177,13 @@ export const translations = {
     rp_send: 'Pasar a la reserva',
     rp_sent: 'Paradas enviadas al formulario de reserva. Vuelva a la pestaña donde está reservando.',
     distance_with_stops: 'con paradas',
+    rp_search_title: 'Buscar otros lugares de interés',
+    rp_search_sub: 'Busque playas, miradores, castillos, bodegas y mercados.',
+    rp_search_ph: 'Escriba el nombre del lugar…',
+    rp_search_none: 'Sin resultados. Pruebe otro nombre o elija en las sugerencias.',
+    rp_popular: 'Más solicitados por clientes',
+    rp_popular_sub: 'Sugerencias basadas en los lugares que eligieron otros clientes.',
+    rp_chosen: '{count}×',
     },
     fr: {
     nav_book: 'Réserver',
@@ -1537,6 +1558,13 @@ export const translations = {
     rp_send: 'Envoyer à la réservation',
     rp_sent: 'Arrêts envoyés au formulaire de réservation. Revenez à l\'onglet de réservation.',
     distance_with_stops: 'avec arrêts',
+    rp_search_title: 'Rechercher d\'autres lieux d\'intérêt',
+    rp_search_sub: 'Cherchez plages, points de vue, châteaux, caves et marchés.',
+    rp_search_ph: 'Écrivez le nom du lieu…',
+    rp_search_none: 'Aucun résultat. Essayez un autre nom ou choisissez dans les suggestions.',
+    rp_popular: 'Les plus demandés par les clients',
+    rp_popular_sub: 'Suggestions basées sur les lieux choisis par d\'autres clients.',
+    rp_chosen: '{count}×',
   },
 
   de: {
@@ -1912,6 +1940,13 @@ export const translations = {
     rp_send: 'Zur Buchung übertragen',
     rp_sent: 'Stopps an das Buchungsformular gesendet. Kehren Sie zum Buchungs-Tab zurück.',
     distance_with_stops: 'mit Stopps',
+    rp_search_title: 'Weitere Orte von Interesse suchen',
+    rp_search_sub: 'Suchen Sie Strände, Aussichtspunkte, Burgen, Weinkeller und Märkte.',
+    rp_search_ph: 'Namen des Ortes eingeben…',
+    rp_search_none: 'Keine Ergebnisse. Versuchen Sie einen anderen Namen oder wählen Sie aus den Vorschlägen.',
+    rp_popular: 'Am häufigsten von Kunden gewählt',
+    rp_popular_sub: 'Vorschläge basierend auf den Orten, die andere Kunden gewählt haben.',
+    rp_chosen: '{count}×',
   },
 
   nl: {
@@ -2287,6 +2322,13 @@ export const translations = {
     rp_send: 'Naar de boeking sturen',
     rp_sent: 'Stops verzonden naar het boekingsformulier. Ga terug naar het tabblad waar u boekt.',
     distance_with_stops: 'met stops',
+    rp_search_title: 'Andere interessante plekken zoeken',
+    rp_search_sub: 'Zoek stranden, uitzichtpunten, kastelen, wijnkelders en markten.',
+    rp_search_ph: 'Typ de naam van de plek…',
+    rp_search_none: 'Geen resultaten. Probeer een andere naam of kies uit de suggesties.',
+    rp_popular: 'Meest gekozen door klanten',
+    rp_popular_sub: 'Suggesties op basis van plekken die andere klanten kozen.',
+    rp_chosen: '{count}×',
   },
 };
 

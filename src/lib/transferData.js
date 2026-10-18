@@ -125,11 +125,27 @@ const PRICE_PER_KM = {
 
 // Tarifas mínimas
 const MINIMUM_FARES = {
-  sedan:   25,
-  premium: 35,
-  minivan: 30,
-  minibus: 35,
+  sedan:   30,
+  premium: 40,
+  minivan: 35,
+  minibus: 40,
 };
+
+// Suplemento noturno: +5€ para recolhas/entregas entre as 22h00 e as 06h00
+export const NIGHT_SURCHARGE = 5;
+
+// Hora em formato HH:MM dentro da janela noturna (22h00-05h59)
+export function isNightTime(time) {
+  if (!time) return false;
+  const hour = parseInt(String(time).split(':')[0], 10);
+  if (isNaN(hour)) return false;
+  return hour >= 22 || hour < 6;
+}
+
+// Valor do suplemento noturno aplicável a uma hora de recolha
+export function getNightSurcharge(time) {
+  return isNightTime(time) ? NIGHT_SURCHARGE : 0;
+}
 
 // Apply dynamic price rules to a base price
 // Rules are additive: each matching rule adds (multiplier - 1) to the combined factor

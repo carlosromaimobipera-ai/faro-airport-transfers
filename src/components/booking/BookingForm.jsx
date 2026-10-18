@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, CircleDot, Calendar, User, Gift, AlertCircle, ArrowLeftRight, Plane, Moon } from 'lucide-react';
 import ExtrasSelector from './ExtrasSelector';
 import TimePicker from './TimePicker.jsx';
 import DatePicker from './DatePicker.jsx';
@@ -15,7 +15,7 @@ import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
-import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName } from '@/lib/transferData';
+import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
 import { useQuery } from '@tanstack/react-query';
 
 const HAS_PLACES_KEY = !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
@@ -136,7 +136,12 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   const basePrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
   const extrasTotal = useMemo(() => calculateExtrasTotal(form.extras), [form.extras]);
   const tripMultiplier = form.trip_type === 'round_trip' ? 2 : 1;
-  const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal) * 100) / 100, [basePrice, tripMultiplier, extrasTotal]);
+  // Suplemento noturno: +5€ por trajecto recolhido/entregue entre as 22h00 e as 06h00
+  const nightFee = useMemo(
+    () => getNightSurcharge(form.transfer_time) + (form.trip_type === 'round_trip' ? getNightSurcharge(form.return_time) : 0),
+    [form.transfer_time, form.return_time, form.trip_type]
+  );
+  const price = useMemo(() => Math.round((basePrice * tripMultiplier + extrasTotal + nightFee) * 100) / 100, [basePrice, tripMultiplier, extrasTotal, nightFee]);
   const CARD_FEE_RATE = 0.035;
   const cardFee = useMemo(() => Math.round(price * CARD_FEE_RATE * 100) / 100, [price]);
   const finalPrice = useMemo(() =>
@@ -187,9 +192,11 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
     const outboundRef = generateBookingRef();
     const returnRef = isRoundTrip ? generateBookingRef() : null;
 
+    const outboundNightFee = getNightSurcharge(form.transfer_time);
+    const returnNightFee = isRoundTrip ? getNightSurcharge(form.return_time) : 0;
     const fee = paymentStatus === 'paid' ? Math.round((isRoundTrip ? (basePrice + extrasTotal) : price) * CARD_FEE_RATE * 100) / 100 : 0;
     const outboundPrice = isRoundTrip
-      ? Math.round((basePrice + extrasTotal + fee) * 100) / 100
+      ? Math.round((basePrice + extrasTotal + fee + outboundNightFee) * 100) / 100
       : Math.round((price + fee) * 100) / 100;
 
     const commonFields = {
@@ -238,7 +245,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
         trip_type: 'one_way',
         extras: [],
         extras_price: 0,
-        price: basePrice,
+        price: Math.round((basePrice + returnNightFee) * 100) / 100,
         linked_booking_ref: outboundRef,
       });
     }
@@ -550,6 +557,12 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     </div>
                   </div>
                 </div>
+                {nightFee > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+                    <Moon className="w-4 h-4 shrink-0" />
+                    {t(lang, 'night_surcharge')}: +{formatPrice(nightFee)} (22h00-06h00)
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>{t(lang, 'notes')}</Label>
                   <Textarea placeholder={t(lang, 'notes_ph')} value={form.notes} onChange={(e) => updateForm('notes', e.target.value)} />
@@ -619,6 +632,14 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     )}
                   </div>
                   <Separator />
+                  {nightFee > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground flex items-center gap-1.5">
+                        <Moon className="w-3.5 h-3.5" /> {t(lang, 'night_surcharge')} (22h00-06h00):
+                      </span>
+                      <span className="font-medium text-muted-foreground">+{formatPrice(nightFee)}</span>
+                    </div>
+                  )}
                   {(paymentMethod === 'card' || paymentMethod === 'paypal') && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">{t(lang, 'card_fee_label') || 'Taxa cartão/PayPal'}:</span>

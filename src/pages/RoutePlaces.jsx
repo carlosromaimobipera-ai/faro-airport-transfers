@@ -63,7 +63,7 @@ export default function RoutePlaces() {
   const togglePlace = (place) => setSelection(prev => (
     prev.some(p => p.name === place.name)
       ? prev.filter(p => p.name !== place.name)
-      : [...prev, { name: place.name, hours: 1 }]
+      : [...prev, { name: place.name, hours: 1, lat: place.lat, lng: place.lng, alongKm: place.alongKm }]
   ));
 
   return (
@@ -97,6 +97,8 @@ export default function RoutePlaces() {
                   selection={selection}
                   onChange={setSelection}
                   routeKm={routeKm}
+                  origin={origin}
+                  destination={destination}
                   initialVehicle={vehicleParam}
                   isSpainRoute={isSpainRoute}
                   lang={lang}

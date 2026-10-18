@@ -52,6 +52,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
     passengers: 1, luggage: 1,
     hours: 2,
     stops: [{ name: '', hours: 1 }],
+    route_km: null,
     customer_name: '', customer_email: '', customer_phone: '', notes: '',
     extras: [],
     language: lang,
@@ -114,7 +115,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
       const saved = readRoutePlacesSelection();
       if (!saved || saved.saved_at === appliedPlacesRef.current) return;
       appliedPlacesRef.current = saved.saved_at;
-      setForm(prev => ({ ...prev, stops: saved.stops }));
+      setForm(prev => ({ ...prev, stops: saved.stops, route_km: saved.route_km ?? null }));
     };
     applyPlacesSelection();
     window.addEventListener('focus', applyPlacesSelection);
@@ -162,13 +163,15 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
 
   const isHourly = form.service_type === 'hourly';
   const isDayTrip = form.service_type === 'daytrip';
+  // Km da rota com as paragens escolhidas (transfer + day trip) — recalcula valores
+  const routeKm = isDayTrip && form.route_km ? form.route_km : distance;
   const hours = parseFloat(form.hours) || 0;
   const stopsTotal = useMemo(() => stopsPrice(form.stops), [form.stops]);
   // Tarifa de transfer da rota escolhida (usada no transfer e no transfer + day trip)
-  const transferPrice = useMemo(() => calculatePrice(distance, form.vehicle_type, [], duration, isSpainRoute), [distance, form.vehicle_type, duration, isSpainRoute]);
+  const transferPrice = useMemo(() => calculatePrice(routeKm, form.vehicle_type, [], duration, isSpainRoute), [routeKm, form.vehicle_type, duration, isSpainRoute]);
   const vehiclePrice = (vehicleId) => {
     if (isHourly) return hourlyPrice(hours);
-    const transfer = calculatePrice(distance, vehicleId, [], duration, isSpainRoute);
+    const transfer = calculatePrice(routeKm, vehicleId, [], duration, isSpainRoute);
     return isDayTrip ? Math.round((transfer + stopsTotal) * 100) / 100 : transfer;
   };
   const basePrice = useMemo(() => {
@@ -196,6 +199,15 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   );
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Paragens alteradas à mão: mantém os km com paragens se a lista de locais não mudou
+  const handleStopsChange = (stops) => {
+    setForm(prev => {
+      const samePlaces = prev.stops.length === stops.length
+        && prev.stops.every((s, i) => s.name === stops[i].name);
+      return { ...prev, stops, route_km: samePlaces ? prev.route_km : null };
+    });
   };
 
   // Muda o tipo de serviço; ida e volta só se aplica a transfers
@@ -262,7 +274,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
       origin_coords: originCoords,
       destination_coords: destCoords || originCoords,
       vehicle_type: form.vehicle_type,
-      distance_km: distance || 0,
+      distance_km: routeKm || 0,
       trip_type: 'one_way',
       transfer_date: form.transfer_date,
       transfer_time: form.transfer_time,
@@ -444,13 +456,13 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   <SimpleAddressPicker
                     label={t(lang, 'origin')}
                     value={form.origin_place}
-                    onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, destination_place: null }))}
+                    onChange={(place) => setForm(prev => ({ ...prev, origin_place: place, destination_place: null, route_km: null }))}
                     placeholder={t(lang, 'select_place')}
                   />
                   <SimpleAddressPicker
                     label={isHourly ? t(lang, 'optional_dest') : t(lang, 'destination')}
                     value={form.destination_place}
-                    onChange={(place) => setForm(prev => ({ ...prev, destination_place: place }))}
+                    onChange={(place) => setForm(prev => ({ ...prev, destination_place: place, route_km: null }))}
                     placeholder={t(lang, 'select_place')}
                   />
                 </div>
@@ -531,7 +543,8 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                 {!isHourly && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && !isLoadingDistance && !isBothInSpain && (
                   <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                     <p className="text-xs text-muted-foreground mb-1">
-                  {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{distance} km</span>
+                  {t(lang, 'est_distance')}: <span className="font-semibold text-foreground">{routeKm} km</span>
+                  {form.route_km && <span className="ml-1 text-xs text-muted-foreground">({t(lang, 'distance_with_stops')})</span>}
                   {form.trip_type === 'round_trip' && <span className="ml-2 text-primary font-medium">× 2 ({t(lang, 'trip_round_trip')})</span>}
                 </p>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -549,7 +562,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                     <RouteInfoBadge 
                       origin={form.origin_place?.address}
                       destination={form.destination_place?.address}
-                      distance={distance}
+                      distance={routeKm}
                       price={basePrice}
                       duration_minutes={distanceData?.duration_minutes}
                       isLoading={isLoadingDistance}
@@ -606,7 +619,7 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                 {isDayTrip && (
                   <StopsSelector
                     stops={form.stops}
-                    onChange={(stops) => updateForm('stops', stops)}
+                    onChange={handleStopsChange}
                     lang={lang}
                   />
                 )}
@@ -774,7 +787,10 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                       </>
                     )}
                     <span className="text-muted-foreground">{t(lang, 'distance')}:</span>
-                    <span className="font-medium">{distance ? `${distance} km` : '—'}</span>
+                    <span className="font-medium">
+                      {routeKm ? `${routeKm} km` : '—'}
+                      {form.route_km && <span className="text-muted-foreground text-xs"> ({t(lang, 'distance_with_stops')})</span>}
+                    </span>
                     <span className="text-muted-foreground">{t(lang, 'vehicle')}:</span>
                     <span className="font-medium">{form.vehicle_type && t(lang, vehicleTypes.find(v => v.id === form.vehicle_type)?.nameKey || '')}</span>
                     {form.service_type === 'transfer' && (

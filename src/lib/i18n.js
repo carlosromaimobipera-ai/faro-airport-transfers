@@ -412,6 +412,7 @@ export const translations = {
     rp_total_estimated: 'Total estimado',
     rp_send: 'Passar para a reserva',
     rp_sent: 'Paragens enviadas para o formulário de reserva. Volte ao separador onde está a reservar.',
+    distance_with_stops: 'com paragens',
   },
 
   en: {
@@ -786,6 +787,7 @@ export const translations = {
     rp_total_estimated: 'Estimated total',
     rp_send: 'Send to the booking',
     rp_sent: 'Stops sent to the booking form. Go back to the tab where you are booking.',
+    distance_with_stops: 'with stops',
   },
 
   es: {
@@ -1160,6 +1162,7 @@ export const translations = {
     rp_total_estimated: 'Total estimado',
     rp_send: 'Pasar a la reserva',
     rp_sent: 'Paradas enviadas al formulario de reserva. Vuelva a la pestaña donde está reservando.',
+    distance_with_stops: 'con paradas',
     },
     fr: {
     nav_book: 'Réserver',
@@ -1533,6 +1536,7 @@ export const translations = {
     rp_total_estimated: 'Total estimé',
     rp_send: 'Envoyer à la réservation',
     rp_sent: 'Arrêts envoyés au formulaire de réservation. Revenez à l\'onglet de réservation.',
+    distance_with_stops: 'avec arrêts',
   },
 
   de: {
@@ -1907,6 +1911,7 @@ export const translations = {
     rp_total_estimated: 'Geschätzte Gesamtsumme',
     rp_send: 'Zur Buchung übertragen',
     rp_sent: 'Stopps an das Buchungsformular gesendet. Kehren Sie zum Buchungs-Tab zurück.',
+    distance_with_stops: 'mit Stopps',
   },
 
   nl: {
@@ -2281,6 +2286,7 @@ export const translations = {
     rp_total_estimated: 'Geschatte totaal',
     rp_send: 'Naar de boeking sturen',
     rp_sent: 'Stops verzonden naar het boekingsformulier. Ga terug naar het tabblad waar u boekt.',
+    distance_with_stops: 'met stops',
   },
 };
 

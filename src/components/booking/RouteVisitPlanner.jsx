@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trash2, Send } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trash2, Send, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,20 +8,47 @@ import { t } from '@/lib/i18n';
 import { useCurrency } from '@/lib/CurrencyContext';
 import { vehicleTypes, calculatePrice } from '@/lib/transferData';
 import { STOP_HOURLY_RATE, stopsPrice } from '@/lib/extraServices';
-import { saveRoutePlacesSelection } from '@/lib/routePlaces';
+import { saveRoutePlacesSelection, fetchRouteThroughPoints, orderStopsAlongRoute } from '@/lib/routePlaces';
 
-export default function RouteVisitPlanner({ selection, onChange, routeKm, initialVehicle, isSpainRoute, lang }) {
+export default function RouteVisitPlanner({ selection, onChange, routeKm, origin, destination, initialVehicle, isSpainRoute, lang }) {
   const { formatPrice } = useCurrency();
   const [vehicle, setVehicle] = useState(
     vehicleTypes.some(v => v.id === initialVehicle) ? initialVehicle : 'sedan'
   );
+  const [sent, setSent] = useState(false);
+  const [kmWithStops, setKmWithStops] = useState(null);
+  const [isRouting, setIsRouting] = useState(false);
+
+  const orderedStops = orderStopsAlongRoute(selection);
+  const stopsKey = orderedStops.map(p => p.name).join('|');
+  const hasRoute = Number.isFinite(origin?.lat) && Number.isFinite(destination?.lat);
+
+  // Km reais da rota com as paragens escolhidas: origem → paragens → destino
+  useEffect(() => {
+    if (!stopsKey || !hasRoute) {
+      setKmWithStops(null);
+      setIsRouting(false);
+      return;
+    }
+    let active = true;
+    setIsRouting(true);
+    const timer = setTimeout(async () => {
+      const { distanceKm } = await fetchRouteThroughPoints([origin, ...orderedStops, destination]);
+      if (active) {
+        setKmWithStops(distanceKm);
+        setIsRouting(false);
+      }
+    }, 700);
+    return () => { active = false; clearTimeout(timer); };
+  }, [stopsKey, hasRoute, origin?.lat, origin?.lng, destination?.lat, destination?.lng]);
+
+  const pricedKm = kmWithStops ?? routeKm;
+  const routeWithStops = orderedStops.length > 0 && !!kmWithStops;
 
   const totalHours = selection.reduce((sum, p) => sum + (parseFloat(p.hours) || 0), 0);
   const visitsTotal = stopsPrice(selection);
-  const routeValue = routeKm ? calculatePrice(routeKm, vehicle, [], 0, isSpainRoute) : 0;
+  const routeValue = pricedKm ? calculatePrice(pricedKm, vehicle, [], 0, isSpainRoute) : 0;
   const total = Math.round((routeValue + visitsTotal) * 100) / 100;
-
-  const [sent, setSent] = useState(false);
 
   const updateHours = (name, value) => {
     setSent(false);
@@ -33,7 +60,7 @@ export default function RouteVisitPlanner({ selection, onChange, routeKm, initia
   };
 
   const sendToBooking = () => {
-    saveRoutePlacesSelection(selection);
+    saveRoutePlacesSelection(orderedStops, pricedKm);
     setSent(true);
   };
 
@@ -95,9 +122,11 @@ export default function RouteVisitPlanner({ selection, onChange, routeKm, initia
         ) : null}
 
         <div className="border-t pt-3 space-y-2 text-sm">
-          {routeKm ? (
+          {pricedKm ? (
             <div className="flex items-center justify-between gap-2">
-              <span className="text-muted-foreground">{t(lang, 'rp_route_value')} · {routeKm} km</span>
+              <span className="text-muted-foreground">
+                {t(lang, 'rp_route_value')} · {pricedKm} km{routeWithStops ? ` (${t(lang, 'distance_with_stops')})` : ''}
+              </span>
               <span className="font-medium">{formatPrice(routeValue)}</span>
             </div>
           ) : null}
@@ -116,10 +145,10 @@ export default function RouteVisitPlanner({ selection, onChange, routeKm, initia
         <Button
           type="button"
           className="w-full gap-2"
-          disabled={selection.length === 0}
+          disabled={selection.length === 0 || isRouting}
           onClick={sendToBooking}
         >
-          <Send className="w-4 h-4" /> {t(lang, 'rp_send')}
+          {isRouting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {t(lang, 'rp_send')}
         </Button>
 
         {sent && (

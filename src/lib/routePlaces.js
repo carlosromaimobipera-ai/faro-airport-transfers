@@ -155,30 +155,43 @@ export function rankPlacesAlongRoute(geometry) {
   return ranked.slice(0, MAX_RESULTS);
 }
 
-// Traçado real da estrada (OSRM). Se falhar, usa a linha directa origem-destino.
-export async function fetchRouteGeometry(origin, destination) {
+// Traçado real da estrada por vários pontos, na ordem dada (OSRM).
+// Usado na rota simples (origem-destino) e na rota com as paragens escolhidas.
+export async function fetchRouteThroughPoints(points) {
+  if (!points || points.length < 2) return { geometry: points || [], distanceKm: null };
+  const coords = points.map(p => `${p.lng},${p.lat}`).join(';');
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
-    const coords = data?.routes?.[0]?.geometry?.coordinates;
-    if (data?.code === 'Ok' && coords?.length > 1) {
+    const route = data?.routes?.[0];
+    const coordinates = route?.geometry?.coordinates;
+    if (data?.code === 'Ok' && coordinates?.length > 1) {
       return {
-        geometry: coords.map(([lng, lat]) => ({ lat, lng })),
-        distanceKm: Math.round(data.routes[0].distance / 100) / 10,
+        geometry: coordinates.map(([lng, lat]) => ({ lat, lng })),
+        distanceKm: Math.round(route.distance / 100) / 10,
       };
     }
   } catch (e) {
     console.warn('Não foi possível obter o traçado da rota:', e?.message);
   }
-  return { geometry: [origin, destination], distanceKm: null };
+  return { geometry: points.map(p => ({ lat: p.lat, lng: p.lng })), distanceKm: null };
+}
+
+export async function fetchRouteGeometry(origin, destination) {
+  return fetchRouteThroughPoints([origin, destination]);
+}
+
+// Paragens pela ordem em que aparecem ao longo da rota
+export function orderStopsAlongRoute(stops) {
+  return [...(stops || [])].sort((a, b) => (a.alongKm ?? 0) - (b.alongKm ?? 0));
 }
 
 // Paragens escolhidas na página "Lugares na rota", para passar ao formulário de reserva
 const SELECTION_STORAGE_KEY = 'routePlacesSelection';
 
-export function saveRoutePlacesSelection(stops) {
-  const payload = { stops, saved_at: Date.now() };
+export function saveRoutePlacesSelection(stops, routeKm) {
+  const payload = { stops, route_km: routeKm ?? null, saved_at: Date.now() };
   try {
     window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(payload));
   } catch (e) {

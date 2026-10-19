@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,7 @@ import VehicleCard from './VehicleCard';
 import ServiceTypeSelector from './ServiceTypeSelector';
 import HourlyHoursSelector from './HourlyHoursSelector';
 import StopsSelector from './StopsSelector';
-import RoutePlacesPrompt from './RoutePlacesPrompt';
-import { readRoutePlacesSelection } from '@/lib/routePlaces';
+import RoutePlacesInline from './RoutePlacesInline';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
@@ -108,25 +107,6 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
     });
   }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
 
-  // Paragens escolhidas na página "Lugares na rota": recolhe a selecção quando o cliente
-  // regressa a este separador (transfer + day trip)
-  const appliedPlacesRef = useRef(null);
-  useEffect(() => {
-    const applyPlacesSelection = () => {
-      const saved = readRoutePlacesSelection();
-      if (!saved || saved.saved_at === appliedPlacesRef.current) return;
-      appliedPlacesRef.current = saved.saved_at;
-      setForm(prev => ({ ...prev, stops: saved.stops, route_km: saved.route_km ?? null }));
-    };
-    applyPlacesSelection();
-    window.addEventListener('focus', applyPlacesSelection);
-    window.addEventListener('storage', applyPlacesSelection);
-    return () => {
-      window.removeEventListener('focus', applyPlacesSelection);
-      window.removeEventListener('storage', applyPlacesSelection);
-    };
-  }, []);
-
   const distance = distanceData?.distance_km || null;
   const duration = distanceData?.duration_minutes || 0;
   // Valor aproximado (linha reta) quando nenhum serviço de rotas respondeu
@@ -202,6 +182,11 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   );
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Paragens escolhidas na lista de lugares da rota (transfer + day trip)
+  const handlePlacesSelectionChange = (stops, routeKm) => {
+    setForm(prev => ({ ...prev, stops, route_km: routeKm ?? null }));
   };
 
   // Paragens alteradas à mão: mantém os km com paragens se a lista de locais não mudou
@@ -571,31 +556,30 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   </div>
                 )}
                 {!isHourly && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
-                  <>
-                    <RouteInfoBadge 
-                      origin={form.origin_place?.address}
-                      destination={form.destination_place?.address}
-                      distance={routeKm}
-                      price={basePrice}
-                      duration_minutes={distanceData?.duration_minutes}
-                      isLoading={isLoadingDistance}
-                      isApproximate={isApproximate}
+                  <RouteInfoBadge 
+                    origin={form.origin_place?.address}
+                    destination={form.destination_place?.address}
+                    distance={routeKm}
+                    price={basePrice}
+                    duration_minutes={distanceData?.duration_minutes}
+                    isLoading={isLoadingDistance}
+                    isApproximate={isApproximate}
+                  />
+                )}
+                {form.service_type === 'transfer' && distance && form.origin_place && form.destination_place && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
+                  <Suspense fallback={<div className="w-full h-72 md:h-96 rounded-xl bg-muted animate-pulse" />}>
+                    <RouteMap 
+                      originCoords={form.origin_place?.coords}
+                      destinationCoords={form.destination_place?.coords}
                     />
-                    <Suspense fallback={<div className="w-full h-72 md:h-96 rounded-xl bg-muted animate-pulse" />}>
-                      <RouteMap 
-                        originCoords={form.origin_place?.coords}
-                        destinationCoords={form.destination_place?.coords}
-                      />
-                    </Suspense>
-                  </>
+                  </Suspense>
                 )}
                 {isDayTrip && distance && form.origin_place?.coords && form.destination_place?.coords && !isBothInSpain && isRouteAllowed(form.origin_place.coords, form.destination_place.coords) && (
-                  <RoutePlacesPrompt
+                  <RoutePlacesInline
                     originPlace={form.origin_place}
                     destinationPlace={form.destination_place}
-                    distanceKm={distance}
-                    vehicleType={form.vehicle_type}
-                    isSpainRoute={isSpainRoute}
+                    selection={form.stops}
+                    onChange={handlePlacesSelectionChange}
                     lang={lang}
                   />
                 )}

@@ -19,10 +19,14 @@ export default function ServiceTypeSelector({ value, onChange, lang }) {
             type="button"
             onClick={() => onChange(opt.id)}
             className={`text-left p-4 rounded-xl border-2 transition-all ${
-              value === opt.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+              value === opt.id
+                ? 'border-secondary bg-secondary/20 shadow-md shadow-secondary/20'
+                : 'border-secondary/50 bg-secondary/5 hover:border-secondary hover:bg-secondary/10'
             }`}
           >
-            <opt.icon className={`w-5 h-5 mb-2 ${value === opt.id ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center mb-2">
+              <opt.icon className="w-5 h-5 text-secondary-foreground" />
+            </div>
             <p className="font-semibold text-sm">{t(lang, opt.labelKey)}</p>
             <p className="text-xs text-muted-foreground mt-1 leading-snug">{t(lang, opt.descKey)}</p>
           </button>

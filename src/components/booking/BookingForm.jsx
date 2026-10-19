@@ -14,6 +14,7 @@ import LocationSelector from './LocationSelector';
 import SimpleAddressPicker from './SimpleAddressPicker';
 import VehicleCard from './VehicleCard';
 import ServiceTypeSelector from './ServiceTypeSelector';
+import HourlyHoursSelector from './HourlyHoursSelector';
 import StopsSelector from './StopsSelector';
 import RoutePlacesPrompt from './RoutePlacesPrompt';
 import { readRoutePlacesSelection } from '@/lib/routePlaces';
@@ -469,10 +470,17 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
                   />
                 </div>
                 {isHourly && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
-                    <Timer className="w-4 h-4 shrink-0" />
-                    {t(lang, 'service_hourly_desc')}
-                  </div>
+                  <>
+                    <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-primary flex items-center gap-2">
+                      <Timer className="w-4 h-4 shrink-0" />
+                      {t(lang, 'service_hourly_desc')}
+                    </div>
+                    <HourlyHoursSelector
+                      value={form.hours}
+                      onChange={(v) => updateForm('hours', v)}
+                      lang={lang}
+                    />
+                  </>
                 )}
                 {/* Trip type selector — apenas para transfers */}
                 {form.service_type === 'transfer' && (

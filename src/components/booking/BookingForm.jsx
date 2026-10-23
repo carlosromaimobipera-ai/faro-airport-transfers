@@ -163,9 +163,9 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   const isHourly = form.service_type === 'hourly';
   const isDayTrip = form.service_type === 'daytrip';
   // Km da rota com as paragens escolhidas (transfer + day trip) — recalcula valores
-  // Transfer + day trip: a viagem vale apenas origem → destino.
-  // As paragens escolhidas acrescentam só o extra de horas, nunca km.
-  const routeKm = distance;
+  // Transfer + day trip: os km da rota com paragens (origem → paragens → destino)
+  // entram no preço da viagem, e cada paragem acrescenta ainda o extra de horas.
+  const routeKm = isDayTrip && form.route_km ? form.route_km : distance;
   const hours = parseFloat(form.hours) || 0;
   const stopsTotal = useMemo(() => stopsPrice(form.stops), [form.stops]);
   // Tarifa de transfer da rota escolhida (usada no transfer e no transfer + day trip)

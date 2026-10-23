@@ -11,8 +11,9 @@ export function hourlyPrice(hours) {
   return Math.round((parseFloat(hours) || 0) * HOURLY_RATE * 100) / 100;
 }
 
+// Só contam paragens com nome: linhas em branco do formulário não são visitas
 export function stopsPrice(stops = []) {
-  const total = stops.reduce((sum, s) => sum + (parseFloat(s.hours) || 0) * STOP_HOURLY_RATE, 0);
+  const total = stops.reduce((sum, s) => sum + (s.name ? (parseFloat(s.hours) || 0) * STOP_HOURLY_RATE : 0), 0);
   return Math.round(total * 100) / 100;
 }
 

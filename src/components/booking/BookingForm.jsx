@@ -61,15 +61,16 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
   const [distanceData, setDistanceData] = useState(null);
   const [isLoadingDistance, setIsLoadingDistance] = useState(false);
 
-  // Haversine fallback for when Google Maps API fails
-  function haversineKm(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-    const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(km * 1.35 * 100) / 100;
-  }
+  // Estimativa (linha reta) usada só quando o serviço de rotas não responde
+  const approximateDistance = (oLat, oLng, dLat, dLng) => {
+    const km = getEffectiveDistance({ lat: oLat, lng: oLng }, { lat: dLat, lng: dLng });
+    return {
+      distance_km: km,
+      duration_minutes: Math.ceil((km / 80) * 60),
+      source: 'approximate',
+      approximate: true,
+    };
+  };
 
   // Calculate distance — Google Maps first, Haversine fallback
   useEffect(() => {
@@ -94,14 +95,10 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
       if (res.data?.distance_km) {
         setDistanceData(res.data);
       } else {
-        // Fallback to Haversine
-        const km = haversineKm(oLat, oLng, dLat, dLng);
-        setDistanceData({ distance_km: km, duration_minutes: Math.ceil((km / 80) * 60), source: 'haversine' });
+        setDistanceData(approximateDistance(oLat, oLng, dLat, dLng));
       }
     }).catch(() => {
-      // Fallback to Haversine
-      const km = haversineKm(oLat, oLng, dLat, dLng);
-      setDistanceData({ distance_km: km, duration_minutes: Math.ceil((km / 80) * 60), source: 'haversine' });
+      setDistanceData(approximateDistance(oLat, oLng, dLat, dLng));
     }).finally(() => {
       setIsLoadingDistance(false);
     });

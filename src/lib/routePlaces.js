@@ -3,6 +3,7 @@
 // Descrição curta em português e inglês (outros idiomas usam a inglesa).
 
 import { Waves, Mountain, Landmark, Trees, Wine, Store } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export const CATEGORIES = {
   beach: { key: 'cat_beach', icon: Waves, chip: 'bg-sky-100 text-sky-700', dot: '#0ea5e9' },
@@ -207,6 +208,22 @@ export async function fetchRouteThroughPoints(points) {
 
 export async function fetchRouteGeometry(origin, destination) {
   return fetchRouteThroughPoints([origin, destination]);
+}
+
+// Distância por estrada de uma rota com paragens. Vai ao servidor (cache + OSRM + Google)
+// para dar o mesmo valor que um transfer simples, em vez de confiar só no OSRM do browser.
+export async function fetchRouteDistanceKm(points) {
+  const valid = (points || []).filter(p => Number.isFinite(p?.lat) && Number.isFinite(p?.lng));
+  if (valid.length < 2) return null;
+  try {
+    const res = await base44.functions.invoke('calculateDistance', {
+      points: valid.map(p => ({ lat: p.lat, lng: p.lng })),
+    });
+    return res.data?.distance_km || null;
+  } catch (e) {
+    console.warn('Não foi possível calcular a distância com paragens:', e?.message);
+    return null;
+  }
 }
 
 // Paragens pela ordem em que aparecem ao longo da rota

@@ -7,7 +7,7 @@ import RoutePlaceCard from './RoutePlaceCard';
 import PopularPlaces from './PopularPlaces';
 import {
   fetchRouteGeometry,
-  fetchRouteThroughPoints,
+  fetchRouteDistanceKm,
   rankPlacesAlongRoute,
   alongKmForPlace,
   orderStopsAlongRoute,
@@ -65,9 +65,11 @@ export default function RoutePlacesInline({ originPlace, destinationPlace, selec
   useEffect(() => {
     if (!stopsKey || !hasCoords) return;
     let active = true;
+    // Paragens sem coordenadas (escritas à mão) não entram no traçado
+    const points = [origin, ...orderedStops.filter(p => Number.isFinite(p?.lat) && Number.isFinite(p?.lng)), destination];
     const timer = setTimeout(async () => {
-      const { distanceKm } = await fetchRouteThroughPoints([origin, ...orderedStops, destination]);
-      if (active && distanceKm) onChange(orderedStops, distanceKm);
+      const km = await fetchRouteDistanceKm(points);
+      if (active && km) onChange(orderedStops, km);
     }, 700);
     return () => { active = false; clearTimeout(timer); };
   }, [stopsKey, hasCoords, origin?.lat, origin?.lng, destination?.lat, destination?.lng]);
@@ -79,7 +81,7 @@ export default function RoutePlacesInline({ originPlace, destinationPlace, selec
     }
 
     onChange([
-      ...selection,
+      ...selection.filter(p => p.name),
       {
         name: place.name,
         hours: 1,

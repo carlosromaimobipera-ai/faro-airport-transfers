@@ -1,7 +1,8 @@
 import { secrets } from "base44:runtime";
 
 export function roundCoord(n: number): number {
-  return Math.round(n * 1000) / 1000;
+  // 5 casas (~1 m): evita que dois pontos diferentes partilhem a mesma distância em cache
+  return Math.round(n * 100000) / 100000;
 }
 
 export function buildLookupKey(oLat: number, oLng: number, dLat: number, dLng: number): string {
@@ -27,15 +28,55 @@ export function haversineFallback(oLat: number, oLng: number, dLat: number, dLng
   return { distance_km, duration_minutes, source: "approximate", approximate: true };
 }
 
+// Comprimento em linha reta ao longo de todos os pontos da rota (útil com paragens)
+export function straightPathKm(points: Array<{ lat: number; lng: number }>): number {
+  let total = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    total += haversineKm(points[i].lat, points[i].lng, points[i + 1].lat, points[i + 1].lng);
+  }
+  return total;
+}
+
+// Uma distância por estrada nunca é muito menor que a linha reta nem desproporcionadamente
+// maior. Serve para descartar valores em cache que não correspondem a esta rota.
+export function isPlausibleRouteDistance(
+  distanceKm: number, points: Array<{ lat: number; lng: number }>
+): boolean {
+  if (!Number.isFinite(distanceKm) || distanceKm <= 0) return false;
+  const straight = straightPathKm(points);
+  if (straight < 0.3) return distanceKm < 5;
+  const ratio = distanceKm / straight;
+  return ratio >= 0.95 && ratio <= 2.5;
+}
+
+// Estimativa por linha reta ao longo da rota (inclui as paragens), marcada como aproximada
+export function haversineFallbackPath(points: Array<{ lat: number; lng: number }>) {
+  const distance_km = Math.round(straightPathKm(points) * 1.35 * 100) / 100;
+  return {
+    distance_km,
+    duration_minutes: Math.ceil((distance_km / 80) * 60),
+    source: "approximate",
+    approximate: true,
+  };
+}
+
 export async function fetchRealRoute(
-  oLat: number, oLng: number, dLat: number, dLng: number
+  oLat: number, oLng: number, dLat: number, dLng: number,
+  waypoints: Array<{ lat: number; lng: number }> = []
 ): Promise<{ distance_km: number; duration_minutes: number; source: string } | null> {
   // Primary: servidores OSRM públicos (roteamento real por estrada, sem chave).
   // O servidor de demonstração falha com frequência (devolve uma página de erro em vez
   // de JSON), por isso há um segundo servidor OSRM antes de passar para o Google.
+  // As paragens (waypoints) entram na rota pela ordem indicada.
+  const path = [
+    `${oLng},${oLat}`,
+    ...waypoints.map((w) => `${w.lng},${w.lat}`),
+    `${dLng},${dLat}`,
+  ].join(";");
+
   const osrmServers = [
-    `https://router.project-osrm.org/route/v1/driving/${oLng},${oLat};${dLng},${dLat}?overview=false`,
-    `https://routing.openstreetmap.de/routed-car/route/v1/driving/${oLng},${oLat};${dLng},${dLat}?overview=false`,
+    `https://router.project-osrm.org/route/v1/driving/${path}?overview=false`,
+    `https://routing.openstreetmap.de/routed-car/route/v1/driving/${path}?overview=false`,
   ];
 
   for (const osrmUrl of osrmServers) {
@@ -73,7 +114,10 @@ export async function fetchRealRoute(
 
   for (const mapsKey of mapsKeys) {
     try {
-      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${oLat},${oLng}&destination=${dLat},${dLng}&mode=driving&key=${mapsKey}`;
+      const waypointParam = waypoints.length
+        ? `&waypoints=${waypoints.map((w) => `${w.lat},${w.lng}`).join("|")}`
+        : "";
+      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${oLat},${oLng}&destination=${dLat},${dLng}&mode=driving${waypointParam}&key=${mapsKey}`;
       const directionsRes = await fetch(directionsUrl, { signal: AbortSignal.timeout(12000) });
       const directionsData = await directionsRes.json();
       const leg = directionsData.routes?.[0]?.legs?.[0];
@@ -103,6 +147,9 @@ export async function fetchRealRoute(
         body: JSON.stringify({
           origin: { location: { latLng: { latitude: oLat, longitude: oLng } } },
           destination: { location: { latLng: { latitude: dLat, longitude: dLng } } },
+          ...(waypoints.length
+            ? { intermediates: waypoints.map((w) => ({ location: { latLng: { latitude: w.lat, longitude: w.lng } } })) }
+            : {}),
           travelMode: "DRIVE",
           routingPreference: "TRAFFIC_UNAWARE",
         }),
@@ -125,18 +172,20 @@ export async function fetchRealRoute(
 }
 
 // Localizações pré-definidas para pré-cálculo (espelha src/lib/transferData.js)
+// Coordenadas dos pontos reais (terminal do aeroporto, centro da vila), não de zonas
+// próximas: um erro de poucos km aqui traduz-se em quilómetros e preços inflacionados.
 export const COMMON_LOCATIONS = [
-  { id: "fao", name: "Aeroporto de Faro (FAO)", coords: { lat: 37.0144, lng: -7.9699 }, type: "airport" },
-  { id: "lis", name: "Aeroporto de Lisboa", coords: { lat: 38.6747, lng: -9.1283 }, type: "airport" },
-  { id: "svq", name: "Aeroporto de Sevilha (SVQ)", coords: { lat: 37.4174, lng: -5.8892 }, type: "airport" },
-  { id: "faro_center", name: "Centro de Faro", coords: { lat: 37.0194, lng: -7.9322 }, type: "city" },
-  { id: "vilamoura", name: "Vilamoura", coords: { lat: 37.0662, lng: -8.1212 }, type: "city" },
-  { id: "albufeira", name: "Albufeira", coords: { lat: 37.0901, lng: -8.2506 }, type: "city" },
-  { id: "armacao", name: "Armação de Pêra", coords: { lat: 37.0845, lng: -8.3642 }, type: "city" },
-  { id: "lagos", name: "Lagos", coords: { lat: 37.1063, lng: -8.6705 }, type: "city" },
-  { id: "portimao", name: "Portimão", coords: { lat: 37.1412, lng: -8.5292 }, type: "city" },
-  { id: "silves", name: "Silves", coords: { lat: 37.2425, lng: -8.4384 }, type: "city" },
-  { id: "tavira", name: "Tavira", coords: { lat: 36.9625, lng: -7.6533 }, type: "city" },
+  { id: "fao", name: "Aeroporto de Faro (FAO)", coords: { lat: 37.0144, lng: -7.9659 }, type: "airport" },
+  { id: "lis", name: "Aeroporto de Lisboa", coords: { lat: 38.7742, lng: -9.1342 }, type: "airport" },
+  { id: "svq", name: "Aeroporto de Sevilha (SVQ)", coords: { lat: 37.4177, lng: -5.8949 }, type: "airport" },
+  { id: "faro_center", name: "Centro de Faro", coords: { lat: 37.0163, lng: -7.9352 }, type: "city" },
+  { id: "vilamoura", name: "Vilamoura", coords: { lat: 37.0785, lng: -8.1146 }, type: "city" },
+  { id: "albufeira", name: "Albufeira", coords: { lat: 37.0917, lng: -8.2550 }, type: "city" },
+  { id: "armacao", name: "Armação de Pêra", coords: { lat: 37.1019, lng: -8.3704 }, type: "city" },
+  { id: "lagos", name: "Lagos", coords: { lat: 37.1028, lng: -8.6729 }, type: "city" },
+  { id: "portimao", name: "Portimão", coords: { lat: 37.1376, lng: -8.5368 }, type: "city" },
+  { id: "silves", name: "Silves", coords: { lat: 37.1889, lng: -8.4383 }, type: "city" },
+  { id: "tavira", name: "Tavira", coords: { lat: 37.1262, lng: -7.6499 }, type: "city" },
   { id: "lis_center", name: "Centro de Lisboa", coords: { lat: 38.7223, lng: -9.1393 }, type: "city" },
   { id: "seville_center", name: "Centro de Sevilha", coords: { lat: 37.386, lng: -5.9844 }, type: "city" },
 ];

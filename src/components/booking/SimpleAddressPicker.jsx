@@ -30,17 +30,17 @@ function predCacheKey(lang, query) {
 }
 
 const COMMON_LOCATIONS_BASE = [
-  { nameKey: 'common_location_airport',        icon: '✈️', coords: { lat: 37.0144, lng: -7.9699 } },
-  { nameKey: 'common_location_lisbon_airport',  icon: '✈️', coords: { lat: 38.6747, lng: -9.1283 } },
-  { nameKey: 'common_location_seville_airport', icon: '✈️', coords: { lat: 37.4174, lng: -5.8892 } },
-  { nameKey: 'common_location_albufeira',       icon: '📍', coords: { lat: 37.0901, lng: -8.2506 } },
-  { nameKey: 'common_location_vilamoura',       icon: '📍', coords: { lat: 37.0662, lng: -8.1212 } },
-  { nameKey: 'common_location_lagos',           icon: '📍', coords: { lat: 37.1063, lng: -8.6705 } },
-  { nameKey: 'common_location_portimao',        icon: '📍', coords: { lat: 37.1412, lng: -8.5292 } },
-  { nameKey: 'common_location_armacao',         icon: '📍', coords: { lat: 37.0845, lng: -8.3642 } },
-  { nameKey: 'common_location_tavira',          icon: '📍', coords: { lat: 36.9625, lng: -7.6533 } },
-  { nameKey: 'common_location_center',          icon: '📍', coords: { lat: 37.0194, lng: -7.9322 } },
-  { nameKey: 'common_location_silves',          icon: '📍', coords: { lat: 37.2425, lng: -8.4384 } },
+  { nameKey: 'common_location_airport',        icon: '✈️', coords: { lat: 37.0144, lng: -7.9659 } },
+  { nameKey: 'common_location_lisbon_airport',  icon: '✈️', coords: { lat: 38.7742, lng: -9.1342 } },
+  { nameKey: 'common_location_seville_airport', icon: '✈️', coords: { lat: 37.4177, lng: -5.8949 } },
+  { nameKey: 'common_location_albufeira',       icon: '📍', coords: { lat: 37.0917, lng: -8.2550 } },
+  { nameKey: 'common_location_vilamoura',       icon: '📍', coords: { lat: 37.0785, lng: -8.1146 } },
+  { nameKey: 'common_location_lagos',           icon: '📍', coords: { lat: 37.1028, lng: -8.6729 } },
+  { nameKey: 'common_location_portimao',        icon: '📍', coords: { lat: 37.1376, lng: -8.5368 } },
+  { nameKey: 'common_location_armacao',         icon: '📍', coords: { lat: 37.1019, lng: -8.3704 } },
+  { nameKey: 'common_location_tavira',          icon: '📍', coords: { lat: 37.1262, lng: -7.6499 } },
+  { nameKey: 'common_location_center',          icon: '📍', coords: { lat: 37.0163, lng: -7.9352 } },
+  { nameKey: 'common_location_silves',          icon: '📍', coords: { lat: 37.1889, lng: -8.4383 } },
   { nameKey: 'common_location_lisbon',          icon: '📍', coords: { lat: 38.7223, lng: -9.1393 } },
   { nameKey: 'common_location_seville',         icon: '📍', coords: { lat: 37.3860, lng: -5.9844 } },
 ];

@@ -226,7 +226,7 @@ export function getEffectiveDistance(originCoords, destinationCoords) {
             Math.cos(originCoords.lat * Math.PI / 180) * Math.cos(destinationCoords.lat * Math.PI / 180) *
             Math.sin(dLng/2) * Math.sin(dLng/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return Math.round(R * c * 1.3 * 100) / 100; // +30% for road network
+  return Math.round(R * c * 1.35 * 100) / 100; // +35% for road network (igual ao servidor)
 }
 
 // Generate booking reference

@@ -198,6 +198,7 @@ export async function fetchRouteThroughPoints(points) {
       return {
         geometry: coordinates.map(([lng, lat]) => ({ lat, lng })),
         distanceKm: Math.round(route.distance / 100) / 10,
+        durationMin: Math.round((route.duration || 0) / 60),
       };
     }
   } catch (e) {

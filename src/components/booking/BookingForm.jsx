@@ -17,6 +17,7 @@ import ServiceTypeSelector from './ServiceTypeSelector';
 import HourlyHoursSelector from './HourlyHoursSelector';
 import StopsSelector from './StopsSelector';
 import RoutePlacesInline from './RoutePlacesInline';
+import { fetchRouteThroughPoints } from '@/lib/routePlaces';
 const RouteMap = lazy(() => import('./RouteMap'));
 import RouteInfoBadge from './RouteInfoBadge';
 import { vehicleTypes, calculatePrice, generateBookingRef, getEffectiveDistance, BOOKING_EXTRAS, calculateExtrasTotal, isRouteAllowed, getRegionName, getNightSurcharge } from '@/lib/transferData';
@@ -85,23 +86,41 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
 
     const { lat: oLat, lng: oLng } = form.origin_place.coords;
     const { lat: dLat, lng: dLng } = form.destination_place.coords;
+    let active = true;
+
+    // Se o servidor não responder, pede a rota real por estrada antes de estimar em linha reta
+    const roadFallback = async () => {
+      const road = await fetchRouteThroughPoints([
+        { lat: oLat, lng: oLng },
+        { lat: dLat, lng: dLng },
+      ]).catch(() => null);
+      if (road?.distanceKm) {
+        return {
+          distance_km: road.distanceKm,
+          duration_minutes: road.durationMin || Math.ceil((road.distanceKm / 70) * 60),
+          source: 'osrm',
+          approximate: false,
+        };
+      }
+      return approximateDistance(oLat, oLng, dLat, dLng);
+    };
 
     base44.functions.invoke('calculateDistance', {
       origin_lat: oLat,
       origin_lng: oLng,
       destination_lat: dLat,
       destination_lng: dLng,
-    }).then(res => {
-      if (res.data?.distance_km) {
-        setDistanceData(res.data);
-      } else {
-        setDistanceData(approximateDistance(oLat, oLng, dLat, dLng));
-      }
-    }).catch(() => {
-      setDistanceData(approximateDistance(oLat, oLng, dLat, dLng));
+    }).then(async res => {
+      const data = res.data?.distance_km ? res.data : await roadFallback();
+      if (active) setDistanceData(data);
+    }).catch(async () => {
+      const data = await roadFallback();
+      if (active) setDistanceData(data);
     }).finally(() => {
-      setIsLoadingDistance(false);
+      if (active) setIsLoadingDistance(false);
     });
+
+    return () => { active = false; };
   }, [form.origin_place?.coords?.lat, form.origin_place?.coords?.lng, form.destination_place?.coords?.lat, form.destination_place?.coords?.lng]);
 
   const distance = distanceData?.distance_km || null;

@@ -1,4 +1,29 @@
 // Public endpoint — no authentication required
+// Sugestões de locais: Google Places Autocomplete e, se este não responder,
+// pesquisa OpenStreetMap (Nominatim) — para que uma morada escrita continue a
+// resolver para coordenadas reais (e não para uma estimativa).
+async function nominatimSuggestions(input: string) {
+  const url = new URL('https://nominatim.openstreetmap.org/search');
+  url.searchParams.set('q', input);
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('limit', '5');
+  url.searchParams.set('countrycodes', 'pt,es');
+  url.searchParams.set('accept-language', 'pt');
+
+  const res = await fetch(url.toString(), {
+    headers: { 'User-Agent': 'TransfersAlgarvestar' },
+  });
+  const results = await res.json();
+  if (!Array.isArray(results)) return [];
+
+  return results
+    .filter((r: any) => r?.lat && r?.lon)
+    .map((r: any) => ({
+      address: String(r.display_name || '').split(',').slice(0, 4).join(',').trim(),
+      coords: { lat: parseFloat(r.lat), lng: parseFloat(r.lon) },
+    }));
+}
+
 Deno.serve(async (req) => {
   console.log('Function called, method:', req.method);
   try {
@@ -17,11 +42,11 @@ Deno.serve(async (req) => {
 
     if (!apiKey) {
       console.log('No API key found');
-      return Response.json({ suggestions: [] });
+      return Response.json({ suggestions: await nominatimSuggestions(trimmedInput) });
     }
 
     // Step 1: Get predictions from Places Autocomplete
-    const acUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(trimmedInput)}&key=${apiKey}&language=pt&components=country:pt|country:es&types=geocode|establishment`;
+    const acUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(trimmedInput)}&key=${apiKey}&language=pt&components=country:pt|country:es|country:es&types=geocode|establishment`;
     const acRes = await fetch(acUrl);
     const acData = await acRes.json();
 
@@ -29,7 +54,9 @@ Deno.serve(async (req) => {
 
     if (acData.status !== 'OK' || !acData.predictions?.length) {
       console.log('Full response:', JSON.stringify(acData).slice(0, 300));
-      return Response.json({ suggestions: [] });
+      const fallback = await nominatimSuggestions(trimmedInput);
+      console.log('Nominatim fallback results:', fallback.length);
+      return Response.json({ suggestions: fallback });
     }
 
     const top5 = acData.predictions.slice(0, 5);

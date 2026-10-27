@@ -119,7 +119,7 @@ export function getDistance() {
 const PRICE_PER_KM = {
   short:     { sedan: 1.05, premium: 1.45, minivan: 1.25, minibus: 1.45 }, // < 30 km
   mid:       { sedan: 0.95, premium: 1.15, minivan: 1.00, minibus: 1.15 }, // 30–60 km
-  mid_long:  { sedan: 0.72, premium: 0.95, minivan: 0.83, minibus: 0.95 }, // 60–150 km
+  mid_long:  { sedan: 0.80, premium: 0.95, minivan: 0.85, minibus: 0.95 }, // 60–150 km
   long:      { sedan: 1.05, premium: 1.40, minivan: 1.25, minibus: 1.40 }, // > 150 km
   spain:     { sedan: 1.05, premium: 1.35, minivan: 1.20, minibus: 1.35 }, // Espanha
 };

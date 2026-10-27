@@ -117,11 +117,11 @@ export function getDistance() {
 
 // Tarifas por km por distância e veículo
 const PRICE_PER_KM = {
-  short:     { sedan: 1.15, premium: 1.55, minivan: 1.35, minibus: 1.55 }, // < 30 km
-  mid:       { sedan: 1.05, premium: 1.25, minivan: 1.10, minibus: 1.25 }, // 30–60 km
-  mid_long:  { sedan: 0.82, premium: 1.05, minivan: 0.93, minibus: 1.05 }, // 60–150 km
-  long:      { sedan: 1.15, premium: 1.50, minivan: 1.35, minibus: 1.50 }, // > 150 km
-  spain:     { sedan: 1.15, premium: 1.45, minivan: 1.30, minibus: 1.45 }, // Espanha
+  short:     { sedan: 1.10, premium: 1.50, minivan: 1.30, minibus: 1.50 }, // < 30 km
+  mid:       { sedan: 1.00, premium: 1.20, minivan: 1.05, minibus: 1.20 }, // 30–60 km
+  mid_long:  { sedan: 0.77, premium: 1.00, minivan: 0.88, minibus: 1.00 }, // 60–150 km
+  long:      { sedan: 1.10, premium: 1.45, minivan: 1.30, minibus: 1.45 }, // > 150 km
+  spain:     { sedan: 1.10, premium: 1.40, minivan: 1.25, minibus: 1.40 }, // Espanha
 };
 
 // Tarifas mínimas
@@ -273,7 +273,7 @@ export const vehicleTypes = [
     luggage: 3,
     maxPassengers: 3,
     maxLuggage: 3,
-    pricePerKm: 1.05,
+    pricePerKm: 1.00,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/2f3fbb999_Kia_Ceed_SW.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
@@ -284,7 +284,7 @@ export const vehicleTypes = [
     luggage: 3,
     maxPassengers: 3,
     maxLuggage: 3,
-    pricePerKm: 1.25,
+    pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/3e7495004_generated_image.png",
     featureKeys: ["feat_ac", "feat_wifi", "feat_baby"],
   },
@@ -295,7 +295,7 @@ export const vehicleTypes = [
     luggage: 5,
     maxPassengers: 5,
     maxLuggage: 5,
-    pricePerKm: 1.25,
+    pricePerKm: 1.20,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/6db18abaf_VK_Caddy_Maxi.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_luggage", "feat_baby"],
   },
@@ -306,7 +306,7 @@ export const vehicleTypes = [
     luggage: 8,
     maxPassengers: 8,
     maxLuggage: 8,
-    pricePerKm: 1.45,
+    pricePerKm: 1.40,
     image: "https://media.base44.com/images/public/69f9fe03f147edc32575e815/5e228dd60_Mercedes_vito.jpg",
     featureKeys: ["feat_ac", "feat_wifi", "feat_space", "feat_group", "feat_baby"],
   },

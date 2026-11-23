@@ -64,10 +64,74 @@ export async function fetchRealRoute(
   oLat: number, oLng: number, dLat: number, dLng: number,
   waypoints: Array<{ lat: number; lng: number }> = []
 ): Promise<{ distance_km: number; duration_minutes: number; source: string } | null> {
-  // Primary: servidores OSRM públicos (roteamento real por estrada, sem chave).
-  // O servidor de demonstração falha com frequência (devolve uma página de erro em vez
-  // de JSON), por isso há um segundo servidor OSRM antes de passar para o Google.
+  // Primary: Google Maps — é a distância que o cliente vê no Google Maps.
+  // Directions API primeiro e, em alternativa, a Routes API (chaves com essa API ativa).
   // As paragens (waypoints) entram na rota pela ordem indicada.
+  const mapsKeys = [secrets.get("GOOGLE_MAPS_SERVER_KEY"), secrets.get("GOOGLE_PLACES_API_KEY")].filter(Boolean) as string[];
+
+  for (const mapsKey of mapsKeys) {
+    try {
+      const waypointParam = waypoints.length
+        ? `&waypoints=${waypoints.map((w) => `${w.lat},${w.lng}`).join("|")}`
+        : "";
+      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${oLat},${oLng}&destination=${dLat},${dLng}&mode=driving${waypointParam}&key=${mapsKey}`;
+      const directionsRes = await fetch(directionsUrl, { signal: AbortSignal.timeout(12000) });
+      const directionsData = await directionsRes.json();
+      const legs = directionsData.routes?.[0]?.legs;
+      if (directionsData.status === "OK" && Array.isArray(legs) && legs.length > 0) {
+        // Soma todas as pernas: com paragens, a primeira perna não é a rota toda
+        const meters = legs.reduce((sum: number, l: any) => sum + (l?.distance?.value || 0), 0);
+        const seconds = legs.reduce((sum: number, l: any) => sum + (l?.duration?.value || 0), 0);
+        if (meters > 0) {
+          return {
+            distance_km: Math.round(meters / 100) / 10,
+            duration_minutes: Math.ceil(seconds / 60),
+            source: "google",
+          };
+        }
+      }
+      console.log("Directions API sem rota:", directionsData.status, directionsData.error_message || "");
+    } catch (e) {
+      console.log("Directions API error:", e.message);
+    }
+  }
+
+  // Secondary: Google Routes API (chaves com a API Routes ativa)
+  for (const mapsKey of mapsKeys) {
+    try {
+      const routesRes = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": mapsKey,
+          "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
+        },
+        body: JSON.stringify({
+          origin: { location: { latLng: { latitude: oLat, longitude: oLng } } },
+          destination: { location: { latLng: { latitude: dLat, longitude: dLng } } },
+          ...(waypoints.length
+            ? { intermediates: waypoints.map((w) => ({ location: { latLng: { latitude: w.lat, longitude: w.lng } } })) }
+            : {}),
+          travelMode: "DRIVE",
+          routingPreference: "TRAFFIC_UNAWARE",
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const routesData = await routesRes.json();
+      if (routesData.routes?.length > 0) {
+        const route = routesData.routes[0];
+        const distance_km = Math.round((route.distanceMeters / 1000) * 100) / 100;
+        const duration_minutes = Math.ceil(parseInt(route.duration) / 60);
+        return { distance_km, duration_minutes, source: "google" };
+      }
+      console.log("Routes API sem rota:", JSON.stringify(routesData).slice(0, 200));
+    } catch (e) {
+      console.log("Routes API error:", e.message);
+    }
+  }
+
+  // Last resort: servidores OSRM públicos (roteamento real por estrada, sem chave).
+  // Só entram se o Google não responder, para nunca sobrepor à distância do Google Maps.
   const path = [
     `${oLng},${oLat}`,
     ...waypoints.map((w) => `${w.lng},${w.lat}`),
@@ -106,65 +170,6 @@ export async function fetchRealRoute(
       console.log("OSRM sem rota:", osrmUrl, osrmData.code || osrmRes.status);
     } catch (e) {
       console.log("OSRM error:", osrmUrl, e.message);
-    }
-  }
-
-  // Secondary: Google Directions API — usa as chaves Google Maps já configuradas
-  const mapsKeys = [secrets.get("GOOGLE_PLACES_API_KEY"), secrets.get("GOOGLE_MAPS_SERVER_KEY")].filter(Boolean) as string[];
-
-  for (const mapsKey of mapsKeys) {
-    try {
-      const waypointParam = waypoints.length
-        ? `&waypoints=${waypoints.map((w) => `${w.lat},${w.lng}`).join("|")}`
-        : "";
-      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${oLat},${oLng}&destination=${dLat},${dLng}&mode=driving${waypointParam}&key=${mapsKey}`;
-      const directionsRes = await fetch(directionsUrl, { signal: AbortSignal.timeout(12000) });
-      const directionsData = await directionsRes.json();
-      const leg = directionsData.routes?.[0]?.legs?.[0];
-      if (directionsData.status === "OK" && leg?.distance?.value) {
-        return {
-          distance_km: Math.round(leg.distance.value / 100) / 10,
-          duration_minutes: Math.ceil(leg.duration.value / 60),
-          source: "google",
-        };
-      }
-      console.log("Directions API sem rota:", directionsData.status, directionsData.error_message || "");
-    } catch (e) {
-      console.log("Directions API error:", e.message);
-    }
-  }
-
-  // Tertiary: Google Routes API (chaves com a API Routes ativa)
-  for (const mapsKey of mapsKeys) {
-    try {
-      const routesRes = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": mapsKey,
-          "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
-        },
-        body: JSON.stringify({
-          origin: { location: { latLng: { latitude: oLat, longitude: oLng } } },
-          destination: { location: { latLng: { latitude: dLat, longitude: dLng } } },
-          ...(waypoints.length
-            ? { intermediates: waypoints.map((w) => ({ location: { latLng: { latitude: w.lat, longitude: w.lng } } })) }
-            : {}),
-          travelMode: "DRIVE",
-          routingPreference: "TRAFFIC_UNAWARE",
-        }),
-        signal: AbortSignal.timeout(8000),
-      });
-      const routesData = await routesRes.json();
-      if (routesData.routes?.length > 0) {
-        const route = routesData.routes[0];
-        const distance_km = Math.round((route.distanceMeters / 1000) * 100) / 100;
-        const duration_minutes = Math.ceil(parseInt(route.duration) / 60);
-        return { distance_km, duration_minutes, source: "google" };
-      }
-      console.log("Routes API sem rota:", JSON.stringify(routesData).slice(0, 200));
-    } catch (e) {
-      console.log("Routes API error:", e.message);
     }
   }
 

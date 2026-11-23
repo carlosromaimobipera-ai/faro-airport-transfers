@@ -65,7 +65,8 @@ export default async function(req: Request): Promise<Response> {
       try {
         const cached = await base44.asServiceRole.entities.RouteDistance.filter({ lookup_key }, undefined, 1);
         const entry = cached && cached.length > 0 ? cached[0] : null;
-        if (entry && isPlausibleRouteDistance(entry.distance_km, points)) {
+        // Só valores do Google Maps: entradas antigas de outros serviços podem estar erradas
+        if (entry && entry.source === "google" && isPlausibleRouteDistance(entry.distance_km, points)) {
           return respond(entry.distance_km, entry.duration_minutes, "cache", false);
         }
       } catch (e) {

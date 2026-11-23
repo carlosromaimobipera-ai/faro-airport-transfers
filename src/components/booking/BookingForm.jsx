@@ -111,7 +111,9 @@ export default function BookingForm({ initialOrigin = '', initialDestination = '
       destination_lat: dLat,
       destination_lng: dLng,
     }).then(async res => {
-      const data = res.data?.distance_km ? res.data : await roadFallback();
+      // Só aceita o valor do servidor se for uma rota real; estimativas em linha reta
+      // são substituídas pela rota por estrada antes de chegar ao ecrã
+      const data = res.data?.distance_km && !res.data.approximate ? res.data : await roadFallback();
       if (active) setDistanceData(data);
     }).catch(async () => {
       const data = await roadFallback();
